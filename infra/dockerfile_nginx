@@ -1,0 +1,11 @@
+FROM nginx:alpine
+
+COPY nginx_config/default.conf /etc/nginx/conf.d/default.conf
+
+COPY nginx_config/nginxSetting.sh .
+
+RUN chmod +x nginxSetting.sh && mkdir -p /etc/ssl
+
+WORKDIR /nginx
+
+ENTRYPOINT ["sh", "/nginxSetting.sh"]
