@@ -1,4 +1,4 @@
-package com.cinefinder.global.entity;
+package com.cinefinder.global.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
