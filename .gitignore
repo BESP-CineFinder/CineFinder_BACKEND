@@ -44,7 +44,6 @@ infra/elasticsearch/data
 ### local ###
 .env
 db
-elasticsearch
 infra/db/
 infra/.env
 infra/db/
