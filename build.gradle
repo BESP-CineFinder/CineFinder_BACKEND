@@ -31,6 +31,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+	
+	//elasticsearch
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 
 	// Lombok
