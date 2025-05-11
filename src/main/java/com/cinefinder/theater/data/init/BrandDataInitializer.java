@@ -20,9 +20,9 @@ public class BrandDataInitializer {
     public void init() {
         if (brandRepository.count() == 0) {
             List<Brand> initialBrands = List.of(
-                    new Brand("CGV"),
-                    new Brand("롯데시네마"),
-                    new Brand("메가박스")
+                    Brand.builder().name("CGV").build(),
+                    Brand.builder().name("메가박스").build(),
+                    Brand.builder().name("롯데시네마").build()
             );
             brandRepository.saveAll(initialBrands);
         }
