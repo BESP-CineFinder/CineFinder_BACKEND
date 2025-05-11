@@ -51,7 +51,6 @@ public class MovieService {
 
         // 2. 일간 박스오피스 정보 응답 분기 처리
         if (redisTemplate.hasKey(redisKey)) {
-            // 일간 박스오피스 키가 존재할 경우
             log.info("⭕ {} 키 존재 ... 캐시된 데이터 조회", redisKey);
 
             return redisTemplate.opsForHash()
@@ -67,7 +66,6 @@ public class MovieService {
                 .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
                 .collect(Collectors.toList());
         } else {
-            // 일간 박스오피스 키가 없을 경우 KOBIS API 호출
             log.info("❌ {} 키 없음 ... KOBIS API 호출 후 캐싱", redisKey);
 
             return fetchDailyBoxOfficeInfo();
@@ -113,13 +111,11 @@ public class MovieService {
         log.info("✅ [영화 상세정보 조회] REDIS 키 이름 : {}", redisKey);
 
         if (redisTemplate.hasKey(redisKey)) {
-            // 영화 상세정보 키가 존재할 경우
             log.info("⭕ {} 키 존재 ... 캐시된 데이터 조회", redisKey);
             
             Object object = redisTemplate.opsForHash().get(redisKey, movieKey);
             return mapper.convertValue(object, MovieDetails.class);
         } else {
-            // 영화 상세정보 키가 없을 경우 KMDB API 호출
             log.info("❌ {} 키 없음 ... KMDB API 호출 후 캐싱", redisKey);
             
             return fetchMovieDetails(movieKey, title, releaseDts);
@@ -151,8 +147,7 @@ public class MovieService {
                 String releaseDate = movieDetails.getReleaseDates().getFirst();
 
                 if (releaseDts.equals(releaseDate)) {
-                    // API 요청 결과 내 개봉일자가 같다면
-                    log.info("⭕ {} 개봉일자 일치 ... 영화 상세정보 데이터 캐싱", releaseDts);
+                    log.info("⭕ API 요청 파라미터와 응답 간 개봉일자가 일치하는 데이터 존재 ... 영화 상세정보 데이터 캐싱");
 
                     redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
                     returnMovieDetails = movieDetails;
