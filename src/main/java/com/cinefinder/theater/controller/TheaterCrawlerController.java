@@ -18,18 +18,18 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/test")
-public class TheaterCrawlerTestController {
+@RequestMapping("/api/theater")
+public class TheaterCrawlerController {
 
     private final ApplicationContext applicationContext;
 
-    @PostMapping("/import/theater")
+    @PostMapping("/sync")
     public ResponseEntity<BaseResponse<List<Theater>>> importTheater(@RequestParam String brand) {
         Map<String, TheaterCrawlerService> theaterCrawlerServices = applicationContext.getBeansOfType(TheaterCrawlerService.class);
         TheaterCrawlerService theaterCrawlerService = theaterCrawlerServices.get(brand+"TheaterCrawler");
 
         List<Theater> theaters = theaterCrawlerService.getCrawlData();
         theaterCrawlerService.syncRecentTheater(theaters);
-        return ResponseMapper.successOf(ApiStatus._OK, theaters, TheaterCrawlerTestController.class);
+        return ResponseMapper.successOf(ApiStatus._OK, theaters, TheaterCrawlerController.class);
     }
 }
