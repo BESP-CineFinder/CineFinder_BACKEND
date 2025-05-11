@@ -17,8 +17,12 @@ spring:
       port: ${REDIS_EXTERNAL_PORT}
 
 api:
-  kobis: ${KOBIS_API_KEY}
-  kmdb: ${KMDB_API_KEY}
+  kobis:
+    request-url: ${KOBIS_REQUEST_URL}
+    service-key: ${KOBIS_SERVICE_KEY}
+  kmdb:
+    request-url: ${KMDB_REQUEST_URL}
+    service-key: ${KMDB_SERVICE_KEY}
 
 # =========================== LOCAL  ===========================
 ---
