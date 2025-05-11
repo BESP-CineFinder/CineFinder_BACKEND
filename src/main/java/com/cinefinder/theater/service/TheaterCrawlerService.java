@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface TheaterCrawlerService {
     List<Theater> getCrawlData();
-    void syncTheaterChanges();
+    void syncRecentTheater(List<Theater> theaters);
 }

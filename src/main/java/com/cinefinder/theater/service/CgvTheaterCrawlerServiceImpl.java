@@ -3,6 +3,7 @@ package com.cinefinder.theater.service;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -19,7 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
+@Service("CGVTheaterCrawler")
 @RequiredArgsConstructor
 public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
@@ -55,14 +56,14 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     }
 
     @Override
-    public void syncTheaterChanges() {
-        List<Theater> newTheaters = getCrawlData();
+    @Transactional
+    public void syncRecentTheater(List<Theater> theaters) {
         Set<String> existingCodes = getExistingTheaterCodes();
-        Set<String> newCodes = extractTheaterCodes(newTheaters);
+        Set<String> newCodes = extractTheaterCodes(theaters);
 
         if (existingCodes.isEmpty()) {
             log.info("✅ CGV 영화관 정보가 없습니다. 새로 저장합니다.");
-            theaterRepository.saveAll(newTheaters);
+            theaterRepository.saveAll(theaters);
             return;
         }
 
@@ -71,9 +72,10 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
             return;
         }
 
-        log.info("✅ CGV 영화관 정보 업데이트 시작");
-        theaterRepository.deleteAll();
-        theaterRepository.saveAll(newTheaters);
+        log.info("⁉️ CGV 영화관 정보 변경 확인! 업데이트 시작...");
+        theaterRepository.deleteByBrandName("CGV");
+        theaterRepository.saveAll(theaters);
+        log.info("✅ CGV 영화관 정보 업데이트 완료!");
     }
 
     private List<Theater> crawlArea(Element areaLink) throws IOException {
@@ -96,7 +98,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         String code = getQueryParam(href, "tc");
         if (code == null) return theaters;
 
-        String name = extractTheaterName(theaterLink);
+        String name = extractTheaterName(theaterLink).replace("CGV", "").trim();
         LatLng latLng = fetchTheaterCoordinates(code);
 
         if (latLng != null) {
@@ -109,7 +111,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                     .build();
 
             theaters.add(theater);
-            log.info("Theater 정보 가져오기 완료: {} - {}", name, code);
+            log.info("CGV 영화관 정보 가져오기 완료: {} - {}", name, code);
         }
         return theaters;
     }
@@ -152,7 +154,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     private record LatLng(double lat, double lng) {}
 
     private Set<String> getExistingTheaterCodes() {
-        return theaterRepository.findAll().stream()
+        return theaterRepository.findByBrandName("CGV").stream()
                 .map(Theater::getCode)
                 .collect(Collectors.toSet());
     }
