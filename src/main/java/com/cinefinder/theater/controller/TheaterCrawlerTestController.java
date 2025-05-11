@@ -26,8 +26,6 @@ public class TheaterCrawlerTestController {
     @PostMapping("/import/theater")
     public ResponseEntity<BaseResponse<List<Theater>>> importTheater(@RequestParam String brand) {
         Map<String, TheaterCrawlerService> theaterCrawlerServices = applicationContext.getBeansOfType(TheaterCrawlerService.class);
-        System.out.println(theaterCrawlerServices);
-
         TheaterCrawlerService theaterCrawlerService = theaterCrawlerServices.get(brand+"TheaterCrawler");
 
         List<Theater> theaters = theaterCrawlerService.getCrawlData();

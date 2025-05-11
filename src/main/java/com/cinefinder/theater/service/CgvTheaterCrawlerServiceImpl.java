@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,12 +25,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
+    @Value("${movie.cgv.name}")
+    private String brandName;
+
+    @Value("${movie.cgv.main-url}")
+    private String mainUrl;
+
+    @Value("${movie.cgv.theater-default-endpoint}")
+    private String theaterDefaultEndpoint;
+
+    @Value("${movie.cgv.theater-detail-endpoint}")
+    private String theaterDetailEndpoint;
+
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
 
-    private static final String BASE_URL = "https://m.cgv.co.kr/WebApp/TheaterV4/";
-    private static final String MAIN_URL = BASE_URL + "Default.aspx";
-    private static final String DETAIL_URL = BASE_URL + "TheaterDetail.aspx?tc=";
     private static final String USER_AGENT = "Mozilla/5.0";
 
     @Override
@@ -37,7 +47,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         List<Theater> theaters = new ArrayList<>();
         Document mainDoc;
         try {
-            mainDoc = Jsoup.connect(MAIN_URL).userAgent(USER_AGENT).get();
+            mainDoc = Jsoup.connect(mainUrl+theaterDefaultEndpoint).userAgent(USER_AGENT).get();
         } catch (IOException e) {
             // TODO: JSoup 연결 실패 시 예외 처리
             throw new RuntimeException(e);
@@ -73,14 +83,14 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         }
 
         log.info("⁉️ CGV 영화관 정보 변경 확인! 업데이트 시작...");
-        theaterRepository.deleteByBrandName("CGV");
+        theaterRepository.deleteByBrandName(brandName);
         theaterRepository.saveAll(theaters);
         log.info("✅ CGV 영화관 정보 업데이트 완료!");
     }
 
     private List<Theater> crawlArea(Element areaLink) throws IOException {
         List<Theater> theaters = new ArrayList<>();
-        String areaUrl = BASE_URL + areaLink.attr("href");
+        String areaUrl = mainUrl + "/TheaterV4/" + areaLink.attr("href");
         Document areaDoc = Jsoup.connect(areaUrl).userAgent(USER_AGENT).get();
 
         Element theaterDiv = areaDoc.selectFirst("div.cgv_choice.area");
@@ -103,7 +113,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
         if (latLng != null) {
             Theater theater = Theater.builder()
-                    .brand(brandRepository.findByName("CGV"))
+                    .brand(brandRepository.findByName(brandName))
                     .code(code)
                     .name(name)
                     .latitude(BigDecimal.valueOf(latLng.lat()))
@@ -124,7 +134,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     }
 
     private LatLng fetchTheaterCoordinates(String code) throws IOException {
-        Document detailDoc = Jsoup.connect(DETAIL_URL + code).userAgent(USER_AGENT).get();
+        Document detailDoc = Jsoup.connect(mainUrl + theaterDetailEndpoint + code).userAgent(USER_AGENT).get();
 
         for (Element script : detailDoc.select("script")) {
             if (script.html().contains("moveNaverMap")) {
@@ -154,7 +164,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     private record LatLng(double lat, double lng) {}
 
     private Set<String> getExistingTheaterCodes() {
-        return theaterRepository.findByBrandName("CGV").stream()
+        return theaterRepository.findByBrandName(brandName).stream()
                 .map(Theater::getCode)
                 .collect(Collectors.toSet());
     }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -25,7 +26,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
-    private static final String LOTTE_API_URL = "https://www.lottecinema.co.kr/LCWS/Cinema/CinemaData.aspx";
+    @Value("${movie.lotte.name}")
+    private String brandName;
+
+    @Value("${movie.lotte.main-url}")
+    private String mainUrl;
+
+    @Value("${movie.lotte.theater-default-endpoint}")
+    private String theaterDefaultEndpoint;
+
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -51,7 +60,7 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
         HttpEntity<String> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(
-                LOTTE_API_URL,
+                mainUrl + theaterDefaultEndpoint,
                 HttpMethod.POST,
                 requestEntity,
                 String.class
@@ -69,7 +78,7 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                 BigDecimal longitude = BigDecimal.valueOf(item.path("Longitude").asDouble());
 
                 Theater theater = Theater.builder()
-                        .brand(brandRepository.findByName("롯데시네마"))
+                        .brand(brandRepository.findByName(brandName))
                         .code(code)
                         .name(name)
                         .latitude(latitude)
@@ -80,6 +89,7 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                 log.info("롯데시네마 영화관 정보 가져오기 완료: {} - {}", name, code);
             }
         } catch (Exception e) {
+            // TODO: 크롤링 오류 처리
             throw new RuntimeException("롯데시네마 영화관 정보 파싱 중 오류 발생", e);
         }
 
@@ -108,13 +118,13 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         }
 
         log.info("⁉️ 롯데시네마 영화관 정보 변경 확인! 업데이트 시작...");
-        theaterRepository.deleteByBrandName("롯데시네마");
+        theaterRepository.deleteByBrandName(brandName);
         theaterRepository.saveAll(theaters);
         log.info("✅ 롯데시네마 영화관 정보 업데이트 완료!");
     }
 
     private Set<String> getExistingTheaterCodes() {
-        return theaterRepository.findByBrandName("롯데시네마").stream()
+        return theaterRepository.findByBrandName(brandName).stream()
                 .map(Theater::getCode)
                 .collect(Collectors.toSet());
     }

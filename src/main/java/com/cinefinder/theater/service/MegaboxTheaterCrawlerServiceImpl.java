@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,11 +29,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
+    @Value("${movie.mega.name}")
+    private String brandName;
+
+    @Value("${movie.mega.main-url}")
+    private String mainUrl;
+
+    @Value("${movie.mega.theater-default-endpoint}")
+    private String theaterDefaultEndpoint;
+
+    @Value("${movie.mega.theater-detail-endpoint}")
+    private String theaterDetailEndpoint;
+
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
 
-    private static final String MAIN_URL = "https://www.megabox.co.kr/theater/list";
-    private static final String COORD_API_URL = "https://www.megabox.co.kr/on/oh/ohc/Brch/infoPage.do";
     private static final String USER_AGENT = "Mozilla/5.0";
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -42,7 +53,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         List<Theater> theaters = new ArrayList<>();
 
         try {
-            Document doc = Jsoup.connect(MAIN_URL).userAgent(USER_AGENT).get();
+            Document doc = Jsoup.connect(mainUrl + theaterDefaultEndpoint).userAgent(USER_AGENT).get();
             Element placeDiv = doc.selectFirst("div.theater-place");
             if (placeDiv == null) {
                 // TODO: 예외처리로 할지 아니면 그냥 리턴할지 고민
@@ -62,7 +73,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                     LatLng latLng = fetchLatLng(code);
                     if (latLng != null) {
                         Theater theater = Theater.builder()
-                                .brand(brandRepository.findByName("메가박스"))
+                                .brand(brandRepository.findByName(brandName))
                                 .code(code)
                                 .name(name)
                                 .latitude(BigDecimal.valueOf(latLng.lat()))
@@ -101,7 +112,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         }
 
         log.info("⁉️ 메가박스 영화관 정보 변경 확인! 업데이트 시작...");
-        theaterRepository.deleteByBrandName("메가박스");
+        theaterRepository.deleteByBrandName(brandName);
         theaterRepository.saveAll(theaters);
         log.info("✅ 메가박스 영화관 정보 업데이트 완료!");
     }
@@ -115,7 +126,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         HttpEntity<String> entity = new HttpEntity<>(json, headers);
 
         try {
-            String html = restTemplate.postForObject(COORD_API_URL, entity, String.class);
+            String html = restTemplate.postForObject(mainUrl + theaterDetailEndpoint, entity, String.class);
             if (html == null) return null;
 
             Document doc = Jsoup.parse(html);
@@ -139,7 +150,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     private record LatLng(double lat, double lng) {}
 
     private Set<String> getExistingTheaterCodes() {
-        return theaterRepository.findByBrandName("메가박스").stream()
+        return theaterRepository.findByBrandName(brandName).stream()
                 .map(Theater::getCode)
                 .collect(Collectors.toSet());
     }
