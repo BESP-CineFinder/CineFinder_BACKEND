@@ -47,7 +47,7 @@ public class MovieService {
         // 1. 최신 일자 계산
         String latestDay = convert(LocalDate.now().minusDays(1).toString(), ConvertType.DATE);
         String redisKey = "dailyBoxOffice:" + latestDay;
-        log.info("✅ REDIS 키 이름 : {}", redisKey);
+        log.info("✅ [일간 박스오피스 정보 조회] REDIS 키 이름 : {}", redisKey);
 
         // 2. 일간 박스오피스 정보 응답 분기 처리
         if (redisTemplate.hasKey(redisKey)) {
@@ -78,6 +78,8 @@ public class MovieService {
         try {
             // 1. 최신 일자 계산
             String latestDay = convert(LocalDate.now().minusDays(1).toString(), ConvertType.DATE);
+            String redisKey = "dailyBoxOffice:" + latestDay;
+            log.info("✅ [일간 박스오피스 정보 저장] REDIS 키 이름 : {}", redisKey);
 
             // 2. 요청 URL 생성
             String url = String.format(
@@ -85,7 +87,6 @@ public class MovieService {
                     kobisServiceKey,
                     latestDay
             );
-            log.info("✅ 요청 URL : {}", url);
 
             // 3. API 요청
             String response = restTemplate.getForObject(new URI(url), String.class);
@@ -94,11 +95,10 @@ public class MovieService {
             List<BoxOfficeInfo> dailyBoxOfficeInfoList = extractDailyBoxOfficeInfoList(response);
 
             // 5. Redis 데이터 저장
-            String redisKey = "dailyBoxOffice:" + latestDay;
             for (BoxOfficeInfo boxOfficeInfo : dailyBoxOfficeInfoList) {
                 redisTemplate.opsForHash().put(redisKey, boxOfficeInfo.getRank(), boxOfficeInfo);
             }
-            log.info("✅ REDIS 키 이름 : {}", redisKey);
+            log.info("✅ REDIS 저장 완료");
 
             return dailyBoxOfficeInfoList;
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class MovieService {
         ObjectMapper mapper = new ObjectMapper();
 
         String redisKey = "movieDetails:" + movieKey;
-        log.info("✅ REDIS 키 이름 : {}", redisKey);
+        log.info("✅ [영화 상세정보 조회] REDIS 키 이름 : {}", redisKey);
 
         if (redisTemplate.hasKey(redisKey)) {
             // 영화 상세정보 키가 존재할 경우
@@ -130,7 +130,7 @@ public class MovieService {
         try {
             String redisKey = "movieDetails:" + movieKey;
             MovieDetails returnMovieDetails = null;
-            log.info("✅ REDIS 키 이름 : {}", redisKey);
+            log.info("✅ [영화 상세정보 저장] REDIS 키 이름 : {}", redisKey);
 
             // 1. 요청 URL 생성
             String url = String.format(
@@ -139,7 +139,6 @@ public class MovieService {
                     URLEncoder.encode(title, StandardCharsets.UTF_8),
                     releaseDts
             );
-            log.info("✅ 요청 URL : {}", url);
 
             // 2. API 요청
             String response = restTemplate.getForObject(new URI(url), String.class);
@@ -152,7 +151,7 @@ public class MovieService {
                 String releaseDate = movieDetails.getReleaseDates().getFirst();
 
                 if (releaseDts.equals(releaseDate)) {
-                    // 개봉일자가 같다면
+                    // API 요청 결과 내 개봉일자가 같다면
                     log.info("⭕ {} 개봉일자 일치 ... 영화 상세정보 데이터 캐싱", releaseDts);
 
                     redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
@@ -244,20 +243,20 @@ public class MovieService {
                 }
 
                 MovieDetails movieDetails = MovieDetails.builder()
-                        .title(title)
-                        .titleEng(titleEng)
-                        .nation(nation)
-                        .genre(genre)
-                        .directors(directors)
-                        .actors(actors)
-                        .plotTexts(plotTexts)
-                        .runtimes(runtimes)
-                        .ratingGrades(ratingGrades)
-                        .releaseDates(releaseDates)
-                        .posters(posters)
-                        .stlls(stlls)
-                        .vods(vods)
-                        .build();
+                    .title(title)
+                    .titleEng(titleEng)
+                    .nation(nation)
+                    .genre(genre)
+                    .directors(directors)
+                    .actors(actors)
+                    .plotTexts(plotTexts)
+                    .runtimes(runtimes)
+                    .ratingGrades(ratingGrades)
+                    .releaseDates(releaseDates)
+                    .posters(posters)
+                    .stlls(stlls)
+                    .vods(vods)
+                    .build();
 
                 list.add(movieDetails);
             }
@@ -269,7 +268,7 @@ public class MovieService {
     }
 
     private String convert(String input, ConvertType type) {
-        if (StringUtil.isNullOrEmpty(input)) throw new IllegalArgumentException("‼️변환할 입력 문자열이 null 또는 빈 값입니다.");
+        if (StringUtil.isNullOrEmpty(input)) throw new IllegalArgumentException("문자열 변환 중 오류 발생 ... NULL 또는 빈값");
 
         switch (type) {
             case ConvertType.MOVIE_KEY -> {
@@ -292,7 +291,7 @@ public class MovieService {
                 }
             }
 
-            default -> throw new IllegalArgumentException("지원하지 않는 변환 타입입니다");
+            default -> throw new IllegalArgumentException("문자열 변환 중 오류 발생 ... 지원하지 않는 변환 타입");
         }
     }
 }
