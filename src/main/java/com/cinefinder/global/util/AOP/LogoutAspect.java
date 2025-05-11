@@ -39,7 +39,7 @@ public class LogoutAspect {
 		}
 		HttpServletRequest request = sra.getRequest();
 		String token = jwtUtil.resolveToken(request);
-
+		log.info("Logout token: {}", token);
 		// 3. 토큰 유효성 검사 및 사용자 정보 추출
 		if (token == null || !jwtUtil.validateToken(token)) {
 			throw new RuntimeException("유효하지 않은 토큰입니다.");

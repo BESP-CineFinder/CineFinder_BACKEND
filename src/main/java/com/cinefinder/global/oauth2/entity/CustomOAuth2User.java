@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class CustomOAuth2User implements OAuth2User {
 
-	private final String googleSub;
+	private final String kakaoSub;
 	private final String email;
 	private final Map<String, Object> attributes;
 
@@ -32,6 +32,6 @@ public class CustomOAuth2User implements OAuth2User {
 
 	@Override
 	public String getName() {
-		return googleSub;
+		return kakaoSub;
 	}
 }

@@ -9,5 +9,5 @@ import com.cinefinder.user.data.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 
-	Optional<User> findByGoogleSub(String googleSub);
+	Optional<User> findByKakaoSub(String kakaoSub);
 }

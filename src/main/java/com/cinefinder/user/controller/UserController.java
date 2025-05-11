@@ -1,18 +1,26 @@
 package com.cinefinder.user.controller;
 
+import java.util.Map;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+import com.cinefinder.global.mapper.ResponseMapper;
+import com.cinefinder.global.response.BaseResponse;
 import com.cinefinder.global.util.annotation.LogoutRequired;
+import com.cinefinder.global.util.statuscode.ApiStatus;
+import com.cinefinder.user.data.response.UserSessionResponseDto;
 import com.cinefinder.user.service.UserService;
 import com.cinefinder.user.data.request.UserSignUpRequestDto;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -22,17 +30,24 @@ public class UserController {
 
 	private final UserService userService;
 
-	@PostMapping("/login")
-	public ResponseEntity<Void> redirectToLogin() {
-		HttpHeaders headers = new HttpHeaders();
-		headers.add("Location", "/login");  // 리다이렉트할 URL 지정
-		return new ResponseEntity<>(headers, HttpStatus.FOUND);  // 302 Found 상태 코드
+	@GetMapping("/signup/session")
+	public ResponseEntity<BaseResponse<UserSessionResponseDto>> getSignupSessionInfo(HttpSession session) {
+		UserSessionResponseDto userSessionData = userService.getSessionDataToDto(session);
+		return ResponseMapper.successOf(
+			ApiStatus._OK,
+			userSessionData,
+			UserController.class
+		);
 	}
 
-	@PostMapping("/signup-nickname")
-	public ResponseEntity<?> completeSignup(@RequestBody UserSignUpRequestDto request) {
-		userService.completeSignup(request.getGoogleSub(), request.getNickname());
-		return ResponseEntity.ok().build();
+	@PostMapping("/signup/nickname")
+	public ResponseEntity<BaseResponse<Object>> completeSignup(@RequestBody UserSignUpRequestDto request) {
+		userService.completeSignup(request);
+		return ResponseMapper.successOf(
+			ApiStatus._CREATED,
+			null,
+			UserController.class
+		);
 	}
 
 	@PostMapping("/logout")

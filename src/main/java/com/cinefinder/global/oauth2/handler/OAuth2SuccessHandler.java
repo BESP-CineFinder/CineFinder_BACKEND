@@ -5,7 +5,9 @@ import java.time.Duration;
 import java.util.Optional;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +18,13 @@ import com.cinefinder.user.data.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 	private final JwtUtil jwtUtil;
@@ -31,24 +36,37 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		throws IOException {
 
 		CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-		String googleSub = oAuth2User.getGoogleSub();
+		String kakaoSub = oAuth2User.getKakaoSub();
+		String kakaoEmail = oAuth2User.getEmail();
 
-		Optional<User> userOpt = userRepository.findByGoogleSub(googleSub);
+		Optional<User> userOpt = userRepository.findByKakaoSub(kakaoSub);
 
 		if (userOpt.isPresent()) {
-			String accessToken = jwtUtil.generateToken(googleSub); // access token 발급
-			String refreshToken = jwtUtil.generateRefreshToken(googleSub); // refresh token 발급
+			// ✅ SecurityContext에 인증 정보 저장
+			UsernamePasswordAuthenticationToken authToken =
+				new UsernamePasswordAuthenticationToken(oAuth2User, null, oAuth2User.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(authToken);
 
-			// refresh token을 Redis에 저장 (redis에서 만료시간을 설정해줌)
-			redisTemplate.opsForValue().set("RT:" + googleSub, refreshToken, Duration.ofDays(1)); // 예시로 7일 설정
+			// ✅ JWT 발급 및 응답 설정
+			String accessToken = jwtUtil.generateToken(kakaoSub);
+			String refreshToken = jwtUtil.generateRefreshToken(kakaoSub);
+
+			redisTemplate.opsForValue().set("RT:" + kakaoSub, refreshToken, Duration.ofDays(1));
 
 			response.setHeader("Authorization", "Bearer " + accessToken);
-			response.setHeader("Refresh-Token", refreshToken); // refresh token 헤더로 전달
+			response.setHeader("Refresh-Token", refreshToken);
+			response.sendRedirect("https://localhost/token?accessToken="+ accessToken + "&refreshToken=" + refreshToken);
+
 		} else {
-			// 사용자가 가입되지 않은 경우, 회원가입 페이지로 리다이렉트
-			response.sendRedirect("/signup?googleSub=" + googleSub);
+			// 회원가입 필요시 리다이렉트
+			HttpSession session = request.getSession(true);
+			session.setAttribute("kakaoSub", kakaoSub);
+			session.setAttribute("kakaoEmail", kakaoEmail);
+
+			response.sendRedirect("/signup");
 		}
 	}
+
 }
 
 

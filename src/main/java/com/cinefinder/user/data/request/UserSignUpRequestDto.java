@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class UserSignUpRequestDto {
-	private String googleSub;
+	private String kakaoSub;
+	private String kakaoEmail;
 	private String nickname;
 }

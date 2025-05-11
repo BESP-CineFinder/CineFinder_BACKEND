@@ -35,7 +35,7 @@ public class SecurityConfig {
 			.logout(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/api/chat/**").hasRole("USER")
-				.requestMatchers("/api/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+				.requestMatchers("/api/signup/session", "/api/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2Login(oauth2 -> oauth2
@@ -44,7 +44,8 @@ public class SecurityConfig {
 				)
 				.successHandler(oAuth2SuccessHandler) // 로그인 성공 후 로직 처리
 			)
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			// .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 			.build();
 	}

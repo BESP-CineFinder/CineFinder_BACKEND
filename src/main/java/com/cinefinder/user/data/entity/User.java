@@ -23,18 +23,18 @@ public class User {
 	@Column(nullable = false, length = 50)
 	private String nickname;
 
-	private String googleSub;
+	private String kakaoSub;
 
-	private String googleEmail;
+	private String kakaoEmail;
 
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
 	@Builder
-	public User(String nickname, String googleSub, String googleEmail, Role role) {
+	public User(String nickname, String kakaoSub, String kakaoEmail, Role role) {
 		this.nickname = nickname;
-		this.googleSub = googleSub;
-		this.googleEmail = googleEmail;
+		this.kakaoSub = kakaoSub;
+		this.kakaoEmail = kakaoEmail;
 		this.role = role;
 	}
 

@@ -47,8 +47,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
 			try {
 				if (jwtUtil.validateToken(token)) {
-					String sub = jwtUtil.getUsernameFromToken(token);
-					Optional<User> userOpt = userRepository.findByGoogleSub(sub);
+					String kakaoSub = jwtUtil.getUsernameFromToken(token);
+					Optional<User> userOpt = userRepository.findByKakaoSub(kakaoSub);
 
 					if (userOpt.isPresent()) {
 						User user = userOpt.get();
@@ -113,7 +113,7 @@ public class JwtFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String path = request.getServletPath();
-		return path.equals("/login") || path.equals("/join") || path.equals("/logout") || path.equals("/signup-nickname");
+		return path.equals("/api/login") || path.equals("/api/signup/session") || path.equals("/api/logout") || path.equals("/api/signup/nickname");
 	}
 }
 
