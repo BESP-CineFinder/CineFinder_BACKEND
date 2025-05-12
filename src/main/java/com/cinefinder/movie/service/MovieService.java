@@ -147,7 +147,7 @@ public class MovieService {
             if (movieDetailsList.size() >= 2) {
                 log.warn("❌ API 1개의 요청 파라미터에 응답 결과가 2개 이상");
 
-                for (MovieDetails movieDetails : movieDetailsList) log.warn("‼️ {}", movieDetails.getTitle());
+                for (MovieDetails movieDetails : movieDetailsList) log.warn("{}", movieDetails.getTitle());
                 throw new IllegalArgumentException("영화 상세정보 데이터 캐싱 전 프로세스 중단");
             }
 
@@ -198,49 +198,55 @@ public class MovieService {
     private List<MovieDetails> extractMovieDetailsList(String response) {
         try {
             ObjectMapper mapper = new ObjectMapper();
+            List<MovieDetails> list = new ArrayList<>();
 
             // 1. 일간 박스오피스 목록 파싱
             JsonNode root = mapper.readTree(response);
             JsonNode dataList = root.path("Data").get(0);
             JsonNode result = dataList.path("Result");
 
-            // 2. 요청 및 응답 List 생성
-            List<MovieDetails> list = new ArrayList<>();
+            // 2. 응답 결과가 없다면
+            if (result.isMissingNode()) {
+                log.warn("❌ API 응답 결과가 없음");
+                return list;
+            }
+
+            // 3. 요청 및 응답 List 생성
             for (JsonNode node : result) {
+                String plotText = "";
+                String runtime = "";
+                String ratingGrade = "";
+                String releaseDate = "";
+
+                List<String> directors = new ArrayList<>();
+                List<String> actors = new ArrayList<>();
+                List<String> vods = new ArrayList<>();
+
                 String title = node.path("title").asText();
                 String titleEng = node.path("titleEng").asText();
                 String nation = node.path("nation").asText();
                 String genre = node.path("genre").asText();
                 String posters = node.path("posters").asText();
                 String stlls = node.path("stlls").asText();
-                List<String> directors = new ArrayList<>();
-                List<String> actors = new ArrayList<>();
-                List<String> plotTexts = new ArrayList<>();
-                List<String> runtimes = new ArrayList<>();
-                List<String> ratingGrades = new ArrayList<>();
-                List<String> releaseDates = new ArrayList<>();
-                List<String> vods = new ArrayList<>();
 
-                JsonNode directorsNode = node.path("directors").path("director");
-                for (JsonNode director : directorsNode) directors.add(director.path("directorNm").asText());
+                JsonNode plotTextNodes = node.path("plots").path("plot");
+                for (JsonNode plotTextNode : plotTextNodes) plotText = plotTextNode.path("plotText").asText();
 
-                JsonNode actorsNode = node.path("actors").path("actor");
-                for (JsonNode actor : actorsNode) actors.add(actor.path("actorNm").asText());
-
-                JsonNode plotTextsNode = node.path("plots").path("plot");
-                for (JsonNode plotText : plotTextsNode) plotTexts.add(plotText.path("plotText").asText());
-
-                JsonNode ratingsNode = node.path("ratings").path("rating");
-                for (JsonNode rating : ratingsNode) {
-                    runtimes.add(convert(rating.path("runtime").asText(), ConvertType.KMDB_JSON_NODE));
-                    ratingGrades.add(convert(rating.path("ratingGrade").asText(), ConvertType.KMDB_JSON_NODE));
-                    releaseDates.add(convert(rating.path("releaseDate").asText(), ConvertType.KMDB_JSON_NODE));
+                JsonNode ratingNodes = node.path("ratings").path("rating");
+                for (JsonNode ratingNode : ratingNodes) {
+                    runtime = convert(ratingNode.path("runtime").asText(), ConvertType.KMDB_JSON_NODE);
+                    ratingGrade = convert(ratingNode.path("ratingGrade").asText(), ConvertType.KMDB_JSON_NODE);
+                    releaseDate = convert(ratingNode.path("releaseDate").asText(), ConvertType.KMDB_JSON_NODE);
                 }
+
+                JsonNode directorsNodes = node.path("directors").path("director");
+                for (JsonNode directorNode : directorsNodes) directors.add(directorNode.path("directorNm").asText());
+
+                JsonNode actorsNodes = node.path("actors").path("actor");
+                for (JsonNode actorNode : actorsNodes) actors.add(actorNode.path("actorNm").asText());
 
                 JsonNode vodsNode = node.path("vods").path("vod");
-                for (JsonNode vod : vodsNode) {
-                    vods.add(vod.path("vodUrl").asText());
-                }
+                for (JsonNode vod : vodsNode) vods.add(vod.path("vodUrl").asText());
 
                 MovieDetails movieDetails = MovieDetails.builder()
                     .title(title)
@@ -249,10 +255,10 @@ public class MovieService {
                     .genre(genre)
                     .directors(directors)
                     .actors(actors)
-                    .plotTexts(plotTexts)
-                    .runtimes(runtimes)
-                    .ratingGrades(ratingGrades)
-                    .releaseDates(releaseDates)
+                    .plotText(plotText)
+                    .runtime(runtime)
+                    .ratingGrade(ratingGrade)
+                    .releaseDate(releaseDate)
                     .posters(posters)
                     .stlls(stlls)
                     .vods(vods)

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class MovieScheduler {
     private final MovieService movieService;
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 11 * * *")
     public void fetchBoxOfficeScheduler() throws Exception {
         movieService.fetchDailyBoxOfficeInfo();
     }
