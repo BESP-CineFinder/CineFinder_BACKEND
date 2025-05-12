@@ -9,6 +9,7 @@ import com.cinefinder.user.data.entity.Role;
 import com.cinefinder.user.data.entity.User;
 import com.cinefinder.user.data.repository.UserRepository;
 import com.cinefinder.user.data.request.UserSignUpRequestDto;
+import com.cinefinder.user.data.response.UserInfoResponseDto;
 import com.cinefinder.user.data.response.UserSessionResponseDto;
 
 import jakarta.servlet.http.HttpSession;
@@ -49,6 +50,12 @@ public class UserService {
 		return UserSessionResponseDto.builder()
 			.kakaoSub(kakaoSub)
 			.kakaoEmail(kakaoEmail)
+			.build();
+	}
+
+	public UserInfoResponseDto getUserInfo(User user) {
+		return UserInfoResponseDto.builder()
+			.nickname(user.getNickname())
 			.build();
 	}
 }

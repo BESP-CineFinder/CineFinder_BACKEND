@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -47,6 +48,8 @@ public class JwtUtil {
 				.build()
 				.parseSignedClaims(token);
 			return true;
+		} catch (ExpiredJwtException e) {
+			throw e;
 		} catch (Exception e) {
 			return false;
 		}
@@ -61,6 +64,8 @@ public class JwtUtil {
 				.getPayload()
 				.getExpiration();
 			return expiration.before(new Date());
+		} catch (ExpiredJwtException e) {
+			throw e;
 		} catch (Exception e) {
 			return true; // 만료
 		}

@@ -10,12 +10,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
 
 import com.cinefinder.global.mapper.ResponseMapper;
 import com.cinefinder.global.response.BaseResponse;
+import com.cinefinder.global.util.annotation.Login;
+import com.cinefinder.global.util.annotation.LoginRequired;
 import com.cinefinder.global.util.annotation.LogoutRequired;
 import com.cinefinder.global.util.statuscode.ApiStatus;
+import com.cinefinder.user.data.entity.User;
+import com.cinefinder.user.data.response.UserInfoResponseDto;
 import com.cinefinder.user.data.response.UserSessionResponseDto;
 import com.cinefinder.user.service.UserService;
 import com.cinefinder.user.data.request.UserSignUpRequestDto;
@@ -54,5 +57,15 @@ public class UserController {
 	@LogoutRequired
 	public ResponseEntity<?> logout() {
 		return ResponseEntity.ok("로그아웃 성공");
+	}
+
+	@GetMapping("/info")
+	@LoginRequired
+	public ResponseEntity<BaseResponse<UserInfoResponseDto>> getUserInfo(@Login User user) {
+		return ResponseMapper.successOf(
+			ApiStatus._CREATED,
+			userService.getUserInfo(user),
+			UserController.class
+		);
 	}
 }

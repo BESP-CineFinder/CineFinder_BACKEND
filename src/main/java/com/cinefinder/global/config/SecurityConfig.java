@@ -34,8 +34,8 @@ public class SecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable)
 			.logout(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/chat/**").hasRole("USER")
-				.requestMatchers("/api/signup/session", "/api/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+				.requestMatchers("/api/chat/**", "/api/info/**").hasAuthority("ROLE_USER") // hasRole -> hasAuthority 변경
+				.requestMatchers("/api/signup/session", "/api/**", "/v3/api-docs/**", "/swagger-ui/**", "/error").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2Login(oauth2 -> oauth2

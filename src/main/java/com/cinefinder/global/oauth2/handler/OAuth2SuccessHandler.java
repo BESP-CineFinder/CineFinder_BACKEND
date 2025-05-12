@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +33,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final JwtUtil jwtUtil;
 	private final UserRepository userRepository;
 	private final RedisTemplate<String, String> redisTemplate; // RedisTemplate 주입
+	@Value("${spring.jwt.expiration.refresh}")
+	private Long refreshExpiredAge;
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
@@ -48,14 +53,23 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			SecurityContextHolder.getContext().setAuthentication(authToken);
 
 			// ✅ JWT 발급 및 응답 설정
-			String accessToken = jwtUtil.generateToken(kakaoSub);
+			// String accessToken = jwtUtil.generateToken(kakaoSub);
 			String refreshToken = jwtUtil.generateRefreshToken(kakaoSub);
 
 			redisTemplate.opsForValue().set("RT:" + kakaoSub, refreshToken, Duration.ofDays(1));
 
-			response.setHeader("Authorization", "Bearer " + accessToken);
+			ResponseCookie responseCookie = ResponseCookie.from("refreshToken", refreshToken)
+				.path("/")
+				.httpOnly(true)
+				.secure(true)
+				.sameSite("None")
+				.maxAge(refreshExpiredAge)
+				.build();
+
+			// response.setHeader("Authorization", "Bearer " + accessToken);
 			response.setHeader("Refresh-Token", refreshToken);
-			response.sendRedirect("https://localhost/token?accessToken="+ accessToken + "&refreshToken=" + refreshToken);
+			// response.sendRedirect("https://localhost/token?accessToken="+ accessToken + "&refreshToken=" + refreshToken);
+			response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
 		} else {
 			// 회원가입 필요시 리다이렉트
