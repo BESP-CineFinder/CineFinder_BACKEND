@@ -71,6 +71,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			// response.sendRedirect("https://localhost/token?accessToken="+ accessToken + "&refreshToken=" + refreshToken);
 			response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
+			response.sendRedirect("/");
 		} else {
 			// 회원가입 필요시 리다이렉트
 			HttpSession session = request.getSession(true);
