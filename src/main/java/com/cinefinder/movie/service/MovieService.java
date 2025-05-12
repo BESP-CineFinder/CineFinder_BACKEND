@@ -47,11 +47,11 @@ public class MovieService {
         // 1. 최신 일자 계산
         String latestDay = convert(LocalDate.now().minusDays(1).toString(), ConvertType.DATE);
         String redisKey = "dailyBoxOffice:" + latestDay;
-        log.info("✅ [일간 박스오피스 정보 조회] REDIS 키 이름 : {}", redisKey);
+        log.info("🔑 [일간 박스오피스 정보 조회] REDIS 키 이름 : {}", redisKey);
 
         // 2. 일간 박스오피스 정보 응답 분기 처리
         if (redisTemplate.hasKey(redisKey)) {
-            log.info("⭕ {} 키 존재 ... 캐시된 데이터 조회", redisKey);
+            log.info("✅ {} 키 존재 ... 캐시된 데이터 조회", redisKey);
 
             return redisTemplate.opsForHash()
                 .entries(redisKey)
@@ -66,7 +66,7 @@ public class MovieService {
                 .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
                 .collect(Collectors.toList());
         } else {
-            log.info("❌ {} 키 없음 ... KOBIS API 호출 후 캐싱", redisKey);
+            log.info("✅ {} 키 없음 ... KOBIS API 호출 후 캐싱", redisKey);
 
             return fetchDailyBoxOfficeInfo();
         }
@@ -77,7 +77,7 @@ public class MovieService {
             // 1. 최신 일자 계산
             String latestDay = convert(LocalDate.now().minusDays(1).toString(), ConvertType.DATE);
             String redisKey = "dailyBoxOffice:" + latestDay;
-            log.info("✅ [일간 박스오피스 정보 저장] REDIS 키 이름 : {}", redisKey);
+            log.info("🔑 [일간 박스오피스 정보 저장] REDIS 키 이름 : {}", redisKey);
 
             // 2. 요청 URL 생성
             String url = String.format(
@@ -96,7 +96,7 @@ public class MovieService {
             for (BoxOfficeInfo boxOfficeInfo : dailyBoxOfficeInfoList) {
                 redisTemplate.opsForHash().put(redisKey, boxOfficeInfo.getRank(), boxOfficeInfo);
             }
-            log.info("✅ REDIS 저장 완료");
+            log.info("⭕ REDIS 저장 완료");
 
             return dailyBoxOfficeInfoList;
         } catch (Exception e) {
@@ -104,54 +104,59 @@ public class MovieService {
         }
     }
 
-    public MovieDetails getMovieDetails(String movieKey, String title, String releaseDts) {
+    public MovieDetails getMovieDetails(String movieKey, String title, String releaseDate) {
         ObjectMapper mapper = new ObjectMapper();
 
         String redisKey = "movieDetails:" + movieKey;
-        log.info("✅ [영화 상세정보 조회] REDIS 키 이름 : {}", redisKey);
+        log.info("🔑 [영화 상세정보 조회] REDIS 키 이름 : {}", redisKey);
 
         if (redisTemplate.hasKey(redisKey)) {
-            log.info("⭕ {} 키 존재 ... 캐시된 데이터 조회", redisKey);
+            log.info("✅ {} 키 존재 ... 캐시된 데이터 조회", redisKey);
             
             Object object = redisTemplate.opsForHash().get(redisKey, movieKey);
             return mapper.convertValue(object, MovieDetails.class);
         } else {
-            log.info("❌ {} 키 없음 ... KMDB API 호출 후 캐싱", redisKey);
+            log.info("✅ {} 키 없음 ... KMDB API 호출 후 캐싱", redisKey);
             
-            return fetchMovieDetails(movieKey, title, releaseDts);
+            return fetchMovieDetails(movieKey, title, releaseDate);
         }
     }
 
-    public MovieDetails fetchMovieDetails(String movieKey, String title, String releaseDts) {
+    public MovieDetails fetchMovieDetails(String movieKey, String title, String releaseDate) {
         try {
             String redisKey = "movieDetails:" + movieKey;
             MovieDetails returnMovieDetails = null;
-            log.info("✅ [영화 상세정보 저장] REDIS 키 이름 : {}", redisKey);
+            log.info("🔑 [영화 상세정보 저장] REDIS 키 이름 : {}", redisKey);
 
             // 1. 요청 URL 생성
             String url = String.format(
-                    kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&releaseDts=%s",
-                    kmdbServiceKey,
-                    URLEncoder.encode(title, StandardCharsets.UTF_8),
-                    releaseDts
+                kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&releaseDts=%s&releaseDte=%s",
+                kmdbServiceKey,
+                URLEncoder.encode(title, StandardCharsets.UTF_8),
+                releaseDate,
+                releaseDate
             );
 
             // 2. API 요청
             String response = restTemplate.getForObject(new URI(url), String.class);
 
-            // 3. 요청 List 생성
+            // 3. 저장 List 생성
             List<MovieDetails> movieDetailsList = extractMovieDetailsList(response);
 
-            // 4. Redis 데이터 저장
+            // 4. 응답 결과가 2개 이상이라면
+            if (movieDetailsList.size() >= 2) {
+                log.warn("❌ API 1개의 요청 파라미터에 응답 결과가 2개 이상");
+
+                for (MovieDetails movieDetails : movieDetailsList) log.warn("‼️ {}", movieDetails.getTitle());
+                throw new IllegalArgumentException("영화 상세정보 데이터 캐싱 전 프로세스 중단");
+            }
+
+            // 5. Redis 데이터 저장
             for (MovieDetails movieDetails : movieDetailsList) {
-                String releaseDate = movieDetails.getReleaseDates().getFirst();
+                log.info("⭕ 영화 상세정보 데이터 캐싱 성공");
 
-                if (releaseDts.equals(releaseDate)) {
-                    log.info("⭕ API 요청 파라미터와 응답 간 개봉일자가 일치하는 데이터 존재 ... 영화 상세정보 데이터 캐싱");
-
-                    redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
-                    returnMovieDetails = movieDetails;
-                }
+                redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
+                returnMovieDetails = movieDetails;
             }
 
             return returnMovieDetails;

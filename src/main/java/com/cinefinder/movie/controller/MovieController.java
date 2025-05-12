@@ -29,8 +29,8 @@ public class MovieController {
     public MovieDetails fetchMovieDetails(
         @RequestParam(value = "movieKey") String movieKey,
         @RequestParam(value = "title") String title,
-        @RequestParam(value = "releaseDts") String releaseDts
+        @RequestParam(value = "releaseDate") String releaseDate
     ) throws URISyntaxException, JsonProcessingException {
-        return movieService.getMovieDetails(movieKey, title, releaseDts);
+        return movieService.getMovieDetails(movieKey, title, releaseDate);
     }
 }
