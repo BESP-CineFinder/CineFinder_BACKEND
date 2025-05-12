@@ -7,4 +7,5 @@ import java.util.List;
 public interface TheaterCrawlerService {
     List<Theater> getCrawlData();
     void syncRecentTheater(List<Theater> theaters);
+    String getBrandName();
 }

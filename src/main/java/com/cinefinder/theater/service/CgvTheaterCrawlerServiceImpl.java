@@ -4,6 +4,7 @@ import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -21,10 +22,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service("CGVTheaterCrawler")
+@Service
 @RequiredArgsConstructor
 public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
+    @Getter
     @Value("${movie.cgv.name}")
     private String brandName;
 

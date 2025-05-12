@@ -6,6 +6,7 @@ import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +23,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service("롯데시네마TheaterCrawler")
+@Service
 @RequiredArgsConstructor
 public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
+    @Getter
     @Value("${movie.lotte.name}")
     private String brandName;
 
