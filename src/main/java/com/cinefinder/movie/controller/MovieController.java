@@ -21,16 +21,15 @@ public class MovieController {
     private final MovieService movieService;
 
     @GetMapping("/daily-box-office")
-    public List<BoxOfficeInfo> fetchDailyBoxOfficeInfo() throws IOException, URISyntaxException {
+    public List<BoxOfficeInfo> fetchDailyBoxOfficeInfo() {
         return movieService.getDailyBoxOfficeInfo();
     }
 
     @GetMapping("/movie-details")
     public MovieDetails fetchMovieDetails(
         @RequestParam(value = "movieKey") String movieKey,
-        @RequestParam(value = "title") String title,
-        @RequestParam(value = "releaseDate") String releaseDate
-    ) throws URISyntaxException, JsonProcessingException {
-        return movieService.getMovieDetails(movieKey, title, releaseDate);
+        @RequestParam(value = "title") String title
+    ) {
+        return movieService.getMovieDetails(movieKey, title);
     }
 }

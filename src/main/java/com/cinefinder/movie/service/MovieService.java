@@ -104,7 +104,7 @@ public class MovieService {
         }
     }
 
-    public MovieDetails getMovieDetails(String movieKey, String title, String releaseDate) {
+    public MovieDetails getMovieDetails(String movieKey, String title) {
         ObjectMapper mapper = new ObjectMapper();
 
         String redisKey = "movieDetails:" + movieKey;
@@ -118,11 +118,11 @@ public class MovieService {
         } else {
             log.info("✅ {} 키 없음 ... KMDB API 호출 후 캐싱", redisKey);
             
-            return fetchMovieDetails(movieKey, title, releaseDate);
+            return fetchMovieDetails(movieKey, title);
         }
     }
 
-    public MovieDetails fetchMovieDetails(String movieKey, String title, String releaseDate) {
+    public MovieDetails fetchMovieDetails(String movieKey, String title) {
         try {
             String redisKey = "movieDetails:" + movieKey;
             MovieDetails returnMovieDetails = null;
@@ -130,11 +130,9 @@ public class MovieService {
 
             // 1. 요청 URL 생성
             String url = String.format(
-                kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&releaseDts=%s&releaseDte=%s",
+                kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&sort=repRlsDate,1&listCount=1",
                 kmdbServiceKey,
-                URLEncoder.encode(title, StandardCharsets.UTF_8),
-                releaseDate,
-                releaseDate
+                URLEncoder.encode(title, StandardCharsets.UTF_8)
             );
 
             // 2. API 요청
@@ -230,7 +228,14 @@ public class MovieService {
                 String stlls = node.path("stlls").asText();
 
                 JsonNode plotTextNodes = node.path("plots").path("plot");
-                for (JsonNode plotTextNode : plotTextNodes) plotText = plotTextNode.path("plotText").asText();
+
+                for (JsonNode plotTextNode : plotTextNodes) {
+                    String lang = plotTextNode.path("plotLang").asText();
+                    if ("한국어".equals(lang)) {
+                        plotText = plotTextNode.path("plotText").asText();
+                        break;
+                    }
+                }
 
                 JsonNode ratingNodes = node.path("ratings").path("rating");
                 for (JsonNode ratingNode : ratingNodes) {

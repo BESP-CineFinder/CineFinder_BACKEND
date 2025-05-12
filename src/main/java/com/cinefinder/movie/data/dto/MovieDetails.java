@@ -1,5 +1,6 @@
 package com.cinefinder.movie.data.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MovieDetails {
     private String title;              /* 제목 */
     private String titleEng;           /* 영문 제목 */
