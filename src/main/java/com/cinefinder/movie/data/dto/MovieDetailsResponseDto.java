@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MovieDetails {
+public class MovieDetailsResponseDto {
     private String title;              /* 제목 */
     private String titleEng;           /* 영문 제목 */
     private String nation;             /* 국가 */
