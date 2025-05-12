@@ -9,15 +9,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.cinefinder.user.data.entity.User;
 
+import lombok.Getter;
+
+@Getter
 public class CustomUserDetails implements UserDetails {
 	private final User user;
 
 	public CustomUserDetails(User user) {
 		this.user = user;
-	}
-
-	public User getUser() {
-		return user;
 	}
 
 	@Override

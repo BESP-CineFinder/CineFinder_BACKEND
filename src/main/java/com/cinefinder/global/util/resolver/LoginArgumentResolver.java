@@ -1,5 +1,6 @@
 package com.cinefinder.global.util.resolver;
 
+import com.cinefinder.global.oauth2.entity.CustomUserDetails;
 import com.cinefinder.global.util.annotation.Login;
 import com.cinefinder.user.data.entity.User;
 import org.springframework.core.MethodParameter;
@@ -27,8 +28,8 @@ public class LoginArgumentResolver implements HandlerMethodArgumentResolver {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 		// principal이 User 객체인 경우 반환
-		if (principal instanceof User) {
-			return principal; // User 객체 반환
+		if (principal instanceof CustomUserDetails) {
+			return ((CustomUserDetails)principal).getUser(); // User 객체 반환
 		}
 
 		// 로그인되지 않은 경우 예외 처리

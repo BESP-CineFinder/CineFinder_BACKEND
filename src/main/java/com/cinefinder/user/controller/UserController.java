@@ -63,7 +63,7 @@ public class UserController {
 	@LoginRequired
 	public ResponseEntity<BaseResponse<UserInfoResponseDto>> getUserInfo(@Login User user) {
 		return ResponseMapper.successOf(
-			ApiStatus._CREATED,
+			ApiStatus._OK,
 			userService.getUserInfo(user),
 			UserController.class
 		);
