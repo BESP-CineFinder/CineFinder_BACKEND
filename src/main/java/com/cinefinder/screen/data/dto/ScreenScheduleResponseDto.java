@@ -22,10 +22,7 @@ public class ScreenScheduleResponseDto {
     private String runningTime;
     private String seatRemainCnt;
     private String seatCapacity;
-    private String allowSaleYn;
     private String platformCd;
     private String platformNm;
-    private String movieAttrCd;
-    private String movieAttrNm;
     private String posterImageUrl;
 }

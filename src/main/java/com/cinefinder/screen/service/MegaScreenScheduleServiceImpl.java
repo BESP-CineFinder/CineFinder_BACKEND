@@ -84,11 +84,8 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
                     item.path("moviePlayTime").asText(),
                     item.path("restSeatCnt").asText(),
                     item.path("totSeatCnt").asText(),
-                    item.path("bokdAbleAt").asText(),
                     item.path("theabKindCd").asText(),
                     item.path("playKindNm").asText(),
-                    item.path("cttsTyDivCd").asText(),
-                    item.path("cttsTyDivCdNm").asText(),
                     "https://www.megabox.co.kr" + item.path("moviePosterImg").asText()
             );
             result.add(dto);

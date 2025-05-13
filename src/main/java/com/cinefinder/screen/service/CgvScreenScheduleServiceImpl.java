@@ -100,6 +100,9 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
 
         List<ScreenScheduleResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
+            String startTime = item.path("PlayStartTm").asText();
+            String endTime = item.path("PlayEndTm").asText();
+
             ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
                     "CGV",
                     item.path("TheaterCd").asText(),
@@ -112,16 +115,13 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                     item.path("ScreenCd").asText(),
                     item.path("ScreenNm").asText(),
                     item.path("PlayYmd").asText(),
-                    item.path("PlayStartTm").asText(),
-                    item.path("PlayEndTm").asText(),
+                    startTime.substring(0, 2) + ":" + startTime.substring(2),
+                    endTime.substring(0, 2) + ":" + endTime.substring(2),
                     item.path("RunningTime").asText(),
                     item.path("SeatRemainCnt").asText(),
                     item.path("SeatCapacity").asText(),
-                    item.path("AllowSaleYn").asText(),
                     item.path("PlatformCd").asText(),
                     item.path("PlatformNm").asText(),
-                    item.path("MovieAttrCd").asText(),
-                    item.path("MovieAttrNm").asText(),
                     item.path("PosterImageUrl").asText()
             );
             result.add(dto);
