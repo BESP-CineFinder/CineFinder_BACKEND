@@ -34,6 +34,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.jsoup:jsoup:1.20.1'
 
+	//websocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
 	
 	//elasticsearch
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'

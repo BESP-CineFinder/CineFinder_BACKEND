@@ -66,9 +66,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 				.maxAge(refreshExpiredAge)
 				.build();
 
-			// response.setHeader("Authorization", "Bearer " + accessToken);
+
 			response.setHeader("Refresh-Token", refreshToken);
-			// response.sendRedirect("https://localhost/token?accessToken="+ accessToken + "&refreshToken=" + refreshToken);
 			response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
 
 			response.sendRedirect("/");

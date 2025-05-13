@@ -44,7 +44,6 @@ public class SecurityConfig {
 				)
 				.successHandler(oAuth2SuccessHandler) // 로그인 성공 후 로직 처리
 			)
-			// .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 			.build();

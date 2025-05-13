@@ -80,6 +80,16 @@ services:
 #    env_file:
 #      - .env
 
+  frontend:
+    build:
+      context: ../../CineFinder_FRONTEND
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      - CineFinder_network
+
   nginx:
     build:
       context: .
