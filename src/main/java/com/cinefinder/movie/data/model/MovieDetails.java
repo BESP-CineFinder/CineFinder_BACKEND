@@ -1,4 +1,4 @@
-package com.cinefinder.movie.data.dto;
+package com.cinefinder.movie.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MovieDetailsResponseDto {
+public class MovieDetails {
     private String title;              /* 제목 */
     private String titleEng;           /* 영문 제목 */
     private String nation;             /* 국가 */
