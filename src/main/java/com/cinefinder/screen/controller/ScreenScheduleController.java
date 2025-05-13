@@ -2,8 +2,8 @@ package com.cinefinder.screen.controller;
 
 import com.cinefinder.screen.data.dto.ScreenScheduleRequestDto;
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
-import com.cinefinder.screen.service.CgvScreenScheduleService;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.cinefinder.screen.service.CgvScreenScheduleServiceImpl;
+import com.cinefinder.screen.service.MegaScreenScheduleServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,13 +16,14 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/screen")
-public class CgvScreenScheduleController {
+public class ScreenScheduleController {
 
-    private final CgvScreenScheduleService cgvScreenScheduleService;
+    private final CgvScreenScheduleServiceImpl cgvScreenScheduleServiceImpl;
+    private final MegaScreenScheduleServiceImpl megaScreenScheduleServiceImpl;
 
     @GetMapping("/schedule")
     public List<ScreenScheduleResponseDto> getTheaterSchedule(@RequestBody ScreenScheduleRequestDto requestDto) throws IOException {
-        return cgvScreenScheduleService.getTheaterSchedule(
+        return megaScreenScheduleServiceImpl.getTheaterSchedule(
                 requestDto.getPlayYMD(),
                 requestDto.getMovieIds(),
                 requestDto.getTheaterIds()

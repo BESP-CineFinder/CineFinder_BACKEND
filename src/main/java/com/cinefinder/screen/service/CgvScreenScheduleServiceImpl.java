@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class CgvScreenScheduleService implements ScreenScheduleService {
+public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
 
     ObjectMapper objectMapper = new ObjectMapper();
     OkHttpClient client = new OkHttpClient();
