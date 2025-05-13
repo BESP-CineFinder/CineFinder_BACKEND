@@ -48,8 +48,29 @@ spring:
 #          client-secret: ${GOOGLE_CLIENT_SECRET}
 
 api:
-  kobis: ${KOBIS_API_KEY}
-  kmdb: ${KMDB_API_KEY}
+  kobis:
+    request-url: ${KOBIS_REQUEST_URL}
+    service-key: ${KOBIS_SERVICE_KEY}
+  kmdb:
+    request-url: ${KMDB_REQUEST_URL}
+    service-key: ${KMDB_SERVICE_KEY}
+
+movie:
+  cgv:
+    name: CGV
+    main-url: https://m.cgv.co.kr/WebApp
+    theater-default-endpoint: /TheaterV4/Default.aspx
+    theater-detail-endpoint: /TheaterV4/TheaterDetail.aspx?tc=
+  lotte:
+    name: 롯데시네마
+    main-url: https://www.lottecinema.co.kr
+    theater-default-endpoint: /LCWS/Cinema/CinemaData.aspx
+  mega:
+    name: 메가박스
+    main-url: https://www.megabox.co.kr
+    theater-default-endpoint: /theater/list
+    theater-detail-endpoint: /on/oh/ohc/Brch/infoPage.do
+
 
 # =========================== LOCAL  ===========================
 ---
