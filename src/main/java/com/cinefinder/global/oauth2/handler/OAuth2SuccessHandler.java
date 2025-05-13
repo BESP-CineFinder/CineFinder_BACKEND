@@ -58,7 +58,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 			redisTemplate.opsForValue().set("RT:" + kakaoSub, refreshToken, Duration.ofDays(1));
 
-			ResponseCookie responseCookie = ResponseCookie.from("refreshToken", refreshToken)
+			ResponseCookie responseCookie = ResponseCookie.from("Refresh-Token", refreshToken)
 				.path("/")
 				.httpOnly(true)
 				.secure(true)
