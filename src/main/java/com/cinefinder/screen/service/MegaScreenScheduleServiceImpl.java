@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,6 +24,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
 
+    @Value("${movie.mega.name}")
+    private String brandName;
+
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -33,13 +37,17 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
     @Override
     public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
 
-        // POST 요청 바디 생성
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("playDe", playYMD);
-        requestBody.put("brchNo1", theaterIds.get(0));
-        if (theaterIds.size() > 1) requestBody.put("brchNo2", theaterIds.get(1));
-        requestBody.put("movieNo1", movieIds.get(0));
-        if (movieIds.size() > 1) requestBody.put("movieNo2", movieIds.get(1));
+        for (int i = 0; i < theaterIds.size(); i++) {
+            requestBody.put("brchNo" + (i + 1), theaterIds.get(i));
+        }
+        for (int i = 0; i < movieIds.size(); i++) {
+            requestBody.put("movieNo" + (i + 1), movieIds.get(i));
+        }
+        if (movieIds.isEmpty()) {
+            requestBody.put("movieNo1", "");
+        }
         requestBody.put("menuId", "M-RE-MO-02");
         requestBody.put("imgSizeDiv", "IMG_TYPE_7");
         requestBody.put("flag", "VIEW_STEP3");
@@ -49,6 +57,7 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+        log.info(requestBody.toString());
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(MEGABOX_URL, request, String.class);
@@ -59,21 +68,22 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
 
                 return parseScheduleListFromMegaboxJson(scheduleList);
             } else {
+                // TODO: 메가박스 API 호출 예외처리
                 throw new RuntimeException("메가박스 API 호출 실패: " + response.getStatusCode());
             }
 
         } catch (Exception e) {
+            // TODO: 메가박스 API 호출 예외처리
             throw new RuntimeException("메가박스 API 요청 중 오류 발생", e);
         }
     }
 
-    // Dummy parser (응답 구조 분석 후 수정 필요)
     private List<ScreenScheduleResponseDto> parseScheduleListFromMegaboxJson(JsonNode scheduleList) {
         List<ScreenScheduleResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
             ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
-                    brandRepository.findByName("메가박스"),
-                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode("메가박스", item.path("brchNo").asText())),
+                    brandRepository.findByName(brandName),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode(brandName, item.path("brchNo").asText())),
                     item.path("rpstMovieNo").asText(),
                     item.path("movieNm").asText(),
                     item.path("movieEngNm").asText(),

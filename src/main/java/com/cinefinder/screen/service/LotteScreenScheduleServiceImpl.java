@@ -1,7 +1,6 @@
 package com.cinefinder.screen.service;
 
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
-import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
@@ -9,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,6 +28,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
+    @Value("${movie.lotte.name}")
+    private String brandName;
+
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -39,13 +42,14 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
         List<ScreenScheduleResponseDto> allSchedules = new ArrayList<>();
 
         for (String theaterId : theaterIds) {
-            for (String movieId : movieIds) {
+            List<String> targetMovieIds = movieIds.isEmpty() ? List.of("") : movieIds;
+            for (String movieId : targetMovieIds) {
                 try {
-                    log.info("시작! 영화관 ID: {}, 영화 ID: {}, 날짜: {}", theaterId, movieId, formattedDate);
                     List<ScreenScheduleResponseDto> result = requestSchedule(theaterId, movieId, formattedDate);
                     allSchedules.addAll(result);
                 } catch (Exception e) {
-                    log.error("[Lotte] Failed to fetch schedule: theater={}, movie={}, error={}", theaterId, movieId, e.getMessage());
+                    // TODO: 메가박스 API 호출 실패 시 예외 처리
+                    throw new RuntimeException("메가박스 API 호출 실패: theaterId=" + theaterId + ", movieId=" + movieId, e);
                 }
             }
         }
@@ -60,30 +64,27 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         String jsonPayload = String.format("""
-        {
-          "MethodName": "GetPlaySequence",
-          "channelType": "HO",
-          "osType": "Chrome",
-          "osVersion": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
-          "playDate": "%s",
-          "cinemaID": "1|1|%s",
-          "representationMovieCode": "%s"
-        }
-        """, playDate, cinemaId, movieId);
+            {
+              "MethodName": "GetPlaySequence",
+              "channelType": "HO",
+              "osType": "Chrome",
+              "osVersion": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36",
+              "playDate": "%s",
+              "cinemaID": "1|1|%s",
+              "representationMovieCode": "%s"
+            }
+            """, playDate, cinemaId, movieId);
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("ParamList", jsonPayload);
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
-        log.info("요청 바디: {}", requestEntity.getBody());
 
         ResponseEntity<String> response = restTemplate.postForEntity(
                 url,
                 requestEntity,
                 String.class
         );
-
-        log.info("응답 바디: {}", response.getBody());
 
         JsonNode root = objectMapper.readTree(response.getBody());
 
@@ -111,16 +112,14 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     }
 
                     runtimeMinutes = Duration.between(startTime, endTime).toMinutes();
-                    System.out.println("Running time: " + runtimeMinutes + "분");
-
                 } catch (Exception e) {
-                    System.out.println("시간 파싱 오류: " + e.getMessage());
+                    log.error("시간 파싱 오류: startTime={}, endTime={}, error={}", start, end, e.getMessage());
                 }
             }
 
             ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
-                    brandRepository.findByName("롯데시네마"),
-                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode("롯데시네마", item.path("CinemaID").asText())),
+                    brandRepository.findByName(brandName),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode(brandName, item.path("CinemaID").asText())),
                     item.path("RepresentationMovieCode").asText(),
                     item.path("MovieNameKR").asText(),
                     item.path("MovieNameUS").asText(),

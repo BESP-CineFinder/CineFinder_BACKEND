@@ -1,7 +1,6 @@
 package com.cinefinder.screen.service;
 
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
-import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
@@ -10,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
+
+    @Value("${movie.cgv.name}")
+    private String brandName;
 
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
@@ -58,7 +61,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                 .map(cookie -> cookie.split(";", 2)[0])
                 .collect(Collectors.joining("; "));
         } catch (IOException e) {
-            // TODO: 호출 실패 시 예외 처리
+            // TODO: CGV COOKIE 생성 API 호출 실패 시 예외 처리
             throw new RuntimeException(e);
         }
     }
@@ -130,7 +133,6 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
             );
             result.add(dto);
         }
-
 
         return result;
     }
