@@ -1,8 +1,13 @@
 package com.cinefinder.screen.service;
 
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
+import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
+import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.data.repository.TheaterRepository;
+import com.cinefinder.theater.mapper.TheaterMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,8 +25,11 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
+    private final BrandRepository brandRepository;
+    private final TheaterRepository theaterRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -111,14 +119,11 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
             }
 
             ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
-                    "롯데시네마",
-                    item.path("CinemaID").asText(),
-                    item.path("CinemaNameKR").asText(),
+                    brandRepository.findByName("롯데시네마"),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode("롯데시네마", item.path("CinemaID").asText())),
                     item.path("RepresentationMovieCode").asText(),
                     item.path("MovieNameKR").asText(),
                     item.path("MovieNameUS").asText(),
-                    item.path("ViewGradeCode").asText(),
-                    item.path("ViewGradeNameKR").asText(),
                     item.path("ScreenID").asText(),
                     item.path("ScreenNameKR").asText(""),
                     item.path("StartTime").asText(),
@@ -128,8 +133,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     item.path("BookingSeatCount").asText(),
                     item.path("TotalSeatCount").asText(),
                     item.path("FilmCode").asText(),
-                    item.path("FilmNameKR").asText(),
-                    item.path("PosterURL").asText("")
+                    item.path("FilmNameKR").asText()
             );
 
             result.add(dto);

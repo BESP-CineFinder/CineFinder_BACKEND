@@ -1,14 +1,18 @@
 package com.cinefinder.screen.service;
 
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
+import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
+import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.data.repository.TheaterRepository;
+import com.cinefinder.theater.mapper.TheaterMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +20,11 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
 
+    private final BrandRepository brandRepository;
+    private final TheaterRepository theaterRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -50,9 +57,6 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
                 String responseBody = response.getBody();
                 JsonNode scheduleList = objectMapper.readTree(responseBody).get("scheduleList");
 
-                // 이후 JsonNode에서 필요한 필드 추출
-                // 예: root.path("scheduleList") 또는 root.path("data").path("list")
-                // 추출 로직은 응답 구조를 실제 확인 후 작성해야 함
                 return parseScheduleListFromMegaboxJson(scheduleList);
             } else {
                 throw new RuntimeException("메가박스 API 호출 실패: " + response.getStatusCode());
@@ -68,14 +72,11 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
         List<ScreenScheduleResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
             ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
-                    "메가박스",
-                    item.path("brchNo").asText(),
-                    item.path("brchNm").asText(),
+                    brandRepository.findByName("메가박스"),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode("메가박스", item.path("brchNo").asText())),
                     item.path("rpstMovieNo").asText(),
                     item.path("movieNm").asText(),
                     item.path("movieEngNm").asText(),
-                    item.path("admisClassCd").asText(),
-                    item.path("admisClassCdNm").asText(),
                     item.path("theabNo").asText(),
                     item.path("theabExpoNm").asText(),
                     item.path("playDe").asText(),
@@ -85,8 +86,7 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
                     item.path("restSeatCnt").asText(),
                     item.path("totSeatCnt").asText(),
                     item.path("theabKindCd").asText(),
-                    item.path("playKindNm").asText(),
-                    "https://www.megabox.co.kr" + item.path("moviePosterImg").asText()
+                    item.path("playKindNm").asText()
             );
             result.add(dto);
         }

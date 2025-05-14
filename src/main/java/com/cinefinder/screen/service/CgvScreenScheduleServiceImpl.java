@@ -1,8 +1,13 @@
 package com.cinefinder.screen.service;
 
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
+import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
+import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.data.repository.TheaterRepository;
+import com.cinefinder.theater.mapper.TheaterMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.stereotype.Service;
@@ -16,10 +21,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    OkHttpClient client = new OkHttpClient();
+    private final BrandRepository brandRepository;
+    private final TheaterRepository theaterRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final OkHttpClient client = new OkHttpClient();
 
     private String getRequiredCookies(String movieParam, String theaterParam) {
 
@@ -104,14 +112,11 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
             String endTime = item.path("PlayEndTm").asText();
 
             ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
-                    "CGV",
-                    item.path("TheaterCd").asText(),
-                    item.path("TheaterNm").asText(),
+                    brandRepository.findByName("CGV"),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode("CGV", item.path("TheaterCd").asText())),
                     item.path("MovieCd").asText(),
                     item.path("MovieNmKor").asText(),
                     item.path("MovieNmEng").asText(),
-                    item.path("MovieRatingCd").asText(),
-                    item.path("MovieRatingNm").asText(),
                     item.path("ScreenCd").asText(),
                     item.path("ScreenNm").asText(),
                     item.path("PlayYmd").asText(),
@@ -121,8 +126,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                     item.path("SeatRemainCnt").asText(),
                     item.path("SeatCapacity").asText(),
                     item.path("PlatformCd").asText(),
-                    item.path("PlatformNm").asText(),
-                    item.path("PosterImageUrl").asText()
+                    item.path("PlatformNm").asText()
             );
             result.add(dto);
         }
