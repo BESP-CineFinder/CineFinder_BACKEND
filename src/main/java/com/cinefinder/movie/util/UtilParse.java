@@ -192,12 +192,12 @@ public class UtilParse {
         try {
             ObjectMapper mapper = new ObjectMapper();
 
-            JsonNode Items = mapper.readTree(response)
+            JsonNode items = mapper.readTree(response)
                 .path("Movies")
                 .path("Items");
 
             List<MovieDetails> movieDetailsList = new ArrayList<>();
-            for (JsonNode node : Items) {
+            for (JsonNode node : items) {
                 MovieDetails movieDetails = new MovieDetails();
 
                 movieDetails.setTitle(decodeUnicode(node.path("MovieNameKR").asText()));

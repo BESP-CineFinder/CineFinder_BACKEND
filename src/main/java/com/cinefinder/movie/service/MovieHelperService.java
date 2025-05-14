@@ -121,23 +121,22 @@ public class MovieHelperService {
 
             if (IGNORE_TITLE_LIST.contains(title)) continue;
 
-            if (!StringUtil.isNullOrEmpty(cgvCode) && originMovieDetails != null) {
-                originMovieDetails.setCgvCode(movieDetails.getCgvCode());
-            }
+            if (originMovieDetails != null) {
+                if (!StringUtil.isNullOrEmpty(cgvCode)) {
+                    originMovieDetails.setCgvCode(movieDetails.getCgvCode());
+                }
 
-            if (!StringUtil.isNullOrEmpty(megaBoxCode) && originMovieDetails != null) {
-                originMovieDetails.setMegaBoxCode(movieDetails.getMegaBoxCode());
-            }
+                if (!StringUtil.isNullOrEmpty(megaBoxCode)) {
+                    originMovieDetails.setMegaBoxCode(movieDetails.getMegaBoxCode());
+                }
 
-            if (!StringUtil.isNullOrEmpty(lotteCinemaCode) && originMovieDetails != null) {
-                originMovieDetails.setLotteCinemaCode(movieDetails.getLotteCinemaCode());
-            }
+                if (!StringUtil.isNullOrEmpty(lotteCinemaCode)) {
+                    originMovieDetails.setLotteCinemaCode(movieDetails.getLotteCinemaCode());
+                }
 
-            if (originMovieDetails != null && originMovieDetails.getTitle().length() >= title.length()) {
-                String originTitle = distinctMap.get(normalizeMovieKey).getTitle();
-                MovieDetails changeTitleMovieDetails = distinctMap.get(normalizeMovieKey);
-                changeTitleMovieDetails.setTitle(originTitle);
-                movieDetails = changeTitleMovieDetails;
+                if (originMovieDetails.getTitle().length() >= title.length()) {
+                    movieDetails = originMovieDetails;
+                }
             }
 
             distinctMap.putIfAbsent(normalizeMovieKey, movieDetails);
