@@ -24,7 +24,7 @@ public class ScreenScheduleController {
     private final LotteScreenScheduleServiceImpl lotteScreenScheduleServiceImpl;
 
     @GetMapping("/schedule/cgv")
-    public List<ScreenScheduleResponseDto> getCgvTheaterSchedule(@RequestBody ScreenScheduleRequestDto requestDto) throws IOException {
+    public List<ScreenScheduleResponseDto> getCgvTheaterSchedule(@RequestBody ScreenScheduleRequestDto requestDto) {
         return cgvScreenScheduleServiceImpl.getTheaterSchedule(
                 requestDto.getPlayYMD(),
                 requestDto.getMovieIds(),
@@ -33,7 +33,7 @@ public class ScreenScheduleController {
     }
 
     @GetMapping("/schedule/lotte")
-    public List<ScreenScheduleResponseDto> getLotteTheaterSchedule(@RequestBody ScreenScheduleRequestDto requestDto) throws IOException {
+    public List<ScreenScheduleResponseDto> getLotteTheaterSchedule(@RequestBody ScreenScheduleRequestDto requestDto) {
         return lotteScreenScheduleServiceImpl.getTheaterSchedule(
                 requestDto.getPlayYMD(),
                 requestDto.getMovieIds(),
@@ -42,7 +42,7 @@ public class ScreenScheduleController {
     }
 
     @GetMapping("/schedule/mega")
-    public List<ScreenScheduleResponseDto> getMegaTheaterSchedule(@RequestBody ScreenScheduleRequestDto requestDto) throws IOException {
+    public List<ScreenScheduleResponseDto> getMegaTheaterSchedule(@RequestBody ScreenScheduleRequestDto requestDto) {
         return megaScreenScheduleServiceImpl.getTheaterSchedule(
                 requestDto.getPlayYMD(),
                 requestDto.getMovieIds(),

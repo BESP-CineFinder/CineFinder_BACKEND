@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ScreenScheduleService {
 
-    List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) throws IOException;
+    List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds);
 }

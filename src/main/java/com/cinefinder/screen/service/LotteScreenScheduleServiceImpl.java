@@ -1,5 +1,7 @@
 package com.cinefinder.screen.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
@@ -48,8 +50,8 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     List<ScreenScheduleResponseDto> result = requestSchedule(theaterId, movieId, formattedDate);
                     allSchedules.addAll(result);
                 } catch (Exception e) {
-                    // TODO: 메가박스 API 호출 실패 시 예외 처리
-                    throw new RuntimeException("메가박스 API 호출 실패: theaterId=" + theaterId + ", movieId=" + movieId, e);
+                    // TODO: 롯데시네마 API 호출 실패 시 예외 처리
+                    throw new RuntimeException("롯데시네마 API 호출 실패: theaterId=" + theaterId + ", movieId=" + movieId, e);
                 }
             }
         }
@@ -80,18 +82,17 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                url,
-                requestEntity,
-                String.class
-        );
+        ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
+
+        if (response.getStatusCode().isError()) {
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=LOTTE MOVIE SCHEDULE, 영화 ID=" + movieId + ", 극장 ID=" + cinemaId + " 오류=" + response.getBody());
+        }
 
         JsonNode root = objectMapper.readTree(response.getBody());
-
-        return parseLotteScheduleResponse(root);
+        return parseScheduleResponse(root);
     }
 
-    private List<ScreenScheduleResponseDto> parseLotteScheduleResponse(JsonNode root) {
+    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) {
         List<ScreenScheduleResponseDto> result = new ArrayList<>();
 
         JsonNode items = root.path("PlaySeqs").path("Items");

@@ -1,7 +1,8 @@
 package com.cinefinder.screen.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
-import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
@@ -57,28 +58,24 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-        log.info(requestBody.toString());
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(MEGABOX_URL, request, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 String responseBody = response.getBody();
-                JsonNode scheduleList = objectMapper.readTree(responseBody).get("scheduleList");
-
-                return parseScheduleListFromMegaboxJson(scheduleList);
-            } else {
-                // TODO: 메가박스 API 호출 예외처리
-                throw new RuntimeException("메가박스 API 호출 실패: " + response.getStatusCode());
+                JsonNode root = objectMapper.readTree(responseBody);
+                return parseScheduleResponse(root);
             }
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=MEGABOX MOVIE SCHEDULE, 영화 ID=" + movieIds + ", 극장 ID=" + theaterIds + " 오류=" + response.getBody());
 
         } catch (Exception e) {
-            // TODO: 메가박스 API 호출 예외처리
-            throw new RuntimeException("메가박스 API 요청 중 오류 발생", e);
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=MEGABOX MOVIE SCHEDULE, 영화 ID=" + movieIds + ", 극장 ID=" + theaterIds + " 오류=" + e.getMessage());
         }
     }
 
-    private List<ScreenScheduleResponseDto> parseScheduleListFromMegaboxJson(JsonNode scheduleList) {
+    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) {
+        JsonNode scheduleList = root.get("scheduleList");
         List<ScreenScheduleResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
             ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(

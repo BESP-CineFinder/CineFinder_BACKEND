@@ -1,9 +1,12 @@
 package com.cinefinder.screen.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +57,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                log.error("응답 실패: " + response.code());
+                throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=CGV COOKIE FOR MOVIE SCHEDULE, 영화 ID=" + Arrays.toString(movieParam.split("\\|")) + ", 극장 ID=" + Arrays.toString(theaterParam.split("\\|")) + " 오류=" + response.body());
             }
 
             Headers headers = response.headers();
@@ -61,13 +65,12 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                 .map(cookie -> cookie.split(";", 2)[0])
                 .collect(Collectors.joining("; "));
         } catch (IOException e) {
-            // TODO: CGV COOKIE 생성 API 호출 실패 시 예외 처리
-            throw new RuntimeException(e);
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=CGV COOKIE FOR MOVIE SCHEDULE, 영화 ID=" + Arrays.toString(movieParam.split("\\|")) + ", 극장 ID=" + Arrays.toString(theaterParam.split("\\|")) + " 오류=" + e.getMessage());
         }
     }
 
     @Override
-    public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) throws IOException {
+    public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
 
         String movieParam = String.join("|", movieIds);
         String theaterParam = String.join("|", theaterIds);
@@ -102,10 +105,22 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Cookie", requiredCookies)
                 .build();
-        Response response = client.newCall(request).execute();
-        String responseBody = response.body() != null ? response.body().string() : "";
+        
+        try {
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=CGV MOVIE SCHEDULE, 영화 ID=" + movieIds + ", 극장 ID=" + theaterIds + " 오류=" + response.body());
+            }
+            String responseBody = response.body() != null ? response.body().string() : "";
+            JsonNode root = objectMapper.readTree(responseBody);
 
-        JsonNode root = objectMapper.readTree(responseBody);
+            return parseScheduleResponse(root);
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=CGV MOVIE SCHEDULE, 영화 ID=" + movieIds + ", 극장 ID=" + theaterIds + " 오류=" + e.getMessage());
+        }
+    }
+
+    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) throws JsonProcessingException {
         String innerJsonStr = root.get("d").asText();
         JsonNode scheduleList = objectMapper.readTree(innerJsonStr).get("ResultSchedule").get("ScheduleList");
 
@@ -133,7 +148,6 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
             );
             result.add(dto);
         }
-
         return result;
     }
 
