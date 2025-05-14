@@ -105,8 +105,19 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
             if (null !=start && null != end && !start.isEmpty() && !end.isEmpty()) {
                 try {
-                    LocalTime startTime = LocalTime.parse(start);
-                    LocalTime endTime = LocalTime.parse(end);
+                    int startHour = Integer.parseInt(start.substring(0, 2));
+                    int endHour = Integer.parseInt(end.substring(0, 2));
+
+                    String startStr = start;
+                    String endStr = end;
+
+                    if (12 < startHour) {
+                        startStr = String.format("%02d", startHour-12) + start.substring(2);
+                        endStr = String.format("%02d", endHour-12) + end.substring(2);
+                    }
+
+                    LocalTime startTime = LocalTime.parse(startStr);
+                    LocalTime endTime = LocalTime.parse(endStr);
 
                     if (endTime.isBefore(startTime)) {
                         endTime = endTime.plusHours(24);
@@ -124,6 +135,8 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     item.path("RepresentationMovieCode").asText(),
                     item.path("MovieNameKR").asText(),
                     item.path("MovieNameUS").asText(),
+                    item.path("FilmCode").asText(),
+                    item.path("FilmNameKR").asText(),
                     item.path("ScreenID").asText(),
                     item.path("ScreenNameKR").asText(""),
                     item.path("StartTime").asText(),
@@ -131,9 +144,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     item.path("EndTime").asText(),
                     String.valueOf(runtimeMinutes),
                     item.path("BookingSeatCount").asText(),
-                    item.path("TotalSeatCount").asText(),
-                    item.path("FilmCode").asText(),
-                    item.path("FilmNameKR").asText()
+                    item.path("TotalSeatCount").asText()
             );
 
             result.add(dto);
