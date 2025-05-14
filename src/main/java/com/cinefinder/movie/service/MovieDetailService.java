@@ -145,8 +145,17 @@ public class MovieDetailService {
             try {
                 movieRepository.save(movie);
             } catch (Exception e) {
-                // TODO: 중복 영화명 외 DB 예외 처리
                 log.warn("‼️ {} 중복된 영화명 존재", movie.getTitle());
+
+                Optional<Movie> optionalOriginMovie = movieRepository.findByTitle(title);
+                if (optionalOriginMovie.isPresent()) {
+                    Movie originMovie = optionalOriginMovie.get();
+                    originMovie.updateMovie(movie);
+
+                    log.info("⭕ 중복 영화 정보 업데이트 완료 {}", movie.getTitle());
+                } else {
+                    log.error("❌ 중복 예외 후 기존 영화 조회 실패 {}", movie.getTitle());
+                }
             }
         }
     }

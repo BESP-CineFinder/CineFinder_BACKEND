@@ -68,4 +68,23 @@ public class Movie {
     @Lob
     @Column(columnDefinition = "TEXT")
     private String vods;
+
+    public void updateMovie(Movie movie) {
+        this.cgvCode = movie.getCgvCode();
+        this.megaBoxCode = movie.getMegaBoxCode();
+        this.lotteCinemaCode = movie.getLotteCinemaCode();
+        this.title = movie.getTitle();
+        this.titleEng = movie.getTitleEng();
+        this.nation = movie.getNation();
+        this.genre = movie.getGenre();
+        this.ratingGrade = movie.getRatingGrade();
+        this.releaseDate = movie.getReleaseDate();
+        this.runtime = movie.getRuntime();
+        this.directors = movie.getDirectors();
+        this.actors = movie.getActors();
+        this.posters = movie.getPosters();
+        this.stlls = movie.getStlls();
+        this.plotText = movie.getPlotText();
+        this.vods = movie.getVods();
+    }
 }
