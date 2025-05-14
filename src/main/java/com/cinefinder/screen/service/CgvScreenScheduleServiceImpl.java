@@ -135,6 +135,8 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                     item.path("MovieCd").asText(),
                     item.path("MovieNmKor").asText(),
                     item.path("MovieNmEng").asText(),
+                    item.path("PlatformCd").asText(),
+                    item.path("PlatformNm").asText(),
                     item.path("ScreenCd").asText(),
                     item.path("ScreenNm").asText(),
                     item.path("PlayYmd").asText(),
@@ -142,9 +144,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                     endTime.substring(0, 2) + ":" + endTime.substring(2),
                     item.path("RunningTime").asText(),
                     item.path("SeatRemainCnt").asText(),
-                    item.path("SeatCapacity").asText(),
-                    item.path("PlatformCd").asText(),
-                    item.path("PlatformNm").asText()
+                    item.path("SeatCapacity").asText()
             );
             result.add(dto);
         }

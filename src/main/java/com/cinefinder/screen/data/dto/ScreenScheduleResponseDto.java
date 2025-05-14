@@ -18,9 +18,9 @@ public class ScreenScheduleResponseDto {
     private String screenCd;
     private String screenNm;
     private String playYmd;
-    private String playStartTm;
-    private String playEndTm;
+    private String playStartTime;
+    private String playEndTime;
     private String runningTime;
     private String seatRemainCnt;
-    private String seatCapacity;
+    private String seatCapacityCnt;
 }

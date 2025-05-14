@@ -84,6 +84,8 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
                     item.path("rpstMovieNo").asText(),
                     item.path("movieNm").asText(),
                     item.path("movieEngNm").asText(),
+                    item.path("theabKindCd").asText(),
+                    item.path("playKindNm").asText(),
                     item.path("theabNo").asText(),
                     item.path("theabExpoNm").asText(),
                     item.path("playDe").asText(),
@@ -91,9 +93,7 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
                     item.path("playEndTime").asText(),
                     item.path("moviePlayTime").asText(),
                     item.path("restSeatCnt").asText(),
-                    item.path("totSeatCnt").asText(),
-                    item.path("theabKindCd").asText(),
-                    item.path("playKindNm").asText()
+                    item.path("totSeatCnt").asText()
             );
             result.add(dto);
         }
