@@ -132,6 +132,7 @@ public class MovieDetailService {
         for (Map.Entry<String, MovieDetails> entry : map.entrySet()) {
             MovieDetails movieDetails = entry.getValue();
             String movieKey = entry.getKey();
+            String redisKey = "movieDetails:" + movieKey;
             String title = movieDetails.getTitle();
 
             // API 요청
@@ -139,6 +140,16 @@ public class MovieDetailService {
 
             // API 응답이 없을 경우 건너뛰기
             if (response == null) continue;
+
+            // REDIS 각 멀티플렉스 영화코드 데이터 갱신
+            MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
+            if (originMovieDetails != null) {
+                originMovieDetails.setCgvCode(movieDetails.getCgvCode());
+                originMovieDetails.setMegaBoxCode(movieDetails.getMegaBoxCode());
+                originMovieDetails.setLotteCinemaCode(movieDetails.getLotteCinemaCode());
+
+                redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
+            }
 
             // 엔티티로 변환 후 목록에 추가
             Movie movie = MovieMapper.toEntity(movieDetails, response);
