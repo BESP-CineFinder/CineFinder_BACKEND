@@ -10,4 +10,5 @@ import java.util.List;
 public interface TheaterRepository extends JpaRepository<Theater, Long> {
     List<Theater> findByBrandName(String brandName);
     void deleteByBrandName(String brandName);
+    Theater findByBrandNameAndCode(String brandName, String code);
 }
