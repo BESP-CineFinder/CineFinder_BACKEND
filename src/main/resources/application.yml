@@ -16,9 +16,44 @@ spring:
     redis:
       port: ${REDIS_EXTERNAL_PORT}
 
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration:
+      access: ${JWT_EXPIRE_ACCESS}
+      refresh: ${JWT_EXPIRE_REFRESH}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope:
+              - profile_nickname
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: "https://kauth.kakao.com/oauth/authorize"
+            token-uri: "https://kauth.kakao.com/oauth/token"
+            user-info-uri: "https://kapi.kakao.com/v2/user/me"
+            user-name-attribute: id
+
+#    oauth2.client:
+#      registration:
+#        google:
+#          redirect-uri: "{baseUrl}/login/oauth2/code/google"
+#          client-id: ${GOOGLE_CLIENT_ID}
+#          client-secret: ${GOOGLE_CLIENT_SECRET}
+
 api:
-  kobis: ${KOBIS_API_KEY}
-  kmdb: ${KMDB_API_KEY}
+  kobis:
+    request-url: ${KOBIS_REQUEST_URL}
+    service-key: ${KOBIS_SERVICE_KEY}
+  kmdb:
+    request-url: ${KMDB_REQUEST_URL}
+    service-key: ${KMDB_SERVICE_KEY}
 
 movie:
   cgv:
