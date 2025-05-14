@@ -1,7 +1,9 @@
 package com.cinefinder.theater.service;
 
+import com.cinefinder.theater.data.ElasticsearchTheater;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -45,6 +47,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
+    private final ElasticsearchTheaterRepository elasticsearchTheaterRepository;
 
     private static final String USER_AGENT = "Mozilla/5.0";
 
@@ -105,6 +108,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         if (existingCodes.isEmpty()) {
             log.info("✅ 메가박스 영화관 정보가 없습니다. 새로 저장합니다.");
             theaterRepository.saveAll(theaters);
+            elasticsearchTheaterRepository.saveAll(returnToElasticsearch(theaters, elasticsearchTheaterRepository));
             return;
         }
 
@@ -116,6 +120,8 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         log.info("⁉️ 메가박스 영화관 정보 변경 확인! 업데이트 시작...");
         theaterRepository.deleteByBrandName(brandName);
         theaterRepository.saveAll(theaters);
+
+        replaceElasticsearchData(theaters, elasticsearchTheaterRepository);
         log.info("✅ 메가박스 영화관 정보 업데이트 완료!");
     }
 
