@@ -23,6 +23,15 @@ api:
   kmdb:
     request-url: ${KMDB_REQUEST_URL}
     service-key: ${KMDB_SERVICE_KEY}
+  cgv:
+    code:
+      request-url: ${CGV_CODE_REQUEST_URL}
+  mega-box:
+    code:
+      request-url: ${MEGA_BOX_CODE_REQUEST_URL}
+  lotte-cinema:
+    code:
+      request-url: ${LOTTE_CINEMA_CODE_REQUEST_URL}
 
 movie:
   cgv:
