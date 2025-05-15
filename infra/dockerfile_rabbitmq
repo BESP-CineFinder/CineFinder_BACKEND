@@ -1,0 +1,25 @@
+# 🧱 단계 1: 플러그인 다운로드용 builder
+FROM ubuntu:20.04 AS builder
+
+ARG PLUGIN_VERSION=3.11.1
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl
+
+RUN mkdir -p /plugins && \
+    curl -fsSL -o "/plugins/rabbitmq_delayed_message_exchange-${PLUGIN_VERSION}.ez" \
+    https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/${PLUGIN_VERSION}/rabbitmq_delayed_message_exchange-${PLUGIN_VERSION}.ez
+
+# 🧱 단계 2: RabbitMQ 이미지에 플러그인 포함
+FROM rabbitmq:3.11.1-management
+
+ARG PLUGIN_VERSION=3.11.1
+
+COPY --from=builder /plugins/rabbitmq_delayed_message_exchange-${PLUGIN_VERSION}.ez \
+    ${RABBITMQ_HOME}/plugins/
+
+RUN rabbitmq-plugins enable --offline rabbitmq_management \
+    rabbitmq_delayed_message_exchange \
+    rabbitmq_consistent_hash_exchange \
+    rabbitmq_stomp
+
+EXPOSE 4369 5671 5672 15672 25672 61613

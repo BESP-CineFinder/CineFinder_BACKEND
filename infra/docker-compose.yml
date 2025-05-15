@@ -105,6 +105,21 @@ services:
     env_file:
       - .env
 
+  rabbitmq:
+    build:
+      context: .
+      dockerfile: dockerfile_rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"      # AMQP
+      - "15672:15672"    # Management UI
+      - "61613:61613"    # STOMP
+    environment:
+      RABBITMQ_DEFAULT_USER: cinefinder
+      RABBITMQ_DEFAULT_PASS: cinefinder
+    networks:
+      - CineFinder_network
+
 networks:
   CineFinder_network:
     driver: bridge

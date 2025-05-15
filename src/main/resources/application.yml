@@ -22,6 +22,12 @@ spring:
       access: ${JWT_EXPIRE_ACCESS}
       refresh: ${JWT_EXPIRE_REFRESH}
 
+  rabbitmq:
+    username: ${RABBITMQ_LOGIN}
+    password: ${RABBITMQ_PASSWORD} #default Password
+    host: localhost # default host
+    port: ${RABBITMQ_PORT}      #default port
+
   security:
     oauth2:
       client:
@@ -71,6 +77,10 @@ movie:
     theater-default-endpoint: /theater/list
     theater-detail-endpoint: /on/oh/ohc/Brch/infoPage.do
 
+rabbitmq:
+  websocket_endpoint: ${WEBSOCKET_ENDPOINT}
+  user: ${RABBITMQ_LOGIN}
+  password: ${RABBITMQ_PASSWORD}
 
 # =========================== LOCAL  ===========================
 ---
