@@ -47,7 +47,7 @@ public class UtilParse {
         }
     }
 
-    public static List<MovieDetails> extractMovieDetailsList(String response, String testTitle) {
+    public static List<MovieDetails> extractMovieDetailsList(String response) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             List<MovieDetails> list = new ArrayList<>();
@@ -59,7 +59,7 @@ public class UtilParse {
 
             // 2. 응답 결과가 없다면
             if (result.isMissingNode()) {
-                log.warn("❌ [영화 상세정보 추출] API 응답 결과가 없음 {}", testTitle);
+                log.warn("❌ [영화 상세정보 추출] API 응답 결과가 없음");
                 return list;
             }
 
