@@ -5,9 +5,15 @@ import com.cinefinder.movie.data.model.MovieDetails;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 @Slf4j
 public class UtilParse {
@@ -53,7 +59,7 @@ public class UtilParse {
 
             // 2. 응답 결과가 없다면
             if (result.isMissingNode()) {
-                log.warn("❌ API 응답 결과가 없음");
+                log.warn("❌ [영화 상세정보 추출] API 응답 결과가 없음");
                 return list;
             }
 
@@ -98,6 +104,7 @@ public class UtilParse {
 
                 JsonNode actorsNodes = node.path("actors").path("actor");
                 for (JsonNode actorNode : actorsNodes) actors.add(actorNode.path("actorNm").asText());
+                if (actors.size() > 5) actors = actors.subList(0, 5);
 
                 JsonNode vodsNode = node.path("vods").path("vod");
                 for (JsonNode vod : vodsNode) vods.add(vod.path("vodUrl").asText());
@@ -107,15 +114,15 @@ public class UtilParse {
                     .titleEng(titleEng)
                     .nation(nation)
                     .genre(genre)
-                    .directors(directors)
-                    .actors(actors)
                     .plotText(plotText)
                     .runtime(runtime)
                     .ratingGrade(ratingGrade)
                     .releaseDate(releaseDate)
                     .posters(posters)
                     .stlls(stlls)
-                    .vods(vods)
+                    .directors(String.join("|", directors))
+                    .actors(String.join("|", actors))
+                    .vods(String.join("|", vods))
                     .build();
 
                 list.add(movieDetails);
@@ -126,5 +133,89 @@ public class UtilParse {
             // TODO: JSON 데이터 파싱 실패 시 예외 처리
             throw new RuntimeException("영화 상세정보 추출 중 오류 발생", e);
         }
+    }
+
+    public static List<MovieDetails> extractCgvMovieList(String response) {
+        try {
+            if (response == null) return new ArrayList<>();
+
+            Document doc = Jsoup.parse(response);
+            Elements movieItems = doc.select("div.mm_list_item");
+
+            List<MovieDetails> movieDetailsList = new ArrayList<>();
+            for (Element movie : movieItems) {
+                MovieDetails movieDetails = new MovieDetails();
+
+                movieDetails.setTitle(movie.selectFirst("div.mm_list_item strong.tit").text());
+
+                Element button = movie.selectFirst("a.btn_reserve");
+                String onclick = button.attr("onclick");
+                String[] argsArray = onclick.split("'");
+                if (argsArray.length >= 4) {
+                    movieDetails.setCgvCode(argsArray[3]);
+                }
+
+                movieDetailsList.add(movieDetails);
+            }
+
+            return movieDetailsList;
+        } catch (Exception e) {
+            // TODO: JSON 데이터 파싱 실패 시 예외 처리
+            throw new RuntimeException("영화 제목 목록 추출 중 오류 발생", e);
+        }
+    }
+
+    public static List<MovieDetails> extractMegaBoxMovieList(String response) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            JsonNode curationBannerListNodes = mapper.readTree(response).path("movieList");
+
+            List<MovieDetails> movieDetailsList = new ArrayList<>();
+            for (JsonNode node : curationBannerListNodes) {
+                MovieDetails movieDetails = new MovieDetails();
+
+                movieDetails.setTitle(decodeUnicode(node.path("movieNm").asText()));
+                movieDetails.setMegaBoxCode(node.path("movieNo").asText());
+
+                movieDetailsList.add(movieDetails);
+            }
+
+            return movieDetailsList;
+        } catch (Exception e) {
+            // TODO: JSON 데이터 파싱 실패 시 예외 처리
+            throw new RuntimeException("영화 제목 목록 추출 중 오류 발생", e);
+        }
+    }
+
+    public static List<MovieDetails> extractLotteCinemaMovieList(String response) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            JsonNode items = mapper.readTree(response)
+                .path("Movies")
+                .path("Items");
+
+            List<MovieDetails> movieDetailsList = new ArrayList<>();
+            for (JsonNode node : items) {
+                MovieDetails movieDetails = new MovieDetails();
+
+                movieDetails.setTitle(decodeUnicode(node.path("MovieNameKR").asText()));
+                movieDetails.setLotteCinemaCode(node.path("RepresentationMovieCode").asText());
+
+                movieDetailsList.add(movieDetails);
+            }
+
+            return movieDetailsList;
+        } catch (Exception e) {
+            // TODO: JSON 데이터 파싱 실패 시 예외 처리
+            throw new RuntimeException("영화 제목 목록 추출 중 오류 발생", e);
+        }
+    }
+
+    private static String decodeUnicode(String input) throws IOException {
+        Properties prop = new Properties();
+        prop.load(new java.io.StringReader("key=" + input));
+        return prop.getProperty("key");
     }
 }
