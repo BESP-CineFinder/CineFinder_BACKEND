@@ -30,9 +30,8 @@ public class MovieController {
 
     @GetMapping("/movie-details")
     public ResponseEntity<BaseResponse<MovieDetails>> fetchMovieDetails(
-        @RequestParam(value = "movieKey") String movieKey,
         @RequestParam(value = "title") String title
     ) {
-        return ResponseMapper.successOf(ApiStatus._OK, movieDetailService.getMovieDetails(movieKey, title), MovieController.class);
+        return ResponseMapper.successOf(ApiStatus._OK, movieDetailService.getMovieDetails(title), MovieController.class);
     }
 }

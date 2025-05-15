@@ -42,17 +42,17 @@ public class BoxOfficeService {
             log.info("✅ {} 키 존재 ... 캐시된 데이터 조회", latestDateRedisKey);
 
             return redisTemplate.opsForHash()
-                    .entries(latestDateRedisKey)
-                    .entrySet()
-                    .stream()
-                    .map(entry -> {
-                        String rank = entry.getKey().toString();
-                        BoxOffice boxOffice = mapper.convertValue(entry.getValue(), BoxOffice.class);
-                        boxOffice.setRank(rank);
-                        return boxOffice;
-                    })
-                    .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
-                    .collect(Collectors.toList());
+                .entries(latestDateRedisKey)
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    String rank = entry.getKey().toString();
+                    BoxOffice boxOffice = mapper.convertValue(entry.getValue(), BoxOffice.class);
+                    boxOffice.setRank(rank);
+                    return boxOffice;
+                })
+                .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
+                .collect(Collectors.toList());
         } else {
             log.info("✅ {} 키 없음 ... KOBIS API 호출 후 캐싱", latestDateRedisKey);
 
@@ -69,9 +69,9 @@ public class BoxOfficeService {
 
             // 2. 요청 URL 생성
             String url = String.format(
-                    kobisRequestUrl + "?key=%s&targetDt=%s",
-                    kobisServiceKey,
-                    latestDate
+                kobisRequestUrl + "?key=%s&targetDt=%s",
+                kobisServiceKey,
+                latestDate
             );
 
             // 3. API 요청
