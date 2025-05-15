@@ -80,6 +80,16 @@ services:
 #    env_file:
 #      - .env
 
+  frontend:
+    build:
+      context: ../../CineFinder_FRONTEND
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      - CineFinder_network
+
   nginx:
     build:
       context: .
@@ -95,13 +105,18 @@ services:
     env_file:
       - .env
 
-  frontend:
+  rabbitmq:
     build:
-      context: ../../cinefinder-front
-      dockerfile: Dockerfile
-    container_name: frontend
+      context: .
+      dockerfile: dockerfile_rabbitmq
+    container_name: rabbitmq
     ports:
-      - "3000:80"
+      - "5672:5672"      # AMQP
+      - "15672:15672"    # Management UI
+      - "61613:61613"    # STOMP
+    environment:
+      RABBITMQ_DEFAULT_USER: cinefinder
+      RABBITMQ_DEFAULT_PASS: cinefinder
     networks:
       - CineFinder_network
 

@@ -34,8 +34,8 @@ public class SecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable)
 			.logout(AbstractHttpConfigurer::disable)
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/chat/**", "/api/info/**").hasAuthority("ROLE_USER") // hasRole -> hasAuthority 변경
-				.requestMatchers("/api/signup/session", "/api/signup/nickname", "/api/**", "/v3/api-docs/**", "/swagger-ui/**", "/error").permitAll()
+				.requestMatchers("/api/info/**").hasAuthority("ROLE_USER") // hasRole -> hasAuthority 변경
+				.requestMatchers("/api/signup/session", "/api/signup/nickname", "/api/**", "/v3/api-docs/**", "/swagger-ui/**", "/error", "/CineFinder-ws/**", "/chat/**").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2Login(oauth2 -> oauth2
@@ -44,7 +44,6 @@ public class SecurityConfig {
 				)
 				.successHandler(oAuth2SuccessHandler) // 로그인 성공 후 로직 처리
 			)
-			// .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 			.build();
