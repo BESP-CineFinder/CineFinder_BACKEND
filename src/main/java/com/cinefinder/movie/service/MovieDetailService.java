@@ -172,4 +172,13 @@ public class MovieDetailService {
             }
         }
     }
+
+    public List<Movie> getFavoriteMovieList(List<Long> movieIdList) {
+        try {
+            return movieRepository.findByMovieIdList(movieIdList);
+        } catch (Exception e) {
+            // TODO: 좋아요 등록한 영화 ID 목록 조회 실패 시 예외 처리
+            throw new RuntimeException("좋아요 등록한 영화 ID 목록 조회 중 오류 발생", e);
+        }
+    }
 }

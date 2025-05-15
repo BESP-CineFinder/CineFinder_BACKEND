@@ -15,7 +15,10 @@ import lombok.NoArgsConstructor;
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
+
+    @Column(unique = true)
+    private String title;
 
     @Column
     private String cgvCode;
@@ -25,9 +28,6 @@ public class Movie {
 
     @Column
     private String lotteCinemaCode;
-
-    @Column(unique = true)
-    private String title;
 
     @Column
     private String titleEng;
