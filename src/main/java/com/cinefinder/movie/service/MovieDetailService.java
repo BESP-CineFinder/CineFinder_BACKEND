@@ -117,7 +117,7 @@ public class MovieDetailService {
         }
     }
 
-    public void fetchMultiflexMovieDetailList() {
+    public void fetchMultiflexMovieDetails() {
         // 1. CGV API 요청
         List<MovieDetails> totalMovieDetails = movieHelperService.requestMovieCgvApi();
 

@@ -9,10 +9,7 @@ import com.cinefinder.movie.service.BoxOfficeService;
 import com.cinefinder.movie.service.MovieDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,5 +30,11 @@ public class MovieController {
         @RequestParam(value = "title") String title
     ) {
         return ResponseMapper.successOf(ApiStatus._OK, movieDetailService.getMovieDetails(title), MovieController.class);
+    }
+
+    @PostMapping("/multiflexMovieDetails")
+    public ResponseEntity<BaseResponse<Void>> fetchMultiflexMovieDetails() {
+        movieDetailService.fetchMultiflexMovieDetails();
+        return ResponseMapper.successOf(ApiStatus._OK, null, MovieController.class);
     }
 }
