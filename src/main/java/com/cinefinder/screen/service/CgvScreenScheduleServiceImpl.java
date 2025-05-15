@@ -9,6 +9,7 @@ import com.cinefinder.theater.mapper.TheaterMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
 
+    @Getter
     @Value("${movie.cgv.name}")
     private String brandName;
 

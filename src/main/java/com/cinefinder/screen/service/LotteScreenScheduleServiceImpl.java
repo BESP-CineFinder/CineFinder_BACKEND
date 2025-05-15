@@ -8,6 +8,7 @@ import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
+    @Getter
     @Value("${movie.lotte.name}")
     private String brandName;
 
