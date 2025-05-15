@@ -5,6 +5,7 @@ import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.util.UtilParse;
+import com.cinefinder.movie.util.UtilString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,9 @@ public class MovieDetailService {
     private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
 
-    public MovieDetails getMovieDetails(String movieKey, String title) {
+    public MovieDetails getMovieDetails(String title) {
         ObjectMapper mapper = new ObjectMapper();
+        String movieKey = UtilString.normalizeMovieKey(title);
 
         String redisKey = "movieDetails:" + movieKey;
         log.info("🔑 [영화 상세정보 캐시 조회] REDIS 키 이름 : {}", redisKey);
@@ -89,7 +91,7 @@ public class MovieDetailService {
             String response = restTemplate.getForObject(new URI(url), String.class);
 
             // 3. 저장 List 생성
-            List<MovieDetails> movieDetailsList = UtilParse.extractMovieDetailsList(response, title);
+            List<MovieDetails> movieDetailsList = UtilParse.extractMovieDetailsList(response);
 
             // 4. 응답 결과가 2개 이상이라면
             if (movieDetailsList.size() >= 2) {
@@ -136,7 +138,7 @@ public class MovieDetailService {
             String title = movieDetails.getTitle();
 
             // API 요청
-            MovieDetails response = getMovieDetails(movieKey, title);
+            MovieDetails response = getMovieDetails(title);
 
             // API 응답이 없을 경우 건너뛰기
             if (response == null) continue;
