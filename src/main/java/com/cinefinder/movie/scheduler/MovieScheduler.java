@@ -22,7 +22,7 @@ public class MovieScheduler {
         }
 
         try {
-            movieDetailService.fetchMultiflexMovieDetailList();
+            movieDetailService.fetchMultiflexMovieDetails();
         } catch (Exception e) {
             // TODO: 멀티플렉스 3사 영화 상세정보 스케줄러 실패 시 예외 처리
             throw new RuntimeException("멀티플렉스 3사 영화 상세정보 패치 중 오류 발생", e);
