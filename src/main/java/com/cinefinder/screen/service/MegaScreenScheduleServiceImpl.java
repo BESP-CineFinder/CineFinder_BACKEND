@@ -1,0 +1,102 @@
+package com.cinefinder.screen.service;
+
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
+import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
+import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.data.repository.TheaterRepository;
+import com.cinefinder.theater.mapper.TheaterMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
+
+    @Value("${movie.mega.name}")
+    private String brandName;
+
+    private final BrandRepository brandRepository;
+    private final TheaterRepository theaterRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final String MEGABOX_URL = "https://m.megabox.co.kr/on/oh/ohb/SimpleBooking/selectBokdList.do";
+
+    @Override
+    public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("playDe", playYMD);
+        for (int i = 0; i < theaterIds.size(); i++) {
+            requestBody.put("brchNo" + (i + 1), theaterIds.get(i));
+        }
+        for (int i = 0; i < movieIds.size(); i++) {
+            requestBody.put("movieNo" + (i + 1), movieIds.get(i));
+        }
+        if (movieIds.isEmpty()) {
+            requestBody.put("movieNo1", "");
+        }
+        requestBody.put("menuId", "M-RE-MO-02");
+        requestBody.put("imgSizeDiv", "IMG_TYPE_7");
+        requestBody.put("flag", "VIEW_STEP3");
+        requestBody.put("sellChnlCd", "MOBILEWEB");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(MEGABOX_URL, request, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                String responseBody = response.getBody();
+                JsonNode root = objectMapper.readTree(responseBody);
+                return parseScheduleResponse(root);
+            }
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=MEGABOX MOVIE SCHEDULE, 영화 ID=" + movieIds + ", 극장 ID=" + theaterIds + " 오류=" + response.getBody());
+
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "API TYPE=MEGABOX MOVIE SCHEDULE, 영화 ID=" + movieIds + ", 극장 ID=" + theaterIds + " 오류=" + e.getMessage());
+        }
+    }
+
+    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) {
+        JsonNode scheduleList = root.get("scheduleList");
+        List<ScreenScheduleResponseDto> result = new ArrayList<>();
+        for (JsonNode item : scheduleList) {
+            ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
+                    brandRepository.findByName(brandName),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode(brandName, item.path("brchNo").asText())),
+                    item.path("rpstMovieNo").asText(),
+                    item.path("movieNm").asText(),
+                    item.path("movieEngNm").asText(),
+                    item.path("theabKindCd").asText(),
+                    item.path("playKindNm").asText(),
+                    item.path("theabNo").asText(),
+                    item.path("theabExpoNm").asText(),
+                    item.path("playDe").asText(),
+                    item.path("playStartTime").asText(),
+                    item.path("playEndTime").asText(),
+                    item.path("moviePlayTime").asText(),
+                    item.path("restSeatCnt").asText(),
+                    item.path("totSeatCnt").asText()
+            );
+            result.add(dto);
+        }
+        return result;
+    }
+}

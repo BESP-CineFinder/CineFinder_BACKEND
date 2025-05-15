@@ -1,7 +1,9 @@
 package com.cinefinder.theater.service;
 
+import com.cinefinder.theater.data.ElasticsearchTheater;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +41,8 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
 
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
+    private final ElasticsearchTheaterRepository elasticsearchTheaterRepository;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -111,6 +115,7 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         if (existingCodes.isEmpty()) {
             log.info("✅ 롯데시네마 영화관 정보가 없습니다. 새로 저장합니다.");
             theaterRepository.saveAll(theaters);
+            elasticsearchTheaterRepository.saveAll(returnToElasticsearch(theaters, elasticsearchTheaterRepository));
             return;
         }
 
@@ -122,6 +127,8 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         log.info("⁉️ 롯데시네마 영화관 정보 변경 확인! 업데이트 시작...");
         theaterRepository.deleteByBrandName(brandName);
         theaterRepository.saveAll(theaters);
+
+        replaceElasticsearchData(theaters, elasticsearchTheaterRepository);
         log.info("✅ 롯데시네마 영화관 정보 업데이트 완료!");
     }
 
