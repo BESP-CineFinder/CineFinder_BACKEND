@@ -1,0 +1,23 @@
+package com.cinefinder.chat.controller;
+
+import com.cinefinder.chat.data.repository.ChatLogEntity;
+import com.cinefinder.chat.service.ChatLogElasticService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/chat/log")
+@RequiredArgsConstructor
+public class ChatLogQueryController {
+
+    private final ChatLogElasticService chatLogElasticService;
+
+    @GetMapping("/all")
+    public List<ChatLogEntity> getAllLogs() {
+        return chatLogElasticService.findAll();
+    }
+}
