@@ -1,6 +1,8 @@
 package com.cinefinder.global.config;
 
 import com.cinefinder.chat.data.dto.ChatMessageDto;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -17,26 +19,19 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @EnableKafka
+@Slf4j
 @Configuration
 public class KafkaConfig {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    // ✅ 1. Topic 설정
-    @Bean
-    public NewTopic chatLogTopic() {
-        return TopicBuilder.name("chat-log")
-                .partitions(3)
-                .replicas(2)
-                .build();
-    }
-
-    // ✅ 2. Kafka Admin 설정
+    // ✅ 1. Kafka Admin 설정
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
@@ -44,7 +39,7 @@ public class KafkaConfig {
         return new KafkaAdmin(configs);
     }
 
-    // ✅ 3. Kafka Producer 설정
+    // ✅ 2. Kafka Producer 설정
     @Bean
     public ProducerFactory<String, ChatMessageDto> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -59,7 +54,7 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    // ✅ 4. Kafka Consumer 설정
+    // ✅ 3. Kafka Consumer 설정
     @Bean
     public ConsumerFactory<String, ChatMessageDto> consumerFactory() {
         JsonDeserializer<ChatMessageDto> deserializer = new JsonDeserializer<>(ChatMessageDto.class);

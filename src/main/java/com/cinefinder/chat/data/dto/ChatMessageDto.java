@@ -7,4 +7,5 @@ public class ChatMessageDto {
     private String id;
     private String senderId;
     private String message;
+    private String timestamp;
 }
