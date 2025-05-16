@@ -1,5 +1,6 @@
 package com.cinefinder.global.util.statuscode;
 
+import co.elastic.clients.elasticsearch.nodes.Http;
 import org.springframework.http.HttpStatus;
 
 import lombok.AllArgsConstructor;
@@ -29,6 +30,9 @@ public enum ApiStatus {
 	_ES_INDEX_QUERY_CREATE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "IndexQuery 생성 중 에러 발생"),
     _ES_INDEX_LIST_FETCH_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인덱스 목록 조회 중 예외 발생"),
 	_EXTERNAL_API_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "외부 API 호출 실패"),
+	_MESSAGE_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "채팅 로그 메세지 파싱 실패"),
+	_CREATE_TOPIC_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "토픽 생성 실패"),
+	_NOT_EXISTENT_TOPIC(HttpStatus.INTERNAL_SERVER_ERROR, 500, "존재하지 않는 영화 입니다."),
 	_JSOUP_CONNECT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Jsoup 연결 실패"),
 	_THEATER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 극장을 찾을 수 없습니다."),
 	_JSON_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "JSON 파싱 실패"),

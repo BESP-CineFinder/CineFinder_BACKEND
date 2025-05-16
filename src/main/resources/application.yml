@@ -40,6 +40,17 @@ spring:
             user-info-uri: "https://kapi.kakao.com/v2/user/me"
             user-name-attribute: id
 
+  kafka:
+    bootstrap-servers: localhost:10000,localhost:10001,localhost:10002 # 카프카 서버 주소
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: chat-log-consumer-group
+      auto-offset-reset: earliest
+    template:
+      default-topic: chat-log
+
 #    oauth2.client:
 #      registration:
 #        google:
@@ -95,6 +106,9 @@ spring:
   data:
     redis:
       host: ${LOCAL_HOST}
+    elasticsearch:
+      repositories:
+        enabled: true
 
   elasticsearch:
     uris: http://${LOCAL_HOST}:${ES_EXTERNAL_PORT_1}/
