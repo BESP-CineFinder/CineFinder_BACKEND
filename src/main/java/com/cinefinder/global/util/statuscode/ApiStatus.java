@@ -32,8 +32,11 @@ public enum ApiStatus {
 	_EXTERNAL_API_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "외부 API 호출 실패"),
 	_MESSAGE_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "채팅 로그 메세지 파싱 실패"),
 	_CREATE_TOPIC_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "토픽 생성 실패"),
-	_NOT_EXISTENT_TOPIC(HttpStatus.INTERNAL_SERVER_ERROR, 500, "존재하지 않는 영화 입니다.");
-
+	_NOT_EXISTENT_TOPIC(HttpStatus.INTERNAL_SERVER_ERROR, 500, "존재하지 않는 영화 입니다."),
+	_JSOUP_CONNECT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Jsoup 연결 실패"),
+	_THEATER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 극장을 찾을 수 없습니다."),
+	_JSON_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "JSON 파싱 실패"),
+	_HTML_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "HTML 파싱 실패");
 
 	private final HttpStatus httpStatus;
 	private final int code;
