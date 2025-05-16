@@ -28,7 +28,11 @@ public enum ApiStatus {
 	_ES_BULK_INDEXING_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Index 생성 중 에러 발생"),
 	_ES_INDEX_QUERY_CREATE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "IndexQuery 생성 중 에러 발생"),
     _ES_INDEX_LIST_FETCH_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인덱스 목록 조회 중 예외 발생"),
-	_EXTERNAL_API_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "외부 API 호출 실패");
+	_EXTERNAL_API_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "외부 API 호출 실패"),
+	_JSOUP_CONNECT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Jsoup 연결 실패"),
+	_THEATER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 극장을 찾을 수 없습니다."),
+	_JSON_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "JSON 파싱 실패"),
+	_HTML_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "HTML 파싱 실패");
 
 	private final HttpStatus httpStatus;
 	private final int code;

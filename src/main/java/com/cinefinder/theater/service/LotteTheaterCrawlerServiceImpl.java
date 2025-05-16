@@ -1,5 +1,7 @@
 package com.cinefinder.theater.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.theater.data.ElasticsearchTheater;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
@@ -95,8 +97,7 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                 log.info("롯데시네마 영화관 정보 가져오기 완료: {} - {}", name, code);
             }
         } catch (Exception e) {
-            // TODO: 크롤링 오류 처리
-            throw new RuntimeException("롯데시네마 영화관 정보 파싱 중 오류 발생", e);
+            throw new CustomException(ApiStatus._JSON_PARSE_FAIL, e.getMessage());
         }
 
         return theaters.stream()
