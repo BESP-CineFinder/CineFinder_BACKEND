@@ -26,15 +26,14 @@ public class MovieController {
     }
 
     @GetMapping("/movie-details")
-    public ResponseEntity<BaseResponse<MovieDetails>> fetchMovieDetails(
-        @RequestParam(value = "title") String title
-    ) {
+    public ResponseEntity<BaseResponse<MovieDetails>> fetchMovieDetails(@RequestParam String title) {
         return ResponseMapper.successOf(ApiStatus._OK, movieDetailService.getMovieDetails(title), MovieController.class);
     }
 
     @PostMapping("/multiflexMovieDetails")
     public ResponseEntity<BaseResponse<Void>> fetchMultiflexMovieDetails() {
         movieDetailService.fetchMultiflexMovieDetailList();
+
         return ResponseMapper.successOf(ApiStatus._OK, null, MovieController.class);
     }
 }

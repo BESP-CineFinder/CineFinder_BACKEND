@@ -25,7 +25,7 @@ public class MovieScheduler {
         }
 
         try {
-            movieDetailService.fetchMultiflexMovieDetailList();
+            movieDetailService.fetchMultiflexMovieDetails();
         } catch (Exception e) {
             log.error("‼️ 멀티플렉스 3사 영화 상세정보 패치 중 오류 발생");
         }

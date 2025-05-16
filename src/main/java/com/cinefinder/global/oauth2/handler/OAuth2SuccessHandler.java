@@ -78,7 +78,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			session.setAttribute("kakaoSub", kakaoSub);
 			session.setAttribute("kakaoEmail", kakaoEmail);
 
-			response.sendRedirect("/signup");
+			response.sendRedirect("/#/signup");
 		}
 	}
 

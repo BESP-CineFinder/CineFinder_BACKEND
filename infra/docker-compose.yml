@@ -95,6 +95,16 @@ services:
     env_file:
       - .env
 
+  frontend:
+    build:
+      context: ../../cinefinder-front
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      - CineFinder_network
+
 networks:
   CineFinder_network:
     driver: bridge

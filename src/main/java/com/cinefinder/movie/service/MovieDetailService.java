@@ -37,6 +37,15 @@ public class MovieDetailService {
     @Value("${api.kmdb.service-key}")
     private String kmdbServiceKey;
 
+    @Value("${movie.cgv.name}")
+    private String cgvBrandName;
+
+    @Value("${movie.mega.name}")
+    private String megaBrandName;
+
+    @Value("${movie.lotte.name}")
+    private String lotteBrandName;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieHelperService movieHelperService;
@@ -127,7 +136,7 @@ public class MovieDetailService {
     }
 
     public void fetchMultiflexMovieDetailList() {
-        List<MovieDetails> totalMovieDetails = new ArrayList<>();;
+        List<MovieDetails> totalMovieDetails = new ArrayList<>();
 
         // 1. CGV API 요청
         try {
@@ -190,6 +199,18 @@ public class MovieDetailService {
         }
     }
 
+    public Movie fetchMovieByBrandMovieCode(String brandName, String movieCode) {
+        if (brandName.equals(cgvBrandName)) {
+            return movieRepository.findByCgvCode(movieCode);
+        } else if (brandName.equals(lotteBrandName)) {
+            return movieRepository.findByLotteCinemaCode(movieCode);
+        } else if (brandName.equals(megaBrandName)) {
+            return movieRepository.findByMegaBoxCode(movieCode);
+        } else {
+            return null;
+        }
+    }
+  
     public List<Movie> getFavoriteMovieList(List<Long> movieIdList) {
         try {
             return movieRepository.findByMovieIdList(movieIdList);

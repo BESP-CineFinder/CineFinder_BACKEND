@@ -12,11 +12,15 @@ import java.util.Optional;
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     Optional<Movie> findByTitle(String title);
-
+    
     @Query(value = """
         SELECT *
         FROM MOVIE
         WHERE id IN :movieIdList
     """, nativeQuery = true)
     List<Movie> findByMovieIdList(@Param("movieIdList") List<Long> movieIdList);
+           
+    Movie findByCgvCode(String cgvCode);
+    Movie findByLotteCinemaCode(String lotteCode);
+    Movie findByMegaBoxCode(String megaCode);
 }
