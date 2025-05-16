@@ -134,10 +134,17 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
             String startTime = item.path("PlayStartTm").asText();
             String endTime = item.path("PlayEndTm").asText();
 
+            String movieCode = item.path("MovieGroupCd").asText();
+            var movie = movieDetailService.fetchMovieByBrandMovieCode(brandName, movieCode);
+            if (movie == null) {
+                log.warn("CGV에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}, MovieName: {}", movieCode, item.path("MovieNmKor").asText());
+                continue;
+            }
+
             CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
                     brandService.getBrandInfo(brandName),
                     TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("TheaterCd").asText())),
-                    MovieMapper.toSimplifiedMovieDto(movieDetailService.fetchMovieByBrandMovieCode(brandName, item.path("MovieCd").asText())),
+                    MovieMapper.toSimplifiedMovieDto(movie),
                     item.path("PlatformCd").asText(),
                     item.path("PlatformNm").asText(),
                     item.path("ScreenCd").asText(),
