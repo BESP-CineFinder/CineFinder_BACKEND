@@ -37,8 +37,8 @@ public class ScreenScheduleAggregatorService {
     public List<MovieGroupedScheduleResponseDto> getCinemasSchedules(ScreenScheduleRequestDto requestDto) {
 
         String date = requestDto.getDate().replace("-", "");
-        String minTimeStr = requestDto.getMinTime();
-        String maxTimeStr = requestDto.getMaxTime();
+        String minTimeStr = (requestDto.getMinTime() == null || requestDto.getMinTime().isEmpty()) ? "00:00" : requestDto.getMinTime();
+        String maxTimeStr = (requestDto.getMaxTime() == null || requestDto.getMaxTime().isEmpty()) ? "24:00" : requestDto.getMaxTime();
         double lat = requestDto.getLat();
         double lng = requestDto.getLng();
         double distance = requestDto.getDistance();
@@ -55,6 +55,8 @@ public class ScreenScheduleAggregatorService {
     private static List<CinemaScheduleApiResponseDto> getCinemaScheduleApiResponseDtos(Map<String, ScreenScheduleService> screenScheduleServices, String date, String minTimeStr, String maxTimeStr, Map<String, List<String>> theaterIds, Map<String, List<String>> movieIds) {
 
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+        LocalTime minTime = minTimeStr.equals("24:00") ? LocalTime.MAX : LocalTime.parse(minTimeStr, dateTimeFormatter);
+        LocalTime maxTime = maxTimeStr.equals("24:00") ? LocalTime.MAX : LocalTime.parse(maxTimeStr, dateTimeFormatter);
 
         List<CinemaScheduleApiResponseDto> schedules = new ArrayList<>();
         for (Map.Entry<String, List<String>> entry : theaterIds.entrySet()) {
@@ -66,9 +68,7 @@ public class ScreenScheduleAggregatorService {
                 if (screenScheduleService.getBrandName().equals(brandName)) {
                     List<CinemaScheduleApiResponseDto> schedule = screenScheduleService.getTheaterSchedule(date, movieValues, theaterValues).stream()
                             .filter(dto -> {
-                                LocalTime startTime = LocalTime.parse(dto.getPlayStartTime(), dateTimeFormatter);
-                                LocalTime minTime = LocalTime.parse(minTimeStr, dateTimeFormatter);
-                                LocalTime maxTime = LocalTime.parse(maxTimeStr, dateTimeFormatter);
+                                LocalTime startTime = dto.getPlayStartTime().equals("24:00") ? LocalTime.MAX : LocalTime.parse(dto.getPlayStartTime(), dateTimeFormatter);
                                 return (startTime.equals(minTime) || startTime.isAfter(minTime)) &&
                                         (startTime.equals(maxTime) || startTime.isBefore(maxTime));
                             })
