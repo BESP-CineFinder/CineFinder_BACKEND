@@ -2,7 +2,9 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
+import com.cinefinder.movie.data.repository.MovieRepository;
+import com.cinefinder.movie.mapper.MovieMapper;
+import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
@@ -37,19 +39,20 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
+    private final MovieRepository movieRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
+    public List<CinemaScheduleApiResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
         String formattedDate = playYMD.substring(0, 4) + "-" + playYMD.substring(4, 6) + "-" + playYMD.substring(6, 8);
-        List<ScreenScheduleResponseDto> allSchedules = new ArrayList<>();
+        List<CinemaScheduleApiResponseDto> allSchedules = new ArrayList<>();
 
         for (String theaterId : theaterIds) {
             List<String> targetMovieIds = movieIds.isEmpty() ? List.of("") : movieIds;
             for (String movieId : targetMovieIds) {
                 try {
-                    List<ScreenScheduleResponseDto> result = requestSchedule(theaterId, movieId, formattedDate);
+                    List<CinemaScheduleApiResponseDto> result = requestSchedule(theaterId, movieId, formattedDate);
                     allSchedules.addAll(result);
                 } catch (Exception e) {
                     // TODO: 롯데시네마 API 호출 실패 시 예외 처리
@@ -61,7 +64,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
         return allSchedules;
     }
 
-    private List<ScreenScheduleResponseDto> requestSchedule(String cinemaId, String movieId, String playDate) throws Exception {
+    private List<CinemaScheduleApiResponseDto> requestSchedule(String cinemaId, String movieId, String playDate) throws Exception {
         String url = "https://www.lottecinema.co.kr/LCWS/Ticketing/TicketingData.aspx";
 
         HttpHeaders headers = new HttpHeaders();
@@ -94,8 +97,8 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
         return parseScheduleResponse(root);
     }
 
-    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) {
-        List<ScreenScheduleResponseDto> result = new ArrayList<>();
+    private List<CinemaScheduleApiResponseDto> parseScheduleResponse(JsonNode root) {
+        List<CinemaScheduleApiResponseDto> result = new ArrayList<>();
 
         JsonNode items = root.path("PlaySeqs").path("Items");
         if (!items.isArray()) return result;
@@ -131,12 +134,10 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                 }
             }
 
-            ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
+            CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
                     brandRepository.findByName(brandName),
                     TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode(brandName, item.path("CinemaID").asText())),
-                    item.path("RepresentationMovieCode").asText(),
-                    item.path("MovieNameKR").asText(),
-                    item.path("MovieNameUS").asText(),
+                    MovieMapper.toSimplifiedMovieDto(movieRepository.findByLotteCinemaCode(item.path("RepresentationMovieCode").asText())),
                     item.path("FilmCode").asText(),
                     item.path("FilmNameKR").asText(),
                     item.path("ScreenID").asText(),

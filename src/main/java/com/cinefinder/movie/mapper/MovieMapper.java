@@ -1,6 +1,7 @@
 package com.cinefinder.movie.mapper;
 
 import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.SimplifiedMovieDto;
 import com.cinefinder.movie.data.model.MovieDetails;
 
 public class MovieMapper {
@@ -44,5 +45,15 @@ public class MovieMapper {
             .actors(response.getActors())
             .vods(response.getVods())
             .build();
+    }
+
+    public static SimplifiedMovieDto toSimplifiedMovieDto(Movie movie) {
+        return new SimplifiedMovieDto(
+            movie.getId(),
+            movie.getTitle(),
+            movie.getTitleEng(),
+            movie.getRatingGrade(),
+            movie.getPosters().split("\\|")[0]
+        );
     }
 }

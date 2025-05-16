@@ -1,7 +1,8 @@
 package com.cinefinder.screen.controller;
 
+import com.cinefinder.screen.data.dto.MovieGroupedScheduleResponseDto;
 import com.cinefinder.screen.data.dto.ScreenScheduleRequestDto;
-import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
+import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.screen.service.CgvScreenScheduleServiceImpl;
 import com.cinefinder.screen.service.LotteScreenScheduleServiceImpl;
 import com.cinefinder.screen.service.MegaScreenScheduleServiceImpl;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -26,7 +26,7 @@ public class ScreenScheduleController {
     private final LotteScreenScheduleServiceImpl lotteScreenScheduleServiceImpl;
 
     @GetMapping("/schedule")
-    public List<ScreenScheduleResponseDto> getSchedules(@RequestBody ScreenScheduleRequestDto requestDto) {
+    public List<MovieGroupedScheduleResponseDto> getSchedules(@RequestBody ScreenScheduleRequestDto requestDto) {
         return screenScheduleAggregatorService.getCinemasSchedules(requestDto);
     }
 

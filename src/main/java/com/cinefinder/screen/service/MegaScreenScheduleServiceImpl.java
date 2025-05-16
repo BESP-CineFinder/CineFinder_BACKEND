@@ -2,7 +2,9 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
+import com.cinefinder.movie.data.repository.MovieRepository;
+import com.cinefinder.movie.mapper.MovieMapper;
+import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
@@ -32,13 +34,14 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
 
     private final BrandRepository brandRepository;
     private final TheaterRepository theaterRepository;
+    private final MovieRepository movieRepository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String MEGABOX_URL = "https://m.megabox.co.kr/on/oh/ohb/SimpleBooking/selectBokdList.do";
 
     @Override
-    public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
+    public List<CinemaScheduleApiResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("playDe", playYMD);
@@ -76,16 +79,14 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
         }
     }
 
-    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) {
+    private List<CinemaScheduleApiResponseDto> parseScheduleResponse(JsonNode root) {
         JsonNode scheduleList = root.get("scheduleList");
-        List<ScreenScheduleResponseDto> result = new ArrayList<>();
+        List<CinemaScheduleApiResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
-            ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
+            CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
                     brandRepository.findByName(brandName),
                     TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode(brandName, item.path("brchNo").asText())),
-                    item.path("rpstMovieNo").asText(),
-                    item.path("movieNm").asText(),
-                    item.path("movieEngNm").asText(),
+                    MovieMapper.toSimplifiedMovieDto(movieRepository.findByMegaBoxCode(item.path("rpstMovieNo").asText())),
                     item.path("theabKindCd").asText(),
                     item.path("playKindNm").asText(),
                     item.path("theabNo").asText(),
