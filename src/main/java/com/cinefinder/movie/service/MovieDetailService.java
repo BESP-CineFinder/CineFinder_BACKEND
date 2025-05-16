@@ -1,5 +1,7 @@
 package com.cinefinder.movie.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.Movie;
 import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.data.repository.MovieRepository;
@@ -12,11 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,8 +74,7 @@ public class MovieDetailService {
                 return fetchMovieDetails(movieKey, title);
             }
         } catch (Exception e) {
-            // TODO: 데이터베이스 조회 시 오류 예외 처리
-            throw new RuntimeException("영화 상세정보 데이터베이스 조회 중 오류 발생", e);
+            throw new CustomException(ApiStatus._READ_FAIL, "영화 상세정보 데이터베이스 조회 중 오류 발생");
         }
     }
 
@@ -95,10 +99,10 @@ public class MovieDetailService {
 
             // 4. 응답 결과가 2개 이상이라면
             if (movieDetailsList.size() >= 2) {
-                log.warn("❌ API 1개의 요청 파라미터에 응답 결과가 2개 이상");
+                log.warn("❌ API 응답 결과가 2개 이상");
 
                 for (MovieDetails movieDetails : movieDetailsList) log.warn("{}", movieDetails.getTitle());
-                throw new IllegalArgumentException("영화 상세정보 데이터 캐싱 전 프로세스 중단");
+                throw new IllegalArgumentException();
             }
 
             // 5. Redis 데이터 저장 및 만료일자 설정
@@ -111,23 +115,36 @@ public class MovieDetailService {
             }
 
             return returnMovieDetails;
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ApiStatus._INTERNAL_SERVER_ERROR, "영화 상세정보 저장 중 API 응답 결과가 2개 이상으로 데이터 정합성 위배");
+        } catch (URISyntaxException e) {
+            throw new CustomException(ApiStatus._INVALID_URI_FORMAT, "영화 상세정보 저장 중 URI 구분 분석 오류 발생");
+        } catch (RestClientException e) {
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "영화 상세정보 저장 중 KMDB API 호출 오류 발생");
         } catch (Exception e) {
-            // TODO: API 1개의 요청 파라미터에 응답 결과가 2개 이상일 경우 예외 처리
-            throw new RuntimeException("영화 상세정보 저장 중 오류 발생", e);
+            throw new CustomException(ApiStatus._OPERATION_FAIL, "영화 상세정보 저장 중 오류 발생");
         }
     }
 
     public void fetchMultiflexMovieDetailList() {
+        List<MovieDetails> totalMovieDetails = new ArrayList<>();;
+
         // 1. CGV API 요청
-        List<MovieDetails> totalMovieDetails = movieHelperService.requestMovieCgvApi();
+        try {
+            totalMovieDetails = movieHelperService.requestMovieCgvApi();
+        } catch (RestClientException e) { log.error("❌ CGV 영화목록 API 호출 실패"); }
 
-        // 2. MegaBox API 요청
-        totalMovieDetails.addAll(movieHelperService.requestMovieMegaBoxApi());
+        // 2. 메가박스 API 요청
+        try {
+            totalMovieDetails.addAll(movieHelperService.requestMovieMegaBoxApi());
+        } catch (RestClientException e) { log.error("❌ 메가박스 영화목록 API 호출 실패"); }
 
-        // 3. LotteCinema API 요청
-        totalMovieDetails.addAll(movieHelperService.requestMovieLotteCinemaApi());
+        // 3. 롯데시네마 API 요청
+        try {
+            totalMovieDetails.addAll(movieHelperService.requestMovieLotteCinemaApi());
+        } catch (RestClientException e) {log.error("❌ 롯데시네마 영화목록 API 호출 실패"); }
 
-        // 4. 3사 응답 결과 중복 제거하여 병합
+        // 4. 멀티플렉스 3사 응답 결과 중복 제거하여 병합
         Map<String, MovieDetails> map = movieHelperService.mergeAndDeduplicateMovieDetails(totalMovieDetails);
 
         // 5. KMDB API 요청 및 저장
@@ -177,8 +194,7 @@ public class MovieDetailService {
         try {
             return movieRepository.findByMovieIdList(movieIdList);
         } catch (Exception e) {
-            // TODO: 좋아요 등록한 영화 ID 목록 조회 실패 시 예외 처리
-            throw new RuntimeException("좋아요 등록한 영화 ID 목록 조회 중 오류 발생", e);
+            throw new CustomException(ApiStatus._READ_FAIL, "좋아요 등록한 영화 ID 목록 조회 중 오류 발생");
         }
     }
 }

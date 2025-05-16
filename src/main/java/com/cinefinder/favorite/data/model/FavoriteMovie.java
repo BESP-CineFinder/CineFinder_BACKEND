@@ -10,5 +10,5 @@ import lombok.*;
 public class FavoriteMovie {
     private Long movieId;
     private String title;
-    private String posters;
+    private String poster;
 }

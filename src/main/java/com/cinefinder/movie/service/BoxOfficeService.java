@@ -1,17 +1,21 @@
 package com.cinefinder.movie.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.model.BoxOffice;
-import com.cinefinder.movie.util.UtilString;
 import com.cinefinder.movie.util.UtilParse;
+import com.cinefinder.movie.util.UtilString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -93,9 +97,12 @@ public class BoxOfficeService {
             log.info("⭕ REDIS 저장 완료");
 
             return dailyBoxOfficeList;
+        } catch (URISyntaxException e) {
+            throw new CustomException(ApiStatus._INVALID_URI_FORMAT, "일간 박스오피스 정보 저장 중 URI 구분 분석 오류 발생");
+        } catch (RestClientException e) {
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "일간 박스오피스 정보 저장 중 외부 API 호출 오류 발생");
         } catch (Exception e) {
-            // TODO: 예외 유형별로 분기 처리 (URI 생성 오류, 문자열 변환 실패 등)
-            throw new RuntimeException("일간 박스오피스 정보 저장 중 오류 발생", e);
+            throw new CustomException(ApiStatus._OPERATION_FAIL, "일간 박스오피스 정보 저장 중 알 수 없는 오류 발생");
         }
     }
 }
