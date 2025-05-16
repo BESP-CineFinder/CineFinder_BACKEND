@@ -56,7 +56,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     allSchedules.addAll(result);
                 } catch (Exception e) {
                     // TODO: 롯데시네마 API 호출 실패 시 예외 처리
-                    throw new RuntimeException("롯데시네마 API 호출 실패: theaterId=" + theaterId + ", movieId=" + movieId, e);
+                    log.warn("롯데시네마에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}", movieId);
                 }
             }
         }
