@@ -48,12 +48,16 @@ public class MovieMapper {
     }
 
     public static SimplifiedMovieDto toSimplifiedMovieDto(Movie movie) {
+        String poster = (movie.getPosters() != null && !movie.getPosters().isEmpty())
+                ? movie.getPosters().split("\\|")[0]
+                : null;
+
         return new SimplifiedMovieDto(
             movie.getId(),
             movie.getTitle(),
             movie.getTitleEng(),
             movie.getRatingGrade(),
-            movie.getPosters().split("\\|")[0]
+            poster
         );
     }
 }
