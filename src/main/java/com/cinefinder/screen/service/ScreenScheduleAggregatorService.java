@@ -9,8 +9,8 @@ import com.cinefinder.screen.mapper.ScreenMapper;
 import com.cinefinder.theater.service.TheaterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,7 +31,7 @@ public class ScreenScheduleAggregatorService {
 
     private final TheaterService theaterService;
     private final MovieDetailService movieDetailService;
-    private final ApplicationContext applicationContext;
+    private final Map<String, ScreenScheduleService> screenScheduleServices;
 
     public List<MovieGroupedScheduleResponseDto> getCinemasSchedules(ScreenScheduleRequestDto requestDto) {
 
@@ -43,25 +43,29 @@ public class ScreenScheduleAggregatorService {
 
         Map<String, List<String>> movieIds = getMovieIds(movieNames);
         Map<String, List<String>> theaterIds = theaterService.getTheaterInfos(lat, lng, distance);
-        Collection<ScreenScheduleService> screenScheduleServices = applicationContext.getBeansOfType(ScreenScheduleService.class).values();
+        //Collection<ScreenScheduleService> screenScheduleServices = applicationContext.getBeansOfType(ScreenScheduleService.class).values();
 
+        List<CinemaScheduleApiResponseDto> schedules = getCinemaScheduleApiResponseDtos(screenScheduleServices, playYMD, theaterIds, movieIds);
+
+        return ScreenMapper.toGroupedSchedule(schedules);
+    }
+
+    @NotNull
+    private static List<CinemaScheduleApiResponseDto> getCinemaScheduleApiResponseDtos(Map<String, ScreenScheduleService> screenScheduleServices, String playYMD, Map<String, List<String>> theaterIds, Map<String, List<String>> movieIds) {
         List<CinemaScheduleApiResponseDto> schedules = new ArrayList<>();
         for (Map.Entry<String, List<String>> entry : theaterIds.entrySet()) {
             String brandName = entry.getKey();
             List<String> theaterValues = entry.getValue();
             List<String> movieValues = movieIds.get(brandName);
 
-            for (ScreenScheduleService screenScheduleService : screenScheduleServices) {
+            for (ScreenScheduleService screenScheduleService : screenScheduleServices.values()) {
                 if (screenScheduleService.getBrandName().equals(brandName)) {
                     List<CinemaScheduleApiResponseDto> schedule = screenScheduleService.getTheaterSchedule(playYMD, movieValues, theaterValues);
                     schedules.addAll(schedule);
                 }
             }
         }
-
-        List<MovieGroupedScheduleResponseDto> movieGroupedSchedules = ScreenMapper.mapToGroupedSchedule(schedules);
-
-        return movieGroupedSchedules;
+        return schedules;
     }
 
     private Map<String, List<String>> getMovieIds(List<String> movieNames) {

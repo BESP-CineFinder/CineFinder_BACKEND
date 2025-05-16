@@ -2,12 +2,12 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
+import com.cinefinder.movie.service.MovieDetailService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
-import com.cinefinder.theater.data.repository.BrandRepository;
-import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
+import com.cinefinder.theater.service.BrandService;
+import com.cinefinder.theater.service.TheaterService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,9 +35,9 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
     @Value("${movie.cgv.name}")
     private String brandName;
 
-    private final BrandRepository brandRepository;
-    private final TheaterRepository theaterRepository;
-    private final MovieRepository movieRepository;
+    private final BrandService brandService;
+    private final TheaterService theaterService;
+    private final MovieDetailService movieDetailService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final OkHttpClient client = new OkHttpClient();
 
@@ -135,9 +135,9 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
             String endTime = item.path("PlayEndTm").asText();
 
             CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
-                    brandRepository.findByName(brandName),
-                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode(brandName, item.path("TheaterCd").asText())),
-                    MovieMapper.toSimplifiedMovieDto(movieRepository.findByCgvCode(item.path("MovieCd").asText())),
+                    brandService.getBrandInfo(brandName),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("TheaterCd").asText())),
+                    MovieMapper.toSimplifiedMovieDto(movieDetailService.fetchMovieByBrandMovieCode(brandName, item.path("MovieCd").asText())),
                     item.path("PlatformCd").asText(),
                     item.path("PlatformNm").asText(),
                     item.path("ScreenCd").asText(),

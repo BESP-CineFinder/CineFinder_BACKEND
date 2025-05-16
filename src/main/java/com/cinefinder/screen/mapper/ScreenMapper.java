@@ -13,19 +13,18 @@ import java.util.stream.Collectors;
 
 public class ScreenMapper {
 
-    public static List<MovieGroupedScheduleResponseDto> mapToGroupedSchedule(List<CinemaScheduleApiResponseDto> apiResponseList) {
+    public static List<MovieGroupedScheduleResponseDto> toGroupedSchedule(List<CinemaScheduleApiResponseDto> apiResponseList) {
         Map<Long, List<CinemaScheduleApiResponseDto>> groupedByMovie = apiResponseList.stream()
                 .collect(Collectors.groupingBy(dto -> dto.getMovie().getId()));
 
         List<MovieGroupedScheduleResponseDto> result = new ArrayList<>();
 
         for (Map.Entry<Long, List<CinemaScheduleApiResponseDto>> entry : groupedByMovie.entrySet()) {
-            Long movieId = entry.getKey();
             List<CinemaScheduleApiResponseDto> schedules = entry.getValue();
 
             if (schedules.isEmpty()) continue;
 
-            SimplifiedMovieDto movie = schedules.get(0).getMovie();
+            SimplifiedMovieDto movie = schedules.getFirst().getMovie();
             Map<String, List<MovieScheduleDetailDto>> scheduleMap = new HashMap<>();
 
             for (CinemaScheduleApiResponseDto dto : schedules) {

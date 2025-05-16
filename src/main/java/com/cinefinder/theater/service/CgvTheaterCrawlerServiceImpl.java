@@ -1,6 +1,5 @@
 package com.cinefinder.theater.service;
 
-import com.cinefinder.theater.data.ElasticsearchTheater;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
