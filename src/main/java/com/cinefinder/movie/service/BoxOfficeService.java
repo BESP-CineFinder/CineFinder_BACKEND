@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BoxOfficeService {
     @Value("${api.kobis.request-url}")
@@ -33,6 +35,7 @@ public class BoxOfficeService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, Object> redisTemplate;
 
+    @Transactional
     public List<BoxOffice> getDailyBoxOfficeInfo() {
         ObjectMapper mapper = new ObjectMapper();
 
@@ -64,6 +67,7 @@ public class BoxOfficeService {
         }
     }
 
+    @Transactional
     public List<BoxOffice> fetchDailyBoxOfficeInfo() {
         try {
             // 1. 최신일자 계산

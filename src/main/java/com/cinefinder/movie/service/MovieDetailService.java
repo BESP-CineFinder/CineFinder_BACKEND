@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,6 +43,7 @@ public class MovieDetailService {
     private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
 
+    @Transactional(readOnly = true)
     public MovieDetails getMovieDetails(String title) {
         ObjectMapper mapper = new ObjectMapper();
         String movieKey = UtilString.normalizeMovieKey(title);
@@ -61,6 +63,7 @@ public class MovieDetailService {
         }
     }
 
+    @Transactional(readOnly = true)
     public MovieDetails getMovieDetailsFromDB(String movieKey, String title) {
         try {
             log.info("🔑 [영화 상세정보 데이터베이스 조회] 영화키 이름 : {}", movieKey);
@@ -78,6 +81,7 @@ public class MovieDetailService {
         }
     }
 
+    @Transactional
     public MovieDetails fetchMovieDetails(String movieKey, String title) {
         try {
             String redisKey = "movieDetails:" + movieKey;
@@ -190,6 +194,7 @@ public class MovieDetailService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<Movie> getFavoriteMovieList(List<Long> movieIdList) {
         try {
             return movieRepository.findByMovieIdList(movieIdList);

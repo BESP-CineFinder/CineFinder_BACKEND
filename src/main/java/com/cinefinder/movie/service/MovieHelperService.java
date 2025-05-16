@@ -41,31 +41,9 @@ public class MovieHelperService {
 
     public List<MovieDetails> requestMovieCgvApi() {
         try {
-            List<MovieDetails> cgvMovieDetailsList;
-            List<MovieDetails> cgvResult = new ArrayList<>();
-            MultiValueMap<String, Object> cgvMap = new LinkedMultiValueMap<>();
-            cgvMap.set("pageRow", "20");
-            cgvMap.set("mtype", "now");
-            cgvMap.set("morder", "TicketRate");
-            cgvMap.set("mnowflag", "1");
-            cgvMap.set("mdistype", "");
-            cgvMap.set("flag", "MLIST");
-            int i = 1;
+            String cgvResponse = restTemplate.getForObject(cgvRequestUrl, String.class);
 
-            do {
-                cgvMap.set("iPage", String.valueOf(i++));
-
-                HttpHeaders cgvHeaders = new HttpHeaders();
-                cgvHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
-                HttpEntity<MultiValueMap<String, Object>> cgvRequest = new HttpEntity<>(cgvMap, cgvHeaders);
-
-                String cgvResponse = restTemplate.postForObject(cgvRequestUrl, cgvRequest, String.class);
-
-                cgvMovieDetailsList = UtilParse.extractCgvMovieList(cgvResponse);
-                cgvResult.addAll(cgvMovieDetailsList);
-            } while (!cgvMovieDetailsList.isEmpty());
-
-            return cgvResult;
+            return UtilParse.extractCgvMovieList(cgvResponse);
         } catch (RestClientException e) {
             throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "CGV 영화목록 API 호출 실패");
         } catch (Exception e) {
@@ -84,9 +62,9 @@ public class MovieHelperService {
                 + "\"specialType\":\"\","
                 + "\"specialYn\":\"N\""
                 + "}";
-            HttpHeaders megaBoxHeaders = new HttpHeaders();
-            megaBoxHeaders.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<String> megaBoxRequest = new HttpEntity<>(jsonBody, megaBoxHeaders);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> megaBoxRequest = new HttpEntity<>(jsonBody, headers);
 
             String megaBoxResponse = restTemplate.postForObject(megaBoxRequestUrl, megaBoxRequest, String.class);
 
@@ -100,30 +78,45 @@ public class MovieHelperService {
 
     public List<MovieDetails> requestMovieLotteCinemaApi() {
         try {
-            MultiValueMap<String, Object> lotteCinemaMap = new LinkedMultiValueMap<>();
-            String paramList = "{\n"
-                + "  \"MethodName\": \"GetMoviesToBe\",\n"
-                + "  \"channelType\": \"HO\",\n"
-                + "  \"osType\": \"Chrome\",\n"
-                + "  \"osVersion\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\",\n"
-                + "  \"multiLanguageID\": \"KR\",\n"
-                + "  \"division\": 1,\n"
-                + "  \"moviePlayYN\": \"Y\",\n"
-                + "  \"orderType\": \"1\",\n"
-                + "  \"blockSize\": 100,\n"
-                + "  \"pageNo\": 1,\n"
-                + "  \"memberOnNo\": \"\",\n"
-                + "  \"imgdivcd\": 2\n"
-                + "}";
-            lotteCinemaMap.add("paramList", paramList);
+            List<MovieDetails> movieDetailsList = new ArrayList<>();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            HttpHeaders lotteCinemaHeaders = new HttpHeaders();
-            lotteCinemaHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            HttpEntity<MultiValueMap<String, Object>> lotteCinemaRequest = new HttpEntity<>(lotteCinemaMap, lotteCinemaHeaders);
+            String paramList = """
+                {
+                  "MethodName": "GetMoviesToBe",
+                  "channelType": "HO",
+                  "osType": "Chrome",
+                  "osVersion": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+                  "multiLanguageID": "KR",
+                  "division": 1,
+                  "moviePlayYN": "%s",
+                  "orderType": "%s",
+                  "blockSize": 100,
+                  "pageNo": 1,
+                  "memberOnNo": "",
+                  "imgdivcd": 2
+                }
+            """;
 
-            String lotteCinemaResponse = restTemplate.postForObject(lotteCinemaRequestUrl, lotteCinemaRequest, String.class);
+            String[][] requestParams = {
+                {"N", "5"},
+                {"Y", "1"}
+            };
 
-            return UtilParse.extractLotteCinemaMovieList(lotteCinemaResponse);
+            for (String[] params : requestParams) {
+                String formattedParam = String.format(paramList, params[0], params[1]);
+
+                MultiValueMap<String, Object> payload = new LinkedMultiValueMap<>();
+                payload.add("paramList", formattedParam);
+
+                HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(payload, headers);
+                String response = restTemplate.postForObject(lotteCinemaRequestUrl, request, String.class);
+
+                movieDetailsList.addAll(UtilParse.extractLotteCinemaMovieList(response));
+            }
+
+            return movieDetailsList;
         } catch (IOException e) {
             throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "롯데시네마 영화목록 API 호출 실패");
         } catch (Exception e) {
