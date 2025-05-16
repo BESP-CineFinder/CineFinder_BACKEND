@@ -9,10 +9,11 @@ import com.cinefinder.screen.mapper.ScreenMapper;
 import com.cinefinder.theater.service.TheaterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -35,7 +36,9 @@ public class ScreenScheduleAggregatorService {
 
     public List<MovieGroupedScheduleResponseDto> getCinemasSchedules(ScreenScheduleRequestDto requestDto) {
 
-        String playYMD = requestDto.getPlayYMD();
+        String date = requestDto.getDate().replace("-", "");
+        String minTimeStr = requestDto.getMinTime();
+        String maxTimeStr = requestDto.getMaxTime();
         double lat = requestDto.getLat();
         double lng = requestDto.getLng();
         double distance = requestDto.getDistance();
@@ -43,15 +46,16 @@ public class ScreenScheduleAggregatorService {
 
         Map<String, List<String>> movieIds = getMovieIds(movieNames);
         Map<String, List<String>> theaterIds = theaterService.getTheaterInfos(lat, lng, distance);
-        //Collection<ScreenScheduleService> screenScheduleServices = applicationContext.getBeansOfType(ScreenScheduleService.class).values();
 
-        List<CinemaScheduleApiResponseDto> schedules = getCinemaScheduleApiResponseDtos(screenScheduleServices, playYMD, theaterIds, movieIds);
+        List<CinemaScheduleApiResponseDto> schedules = getCinemaScheduleApiResponseDtos(screenScheduleServices, date, minTimeStr, maxTimeStr, theaterIds, movieIds);
 
         return ScreenMapper.toGroupedSchedule(schedules);
     }
 
-    @NotNull
-    private static List<CinemaScheduleApiResponseDto> getCinemaScheduleApiResponseDtos(Map<String, ScreenScheduleService> screenScheduleServices, String playYMD, Map<String, List<String>> theaterIds, Map<String, List<String>> movieIds) {
+    private static List<CinemaScheduleApiResponseDto> getCinemaScheduleApiResponseDtos(Map<String, ScreenScheduleService> screenScheduleServices, String date, String minTimeStr, String maxTimeStr, Map<String, List<String>> theaterIds, Map<String, List<String>> movieIds) {
+
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
         List<CinemaScheduleApiResponseDto> schedules = new ArrayList<>();
         for (Map.Entry<String, List<String>> entry : theaterIds.entrySet()) {
             String brandName = entry.getKey();
@@ -60,7 +64,16 @@ public class ScreenScheduleAggregatorService {
 
             for (ScreenScheduleService screenScheduleService : screenScheduleServices.values()) {
                 if (screenScheduleService.getBrandName().equals(brandName)) {
-                    List<CinemaScheduleApiResponseDto> schedule = screenScheduleService.getTheaterSchedule(playYMD, movieValues, theaterValues);
+                    List<CinemaScheduleApiResponseDto> schedule = screenScheduleService.getTheaterSchedule(date, movieValues, theaterValues).stream()
+                            .filter(dto -> {
+                                LocalTime startTime = LocalTime.parse(dto.getPlayStartTime(), dateTimeFormatter);
+                                LocalTime minTime = LocalTime.parse(minTimeStr, dateTimeFormatter);
+                                LocalTime maxTime = LocalTime.parse(maxTimeStr, dateTimeFormatter);
+                                return (startTime.equals(minTime) || startTime.isAfter(minTime)) &&
+                                        (startTime.equals(maxTime) || startTime.isBefore(maxTime));
+                            })
+                            .toList();
+
                     schedules.addAll(schedule);
                 }
             }
