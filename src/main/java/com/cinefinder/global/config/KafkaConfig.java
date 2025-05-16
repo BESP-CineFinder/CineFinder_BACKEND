@@ -4,7 +4,6 @@ import com.cinefinder.chat.data.dto.ChatMessageDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -12,14 +11,12 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +36,15 @@ public class KafkaConfig {
         return new KafkaAdmin(configs);
     }
 
-    // ✅ 2. Kafka Producer 설정
+    // ✅ 3. Kafka AdminClient 설정
+    @Bean
+    public AdminClient kafkaAdminClient() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        return AdminClient.create(configs);
+    }
+
+    // ✅ 3. Kafka Producer 설정
     @Bean
     public ProducerFactory<String, ChatMessageDto> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -54,7 +59,7 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-    // ✅ 3. Kafka Consumer 설정
+    // ✅ 5. Kafka Consumer 설정
     @Bean
     public ConsumerFactory<String, ChatMessageDto> consumerFactory() {
         JsonDeserializer<ChatMessageDto> deserializer = new JsonDeserializer<>(ChatMessageDto.class);
@@ -70,6 +75,7 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
     }
 
+    // ✅ 5. Kafka ContainerFactory 설정
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, ChatMessageDto> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, ChatMessageDto> factory =

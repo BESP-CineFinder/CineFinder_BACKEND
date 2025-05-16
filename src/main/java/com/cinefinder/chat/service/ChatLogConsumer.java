@@ -16,7 +16,6 @@ public class ChatLogConsumer {
 
     @KafkaListener(topicPattern = "chat-log-.*", groupId = "chat-log-group", containerFactory = "kafkaListenerContainerFactory")
     public void consume(ChatMessageDto messageDto) {
-        log.info("Kafka received: {}", messageDto);
         chatLogElasticService.save(messageDto);
     }
 }
