@@ -20,6 +20,7 @@ COPY --from=builder /plugins/rabbitmq_delayed_message_exchange-${PLUGIN_VERSION}
 RUN rabbitmq-plugins enable --offline rabbitmq_management \
     rabbitmq_delayed_message_exchange \
     rabbitmq_consistent_hash_exchange \
-    rabbitmq_stomp
+    rabbitmq_stomp \
+    rabbitmq_web_stomp
 
 EXPOSE 4369 5671 5672 15672 25672 61613

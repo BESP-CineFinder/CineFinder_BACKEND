@@ -20,8 +20,8 @@ services:
       - CineFinder_network
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:9200 || exit 1"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 5
     env_file:
       - .env
@@ -57,6 +57,13 @@ services:
       - TZ=Asia/Seoul
     env_file:
       - .env
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" , "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - CineFinder_network
 
   redis:
     image: redis:alpine
@@ -68,17 +75,6 @@ services:
     env_file:
       - .env
 
-#  redisinsight:
-#    image: redis/redisinsight:latest
-#    container_name: redisinsight
-#    ports:
-#      - "${REDIS_INSIGHT_EXTERNAL_PORT}:${REDIS_INSIGHT_INTERNAL_PORT}"
-#    depends_on:
-#      - redis
-#    networks:
-#      - CineFinder_network
-#    env_file:
-#      - .env
 
   frontend:
     build:
@@ -104,6 +100,10 @@ services:
     restart: always
     env_file:
       - .env
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
 
   rabbitmq:
     build:
@@ -119,6 +119,57 @@ services:
       RABBITMQ_DEFAULT_PASS: cinefinder
     networks:
       - CineFinder_network
+
+  backend1:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: backend1
+    ports:
+      - "8081:8081"
+    networks:
+      - CineFinder_network
+    env_file:
+      - .env
+    depends_on:
+      elasticsearch:
+          condition: service_healthy
+      mysql:
+          condition: service_healthy
+
+  backend2:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: backend2
+    ports:
+      - "8082:8081"
+    networks:
+      - CineFinder_network
+    env_file:
+      - .env
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+
+  backend3:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: backend3
+    ports:
+      - "8083:8081"
+    networks:
+      - CineFinder_network
+    env_file:
+      - .env
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
 
 networks:
   CineFinder_network:

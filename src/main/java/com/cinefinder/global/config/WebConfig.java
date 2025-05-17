@@ -23,8 +23,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("https://localhost/", "https://localhost")  // 모든 origin 허용
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                .allowedOrigins("https://localhost/", "https://localhost", "http://localhost:3001")  // 모든 origin 허용
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "OPTION", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true)  // credentials 허용
                 .exposedHeaders("Authorization", "Refresh-Token")  // 클라이언트에 노출할 헤더

@@ -22,8 +22,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
-		config.enableStompBrokerRelay("/topic", "/queue")
-			.setRelayHost("localhost")
+		config.enableStompBrokerRelay("/topic/chat", "/queue")
+			.setRelayHost("rabbitmq")
 			.setRelayPort(61613)
 			.setSystemLogin(login)
 			.setSystemPasscode(passcode)
@@ -34,6 +34,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint(WEBSOCKET_ENDPOINT).setAllowedOrigins("*").withSockJS();
+		registry.addEndpoint(WEBSOCKET_ENDPOINT)
+			.setAllowedOriginPatterns("*")
+			.withSockJS();
 	}
+
 }

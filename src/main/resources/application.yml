@@ -2,6 +2,10 @@ spring:
   application:
     name: cinefinder
 
+  session:
+    store-type: redis
+    timeout: 1800
+
   profiles:
     active: ${PROFILE}
 
@@ -25,7 +29,7 @@ spring:
   rabbitmq:
     username: ${RABBITMQ_LOGIN}
     password: ${RABBITMQ_PASSWORD} #default Password
-    host: localhost # default host
+    host: rabbitmq # default host
     port: ${RABBITMQ_PORT}      #default port
 
   security:
@@ -100,14 +104,14 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://${LOCAL_HOST}:${MYSQL_EXTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://mysql:${MYSQL_INTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 
   data:
     redis:
-      host: ${LOCAL_HOST}
+      host: redis
 
   elasticsearch:
-    uris: http://${LOCAL_HOST}:${ES_EXTERNAL_PORT_1}/
+    uris: http://elasticsearch:${ES_EXTERNAL_PORT_1}/
     connection-timeout: 120s
     socket-timeout: 120s
 

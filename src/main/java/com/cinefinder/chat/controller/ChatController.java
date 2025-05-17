@@ -10,16 +10,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.cinefinder.chat.data.entity.ChatMessage;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/api")
+@Slf4j
 public class ChatController {
 
 	private final SimpMessagingTemplate messagingTemplate;
 
-	@MessageMapping("/chat/{movieId}")
-	public void sendMessage(@DestinationVariable Long movieId, ChatMessage message) {
-		messagingTemplate.convertAndSend("/topic/chat/" + movieId, message);
+	@MessageMapping("/chat-{movieId}")
+	public void sendMessage(@DestinationVariable String movieId, ChatMessage message) {
+		log.info("Received message: {}", message);
+		messagingTemplate.convertAndSend("/topic/chat-" + movieId, message);
 	}
 }
