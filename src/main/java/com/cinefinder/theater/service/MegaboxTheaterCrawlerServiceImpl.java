@@ -1,5 +1,7 @@
 package com.cinefinder.theater.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.theater.data.ElasticsearchTheater;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
@@ -61,9 +63,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
             Document doc = Jsoup.connect(mainUrl + theaterDefaultEndpoint).userAgent(USER_AGENT).get();
             Element placeDiv = doc.selectFirst("div.theater-place");
             if (placeDiv == null) {
-                // TODO: 예외처리로 할지 아니면 그냥 리턴할지 고민
-                log.warn("❌ 메가박스 사이트에서 영화관 정보 영역 찾을 수 없습니다.(theater-place)");
-                return theaters;
+                throw new CustomException(ApiStatus._HTML_PARSE_FAIL, "메가박스 영화관 파싱 중 오류 => theater-place");
             }
 
             Elements theaterLists = placeDiv.select("div.theater-list");
@@ -92,8 +92,7 @@ public class MegaboxTheaterCrawlerServiceImpl implements TheaterCrawlerService {
             }
 
         } catch (IOException e) {
-            // TODO: 크롤링 오류 처리
-            throw new RuntimeException("메가박스 영화관 목록 크롤링 중 오류 발생", e);
+            throw new CustomException(ApiStatus._JSOUP_CONNECT_FAIL, e.getMessage());
         }
 
         return theaters;

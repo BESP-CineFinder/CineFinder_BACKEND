@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessage extends BaseTimeEntity {
-	private Long senderId;
+	private String senderId;
 
-	private Long movieId;
+	private String movieId;
 
 	private String message;
 }

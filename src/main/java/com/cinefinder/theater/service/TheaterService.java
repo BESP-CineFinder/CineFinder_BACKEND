@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.repository.TheaterRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,13 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class TheaterService {
 
+	private final TheaterRepository theaterRepository;
+	private final Map<String, TheaterCrawlerService> theaterCrawlerServices;
 	private final ElasticsearchClient elasticsearchClient;
+
+	public Theater getTheaterInfo(String brand, String theaterId) {
+		return theaterRepository.findByBrandNameAndCode(brand, theaterId);
+	}
 
 	public Map<String,List<String>> getTheaterInfos(Double lat, Double lon, Double distance) {
 		Map<String,List<String>> results = new HashMap<>();
@@ -81,5 +89,16 @@ public class TheaterService {
 			throw new CustomException(ApiStatus._READ_FAIL);
 		}
 		return results;
+	}
+
+	public Map<String, List<Theater>> getTheaterInfosAfterSync() {
+		Map<String, List<Theater>> theaterInfos = new HashMap<>();
+		for (TheaterCrawlerService theaterCrawlerService : theaterCrawlerServices.values()) {
+			List<Theater> theaters = theaterCrawlerService.getCrawlData();
+			theaterCrawlerService.syncRecentTheater(theaters);
+			theaterInfos.put(theaterCrawlerService.getBrandName(), theaters);
+		}
+
+		return theaterInfos;
 	}
 }

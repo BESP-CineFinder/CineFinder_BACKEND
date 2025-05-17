@@ -32,6 +32,15 @@ public class MovieDetailService {
     @Value("${api.kmdb.service-key}")
     private String kmdbServiceKey;
 
+    @Value("${movie.cgv.name}")
+    private String cgvBrandName;
+
+    @Value("${movie.mega.name}")
+    private String megaBrandName;
+
+    @Value("${movie.lotte.name}")
+    private String lotteBrandName;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieHelperService movieHelperService;
@@ -170,6 +179,18 @@ public class MovieDetailService {
                     log.error("❌ 중복 예외 후 기존 영화 조회 실패 {}", movie.getTitle());
                 }
             }
+        }
+    }
+
+    public Movie fetchMovieByBrandMovieCode(String brandName, String movieCode) {
+        if (brandName.equals(cgvBrandName)) {
+            return movieRepository.findByCgvCode(movieCode);
+        } else if (brandName.equals(lotteBrandName)) {
+            return movieRepository.findByLotteCinemaCode(movieCode);
+        } else if (brandName.equals(megaBrandName)) {
+            return movieRepository.findByMegaBoxCode(movieCode);
+        } else {
+            return null;
         }
     }
 }

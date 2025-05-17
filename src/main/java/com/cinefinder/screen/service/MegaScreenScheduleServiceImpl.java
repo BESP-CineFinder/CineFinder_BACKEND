@@ -2,12 +2,15 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
-import com.cinefinder.theater.data.repository.BrandRepository;
-import com.cinefinder.theater.data.repository.TheaterRepository;
+import com.cinefinder.movie.mapper.MovieMapper;
+import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.mapper.TheaterMapper;
+import com.cinefinder.theater.service.BrandService;
+import com.cinefinder.theater.service.TheaterService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,18 +28,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
 
+    @Getter
     @Value("${movie.mega.name}")
     private String brandName;
 
-    private final BrandRepository brandRepository;
-    private final TheaterRepository theaterRepository;
+    private final BrandService brandService;
+    private final TheaterService theaterService;
+    private final MovieDetailService movieDetailService;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String MEGABOX_URL = "https://m.megabox.co.kr/on/oh/ohb/SimpleBooking/selectBokdList.do";
 
     @Override
-    public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
+    public List<CinemaScheduleApiResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("playDe", playYMD);
@@ -74,16 +79,14 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
         }
     }
 
-    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) {
+    private List<CinemaScheduleApiResponseDto> parseScheduleResponse(JsonNode root) {
         JsonNode scheduleList = root.get("scheduleList");
-        List<ScreenScheduleResponseDto> result = new ArrayList<>();
+        List<CinemaScheduleApiResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
-            ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
-                    brandRepository.findByName(brandName),
-                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode(brandName, item.path("brchNo").asText())),
-                    item.path("rpstMovieNo").asText(),
-                    item.path("movieNm").asText(),
-                    item.path("movieEngNm").asText(),
+            CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
+                    brandService.getBrandInfo(brandName),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("brchNo").asText())),
+                    MovieMapper.toSimplifiedMovieDto(movieDetailService.fetchMovieByBrandMovieCode(brandName, item.path("rpstMovieNo").asText())),
                     item.path("theabKindCd").asText(),
                     item.path("playKindNm").asText(),
                     item.path("theabNo").asText(),

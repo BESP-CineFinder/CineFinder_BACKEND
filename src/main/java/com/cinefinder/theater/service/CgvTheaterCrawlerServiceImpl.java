@@ -1,6 +1,7 @@
 package com.cinefinder.theater.service;
 
-import com.cinefinder.theater.data.ElasticsearchTheater;
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
 import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
@@ -54,8 +55,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         try {
             mainDoc = Jsoup.connect(mainUrl+theaterDefaultEndpoint).userAgent(USER_AGENT).get();
         } catch (IOException e) {
-            // TODO: JSoup 연결 실패 시 예외 처리
-            throw new RuntimeException(e);
+            throw new CustomException(ApiStatus._JSOUP_CONNECT_FAIL, e.getMessage());
         }
         Elements areaLinks = mainDoc.select("div.cgv_choice.linktype.area a");
 
@@ -63,8 +63,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
             try {
                 theaters.addAll(crawlArea(areaLink));
             } catch (IOException e) {
-                // TODO: DB에 저장된 영화관 정보가 없을 경우 예외 처리
-                throw new RuntimeException(e);
+                throw new CustomException(ApiStatus._THEATER_NOT_FOUND, e.getMessage());
             }
         }
         return theaters;

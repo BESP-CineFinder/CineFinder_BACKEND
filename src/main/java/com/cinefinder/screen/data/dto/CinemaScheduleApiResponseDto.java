@@ -1,5 +1,6 @@
 package com.cinefinder.screen.data.dto;
 
+import com.cinefinder.movie.data.SimplifiedMovieDto;
 import com.cinefinder.theater.data.Brand;
 import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
 import lombok.AllArgsConstructor;
@@ -7,14 +8,12 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ScreenScheduleResponseDto {
+public class CinemaScheduleApiResponseDto {
     private Brand brand;
     private SimplifiedTheaterDto theater;
-    private String movieCd;
-    private String movieNmKor;
-    private String movieNmEng;
-    private String platformCd;
-    private String platformNm;
+    private SimplifiedMovieDto movie;
+    private String filmCd;
+    private String filmNm;
     private String screenCd;
     private String screenNm;
     private String playYmd;

@@ -2,13 +2,16 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.screen.data.dto.ScreenScheduleResponseDto;
-import com.cinefinder.theater.data.repository.BrandRepository;
-import com.cinefinder.theater.data.repository.TheaterRepository;
+import com.cinefinder.movie.mapper.MovieMapper;
+import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.mapper.TheaterMapper;
+import com.cinefinder.theater.service.BrandService;
+import com.cinefinder.theater.service.TheaterService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
@@ -28,11 +31,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
 
+    @Getter
     @Value("${movie.cgv.name}")
     private String brandName;
 
-    private final BrandRepository brandRepository;
-    private final TheaterRepository theaterRepository;
+    private final BrandService brandService;
+    private final TheaterService theaterService;
+    private final MovieDetailService movieDetailService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final OkHttpClient client = new OkHttpClient();
 
@@ -70,7 +75,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
     }
 
     @Override
-    public List<ScreenScheduleResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
+    public List<CinemaScheduleApiResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
 
         String movieParam = String.join("|", movieIds);
         String theaterParam = String.join("|", theaterIds);
@@ -120,21 +125,26 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
         }
     }
 
-    private List<ScreenScheduleResponseDto> parseScheduleResponse(JsonNode root) throws JsonProcessingException {
+    private List<CinemaScheduleApiResponseDto> parseScheduleResponse(JsonNode root) throws JsonProcessingException {
         String innerJsonStr = root.get("d").asText();
         JsonNode scheduleList = objectMapper.readTree(innerJsonStr).get("ResultSchedule").get("ScheduleList");
 
-        List<ScreenScheduleResponseDto> result = new ArrayList<>();
+        List<CinemaScheduleApiResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
             String startTime = item.path("PlayStartTm").asText();
             String endTime = item.path("PlayEndTm").asText();
 
-            ScreenScheduleResponseDto dto = new ScreenScheduleResponseDto(
-                    brandRepository.findByName("CGV"),
-                    TheaterMapper.toSimplifiedTheaterDto(theaterRepository.findByBrandNameAndCode("CGV", item.path("TheaterCd").asText())),
-                    item.path("MovieCd").asText(),
-                    item.path("MovieNmKor").asText(),
-                    item.path("MovieNmEng").asText(),
+            String movieCode = item.path("MovieGroupCd").asText();
+            var movie = movieDetailService.fetchMovieByBrandMovieCode(brandName, movieCode);
+            if (movie == null) {
+                log.warn("CGV에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}, MovieName: {}", movieCode, item.path("MovieNmKor").asText());
+                continue;
+            }
+
+            CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
+                    brandService.getBrandInfo(brandName),
+                    TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("TheaterCd").asText())),
+                    MovieMapper.toSimplifiedMovieDto(movie),
                     item.path("PlatformCd").asText(),
                     item.path("PlatformNm").asText(),
                     item.path("ScreenCd").asText(),
@@ -150,72 +160,4 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
         }
         return result;
     }
-
-    //    public String getTheaterScheduleWithRestTemplate(String playYMD, List<String> movieIds, List<String> theaterIds) {
-//        String movieParam = String.join("|", movieIds);
-//        String theaterParam = String.join("|", theaterIds);
-//
-//        String refererUrl = String.format(
-//                "https://m.cgv.co.kr/WebApp/Reservation/QuickResult.aspx?mc=&mgc=%s&tc=%s&ymd=&rt=MOVIE&fst=&fet=&fsrc=&fmac=",
-//                movieParam, theaterParam
-//        );
-//
-//        // 1. 먼저 쿠키 얻기 위한 URL 호출
-//        String dataImgPath = "MovieImg.aspx?MovieIdx=" + movieIds.get(0); // 예시
-//        String encodedPath = URLEncoder.encode("\"" + dataImgPath + "\"", StandardCharsets.UTF_8);
-//        String reservationUrl = "https://m.cgv.co.kr/WebApp/Reservation/" + encodedPath;
-//        log.info(reservationUrl);
-//
-//        HttpHeaders headers1 = new HttpHeaders();
-//        headers1.set("Referer", refererUrl);
-//        headers1.set("User-Agent", "Mozilla/5.0");
-//
-//        HttpEntity<Void> request1 = new HttpEntity<>(headers1);
-//        ResponseEntity<String> response1 = restTemplate.exchange(reservationUrl, HttpMethod.GET, request1, String.class);
-//
-//        List<String> cookies = response1.getHeaders().get(HttpHeaders.SET_COOKIE);
-//
-//        // 2. 얻은 쿠키를 두 번째 요청에 사용
-//        HttpHeaders headers2 = new HttpHeaders();
-//        headers2.set("User-Agent", "Mozilla/5.0 (Linux; Android 10; SM-G973N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36");
-//        headers2.setContentType(MediaType.APPLICATION_JSON);
-//        headers2.setAccept(List.of(MediaType.APPLICATION_JSON));
-//        headers2.set("Accept", "application/json, text/javascript, */*; q=0.01");
-//        headers2.set("Accept-Language", "ko,en-US;q=0.9,en;q=0.8,ko-KR;q=0.7");
-//        headers2.set("Origin", "https://m.cgv.co.kr");
-////        headers2.set("Referer", refererUrl);
-//        String cookieValues = cookies.stream()
-//                .map(cookie -> cookie.split(";", 2)[0])  // "key=value"만 추출
-//                .collect(Collectors.joining("; "));
-//        headers2.set(HttpHeaders.COOKIE, cookieValues);
-//
-//        String requestBodyJson = """
-//        {
-//          "strRequestType": "COMPARE",
-//          "strUserID": "",
-//          "strMovieGroupCd": "%s",
-//          "strMovieTypeCd": "",
-//          "strPlayYMD": "%s",
-//          "strTheaterCd": "%s",
-//          "strScreenTypeCd": "",
-//          "strRankType": "MOVIE"
-//        }
-//        """.formatted(
-//                movieParam,
-//                playYMD,
-//                theaterParam
-//        );
-//
-//        HttpEntity<String> request2 = new HttpEntity<>(requestBodyJson, headers2);
-//        log.info(request2.getBody());
-//        log.info(String.valueOf(request2.getHeaders()));
-//
-//        ResponseEntity<String> response2 = restTemplate.postForEntity(
-//                "https://m.cgv.co.kr/WebApp/Reservation/Common/ajaxTheaterScheduleList.aspx/GetTheaterScheduleList",
-//                request2,
-//                String.class
-//        );
-//
-//        return response2.getBody();
-//    }
 }
