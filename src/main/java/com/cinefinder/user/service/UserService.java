@@ -58,4 +58,12 @@ public class UserService {
 			.nickname(user.getNickname())
 			.build();
 	}
+
+	public UserInfoResponseDto getUserInfoById(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ApiStatus._NOT_FOUND, "User not found"));
+		return UserInfoResponseDto.builder()
+			.nickname(user.getNickname())
+			.build();
+	}
 }
