@@ -23,6 +23,7 @@ public enum ApiStatus {
 	_METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 405, "허용되지 않은 메소드입니다."),
 	_CONFLICT(HttpStatus.CONFLICT, 409, "충돌이 발생했습니다."),
 	_INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "서버 내부 오류가 발생했습니다."),
+	_INVALID_URI_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, 500, "유효하지 않은 URI 형식입니다."),
 	_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, 503, "서비스를 사용할 수 없습니다."),
 	_EMBEDDING_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "임베딩 서버 호출에 실패했습니다."),
 	_READ_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "DB 읽기에 실패하였습니다."),

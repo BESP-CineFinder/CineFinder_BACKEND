@@ -30,9 +30,9 @@ public class MovieController {
         return ResponseMapper.successOf(ApiStatus._OK, movieDetailService.getMovieDetails(title), MovieController.class);
     }
 
-    @PostMapping("/multiflexMovieDetails")
-    public ResponseEntity<BaseResponse<Void>> fetchMultiflexMovieDetails() {
-        movieDetailService.fetchMultiflexMovieDetails();
+    @PostMapping("/multiplexMovieDetails")
+    public ResponseEntity<BaseResponse<Void>> fetchMultiplexMovieDetails() {
+        movieDetailService.fetchMultiplexMovieDetails();
         return ResponseMapper.successOf(ApiStatus._OK, null, MovieController.class);
     }
 }
