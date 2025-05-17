@@ -1,5 +1,7 @@
 package com.cinefinder.movie.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.Movie;
 import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.data.repository.MovieRepository;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -191,6 +194,15 @@ public class MovieDetailService {
             return movieRepository.findByMegaBoxCode(movieCode);
         } else {
             return null;
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Movie> getFavoriteMovieList(List<Long> movieIdList) {
+        try {
+            return movieRepository.findByMovieIdList(movieIdList);
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._READ_FAIL, "좋아요 등록한 영화 ID 목록 조회 중 오류 발생");
         }
     }
 }
