@@ -16,15 +16,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomOAuth2Service extends DefaultOAuth2UserService {
 
-	// @Override
-	// public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-	// 	OAuth2User oAuth2User = super.loadUser(userRequest);
-	// 	String sub = oAuth2User.getAttribute("sub");
-	// 	String email = oAuth2User.getAttribute("email");
-	//
-	// 	return new CustomOAuth2User(sub, email, oAuth2User.getAttributes());
-	// }
-
 	@Override
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 		OAuth2User oAuth2User = new DefaultOAuth2UserService().loadUser(userRequest);
