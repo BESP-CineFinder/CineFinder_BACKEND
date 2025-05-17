@@ -3,10 +3,12 @@ package com.cinefinder.movie.scheduler;
 import com.cinefinder.movie.service.BoxOfficeService;
 import com.cinefinder.movie.service.MovieDetailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class MovieScheduler {
     private final BoxOfficeService boxOfficeService;
@@ -17,15 +19,13 @@ public class MovieScheduler {
         try {
             boxOfficeService.fetchDailyBoxOfficeInfo();
         } catch (Exception e) {
-            // TODO: 박스오피스 정보 스케줄러 실패 시 예외 처리
-            throw new RuntimeException("박스오피스 정보 패치 중 오류 발생", e);
+            log.error("‼️ 박스오피스 정보 패치 중 오류 발생", e);
         }
 
         try {
-            movieDetailService.fetchMultiflexMovieDetails();
+            movieDetailService.fetchMultiplexMovieDetails();
         } catch (Exception e) {
-            // TODO: 멀티플렉스 3사 영화 상세정보 스케줄러 실패 시 예외 처리
-            throw new RuntimeException("멀티플렉스 3사 영화 상세정보 패치 중 오류 발생", e);
+            log.error("‼️ 멀티플렉스 3사 영화 상세정보 패치 중 오류 발생", e);
         }
     }
 }
