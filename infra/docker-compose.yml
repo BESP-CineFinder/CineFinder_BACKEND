@@ -20,7 +20,7 @@ services:
       - CineFinder_network
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:9200 || exit 1"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
       retries: 5
     env_file:
@@ -170,16 +170,6 @@ services:
         condition: service_healthy
       mysql:
         condition: service_healthy
-
-  frontend:
-    build:
-      context: ../../cinefinder-front
-      dockerfile: Dockerfile
-    container_name: frontend
-    ports:
-      - "3000:80"
-    networks:
-      - CineFinder_network
 
   Kafka00Service:
     image: bitnami/kafka:3.7.0
