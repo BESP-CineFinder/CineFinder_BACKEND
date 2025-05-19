@@ -51,7 +51,7 @@ spring:
             user-name-attribute: id
 
   kafka:
-    bootstrap-servers: localhost:10000,localhost:10001,localhost:10002 # 카프카 서버 주소
+    bootstrap-servers: Kafka00Service:10000,Kafka01Service:10001,Kafka02Service:10002 # 카프카 서버 주소
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -60,13 +60,6 @@ spring:
       auto-offset-reset: earliest
     template:
       default-topic: chat-log
-
-#    oauth2.client:
-#      registration:
-#        google:
-#          redirect-uri: "{baseUrl}/login/oauth2/code/google"
-#          client-id: ${GOOGLE_CLIENT_ID}
-#          client-secret: ${GOOGLE_CLIENT_SECRET}
 
 api:
   kobis:

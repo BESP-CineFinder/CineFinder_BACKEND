@@ -26,6 +26,7 @@ public enum ApiStatus {
 	_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, 503, "서비스를 사용할 수 없습니다."),
 	_EMBEDDING_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "임베딩 서버 호출에 실패했습니다."),
 	_READ_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "DB 읽기에 실패하였습니다."),
+	_OPERATION_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "DB 조작에 실패하였습니다."),
 	_ES_BULK_INDEXING_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Index 생성 중 에러 발생"),
 	_ES_INDEX_QUERY_CREATE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "IndexQuery 생성 중 에러 발생"),
     _ES_INDEX_LIST_FETCH_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인덱스 목록 조회 중 예외 발생"),

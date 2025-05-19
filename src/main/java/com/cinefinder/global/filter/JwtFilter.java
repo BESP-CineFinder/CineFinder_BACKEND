@@ -153,7 +153,7 @@ public class JwtFilter extends OncePerRequestFilter {
 			|| path.equals("/api/logout") || path.equals("/api/signup/nickname")
 			|| path.startsWith("/api/movie") || path.startsWith("/api/theater")
 			|| path.startsWith("/api/screen") || path.startsWith("/CineFinder-ws")
-			|| path.startsWith("/chat");
+			|| path.startsWith("/chat") || path.startsWith("/api/favorite");
 	}
 }
 
