@@ -1,6 +1,6 @@
 package com.cinefinder.chat.service;
 
-import com.cinefinder.chat.data.dto.ChatMessageDto;
+import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.repository.ChatLogEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class ChatLogElasticService {
 
     private final ElasticsearchOperations elasticsearchOperations;
 
-    public void save(ChatMessageDto dto) {
+    public void save(ChatMessage dto) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String timestamp = LocalDateTime.now().format(formatter);
 
@@ -37,7 +37,7 @@ public class ChatLogElasticService {
                 .build();
 
         // 인덱스명 동적 생성: chat-log-{movieId}
-        String indexName = "chat-log-" + dto.getId(); // movieId가 id에 들어 있다고 가정
+        String indexName = "chat-log-" + dto.getMovieId(); // movieId가 id에 들어 있다고 가정
 
         // 인덱스 존재 여부 확인 후 생성
         IndexOperations indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));

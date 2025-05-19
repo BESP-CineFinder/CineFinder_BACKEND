@@ -20,8 +20,8 @@ services:
       - CineFinder_network
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:9200 || exit 1"]
-      interval: 30s
-      timeout: 10s
+      interval: 15s
+      timeout: 5s
       retries: 5
     env_file:
       - .env
@@ -57,6 +57,13 @@ services:
       - TZ=Asia/Seoul
     env_file:
       - .env
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" , "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - CineFinder_network
 
   redis:
     image: redis:alpine
@@ -68,17 +75,16 @@ services:
     env_file:
       - .env
 
-#  redisinsight:
-#    image: redis/redisinsight:latest
-#    container_name: redisinsight
-#    ports:
-#      - "${REDIS_INSIGHT_EXTERNAL_PORT}:${REDIS_INSIGHT_INTERNAL_PORT}"
-#    depends_on:
-#      - redis
-#    networks:
-#      - CineFinder_network
-#    env_file:
-#      - .env
+
+  frontend:
+    build:
+      context: ../../CineFinder_FRONTEND
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      - CineFinder_network
 
   nginx:
     build:
@@ -94,16 +100,58 @@ services:
     restart: always
     env_file:
       - .env
+    depends_on:
+      - backend1
+      - backend2
 
-  frontend:
+  rabbitmq:
     build:
-      context: ../../cinefinder-front
-      dockerfile: Dockerfile
-    container_name: frontend
+      context: .
+      dockerfile: dockerfile_rabbitmq
+    container_name: rabbitmq
     ports:
-      - "3000:80"
+      - "5672:5672"      # AMQP
+      - "15672:15672"    # Management UI
+      - "61613:61613"    # STOMP
+    environment:
+      RABBITMQ_DEFAULT_USER: cinefinder
+      RABBITMQ_DEFAULT_PASS: cinefinder
     networks:
       - CineFinder_network
+
+  backend1:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: backend1
+    ports:
+      - "8081:8081"
+    networks:
+      - CineFinder_network
+    env_file:
+      - .env
+    depends_on:
+      elasticsearch:
+          condition: service_healthy
+      mysql:
+          condition: service_healthy
+
+  backend2:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: backend2
+    ports:
+      - "8082:8081"
+    networks:
+      - CineFinder_network
+    env_file:
+      - .env
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
 
   Kafka00Service:
     image: bitnami/kafka:3.7.0
@@ -124,7 +172,7 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:10000
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://Kafka00Service:9092,EXTERNAL://localhost:10000
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://Kafka00Service:9092,EXTERNAL://host.docker.internal:10000
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       # 클러스터 설정
@@ -155,7 +203,7 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:10000
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://Kafka01Service:9092,EXTERNAL://localhost:10001
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://Kafka01Service:9092,EXTERNAL://host.docker.internal:10001
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       # 클러스터 설정
@@ -186,7 +234,7 @@ services:
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:10000
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://Kafka02Service:9092,EXTERNAL://localhost:10002
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://Kafka02Service:9092,EXTERNAL://host.docker.internal:10002
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       # 클러스터 설정

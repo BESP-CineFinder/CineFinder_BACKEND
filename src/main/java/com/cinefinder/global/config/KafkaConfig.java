@@ -1,6 +1,7 @@
 package com.cinefinder.global.config;
 
-import com.cinefinder.chat.data.dto.ChatMessageDto;
+import com.cinefinder.chat.data.entity.ChatMessage;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -46,7 +47,7 @@ public class KafkaConfig {
 
     // ✅ 3. Kafka Producer 설정
     @Bean
-    public ProducerFactory<String, ChatMessageDto> producerFactory() {
+    public ProducerFactory<String, ChatMessage> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -55,14 +56,14 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, ChatMessageDto> kafkaTemplate() {
+    public KafkaTemplate<String, ChatMessage> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     // ✅ 5. Kafka Consumer 설정
     @Bean
-    public ConsumerFactory<String, ChatMessageDto> consumerFactory() {
-        JsonDeserializer<ChatMessageDto> deserializer = new JsonDeserializer<>(ChatMessageDto.class);
+    public ConsumerFactory<String, ChatMessage> consumerFactory() {
+        JsonDeserializer<ChatMessage> deserializer = new JsonDeserializer<>(ChatMessage.class);
         deserializer.setRemoveTypeHeaders(false);
         deserializer.addTrustedPackages("*");
         deserializer.setUseTypeMapperForKey(true);
@@ -77,8 +78,8 @@ public class KafkaConfig {
 
     // ✅ 5. Kafka ContainerFactory 설정
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ChatMessageDto> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, ChatMessageDto> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, ChatMessage> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ChatMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;

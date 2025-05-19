@@ -2,6 +2,10 @@ spring:
   application:
     name: cinefinder
 
+  session:
+    store-type: redis
+    timeout: 1800
+
   profiles:
     active: ${PROFILE}
 
@@ -22,6 +26,12 @@ spring:
       access: ${JWT_EXPIRE_ACCESS}
       refresh: ${JWT_EXPIRE_REFRESH}
 
+  rabbitmq:
+    username: ${RABBITMQ_LOGIN}
+    password: ${RABBITMQ_PASSWORD} #default Password
+    host: rabbitmq # default host
+    port: ${RABBITMQ_PORT}      #default port
+
   security:
     oauth2:
       client:
@@ -41,7 +51,7 @@ spring:
             user-name-attribute: id
 
   kafka:
-    bootstrap-servers: localhost:10000,localhost:10001,localhost:10002 # 카프카 서버 주소
+    bootstrap-servers: Kafka00Service:10000,Kafka01Service:10001,Kafka02Service:10002 # 카프카 서버 주소
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -50,13 +60,6 @@ spring:
       auto-offset-reset: earliest
     template:
       default-topic: chat-log
-
-#    oauth2.client:
-#      registration:
-#        google:
-#          redirect-uri: "{baseUrl}/login/oauth2/code/google"
-#          client-id: ${GOOGLE_CLIENT_ID}
-#          client-secret: ${GOOGLE_CLIENT_SECRET}
 
 api:
   kobis:
@@ -91,6 +94,10 @@ movie:
     theater-default-endpoint: /theater/list
     theater-detail-endpoint: /on/oh/ohc/Brch/infoPage.do
 
+rabbitmq:
+  websocket_endpoint: ${WEBSOCKET_ENDPOINT}
+  user: ${RABBITMQ_LOGIN}
+  password: ${RABBITMQ_PASSWORD}
 
 # =========================== LOCAL  ===========================
 ---
@@ -101,17 +108,17 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://${LOCAL_HOST}:${MYSQL_EXTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://mysql:${MYSQL_INTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
 
   data:
     redis:
-      host: ${LOCAL_HOST}
+      host: redis
     elasticsearch:
       repositories:
         enabled: true
 
   elasticsearch:
-    uris: http://${LOCAL_HOST}:${ES_EXTERNAL_PORT_1}/
+    uris: http://elasticsearch:${ES_EXTERNAL_PORT_1}/
     connection-timeout: 120s
     socket-timeout: 120s
 
