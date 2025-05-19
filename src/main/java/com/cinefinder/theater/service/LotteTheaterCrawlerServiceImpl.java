@@ -2,14 +2,10 @@ package com.cinefinder.theater.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.theater.data.ElasticsearchTheater;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
-import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
-import com.cinefinder.theater.data.repository.TheaterRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +19,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -42,8 +37,6 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     private String theaterDefaultEndpoint;
 
     private final BrandRepository brandRepository;
-    private final TheaterRepository theaterRepository;
-    private final ElasticsearchTheaterRepository elasticsearchTheaterRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -94,7 +87,6 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                         .build();
 
                 theaters.add(theater);
-                log.info("롯데시네마 영화관 정보 가져오기 완료: {} - {}", name, code);
             }
         } catch (Exception e) {
             throw new CustomException(ApiStatus._JSON_PARSE_FAIL, e.getMessage());
@@ -105,43 +97,5 @@ public class LotteTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                 .values()
                 .stream()
                 .toList();
-    }
-
-    @Override
-    @Transactional
-    public void syncRecentTheater(List<Theater> theaters) {
-        Set<String> existingCodes = getExistingTheaterCodes();
-        Set<String> newCodes = extractTheaterCodes(theaters);
-
-        if (existingCodes.isEmpty()) {
-            log.info("✅ 롯데시네마 영화관 정보가 없습니다. 새로 저장합니다.");
-            theaterRepository.saveAll(theaters);
-            elasticsearchTheaterRepository.saveAll(returnToElasticsearch(theaters, elasticsearchTheaterRepository));
-            return;
-        }
-
-        if (existingCodes.equals(newCodes)) {
-            log.info("✅ 롯데시네마 영화관 정보가 이미 최신입니다.");
-            return;
-        }
-
-        log.info("⁉️ 롯데시네마 영화관 정보 변경 확인! 업데이트 시작...");
-        theaterRepository.deleteByBrandName(brandName);
-        theaterRepository.saveAll(theaters);
-
-        replaceElasticsearchData(theaters, elasticsearchTheaterRepository);
-        log.info("✅ 롯데시네마 영화관 정보 업데이트 완료!");
-    }
-
-    private Set<String> getExistingTheaterCodes() {
-        return theaterRepository.findByBrandName(brandName).stream()
-                .map(Theater::getCode)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<String> extractTheaterCodes(List<Theater> theaters) {
-        return theaters.stream()
-                .map(Theater::getCode)
-                .collect(Collectors.toSet());
     }
 }

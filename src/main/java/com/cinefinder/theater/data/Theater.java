@@ -13,7 +13,10 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "THEATER")
+@Table(
+        name = "THEATER",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"code", "brand_id"})}
+)
 public class Theater {
 
     @Id

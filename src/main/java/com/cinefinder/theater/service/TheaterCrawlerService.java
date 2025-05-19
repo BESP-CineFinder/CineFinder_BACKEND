@@ -7,11 +7,8 @@ import com.cinefinder.theater.mapper.TheaterMapper;
 
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
-
 public interface TheaterCrawlerService {
     List<Theater> getCrawlData();
-    void syncRecentTheater(List<Theater> theaters);
     String getBrandName();
 
     default List<ElasticsearchTheater> returnToElasticsearch(List<Theater> theaters, ElasticsearchTheaterRepository repo) {
