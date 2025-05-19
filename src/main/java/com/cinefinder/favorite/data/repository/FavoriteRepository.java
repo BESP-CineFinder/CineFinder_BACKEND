@@ -1,6 +1,6 @@
 package com.cinefinder.favorite.data.repository;
 
-import com.cinefinder.favorite.Favorite;
+import com.cinefinder.favorite.data.Favorite;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

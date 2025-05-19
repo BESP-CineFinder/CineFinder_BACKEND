@@ -20,9 +20,9 @@ public class MovieMapper {
             .ratingGrade(movie.getRatingGrade())
             .releaseDate(movie.getReleaseDate())
             .runtime(movie.getRuntime())
-            .directors(movie.getCgvCode())
-            .actors(movie.getCgvCode())
-            .vods(movie.getCgvCode())
+            .directors(movie.getDirectors())
+            .actors(movie.getActors())
+            .vods(movie.getVods())
             .build();
     }
 

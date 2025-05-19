@@ -1,4 +1,4 @@
-package com.cinefinder.favorite;
+package com.cinefinder.favorite.data;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
