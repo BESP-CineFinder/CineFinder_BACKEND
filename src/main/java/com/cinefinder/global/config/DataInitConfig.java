@@ -1,15 +1,19 @@
-package com.cinefinder.theater.data.init;
+package com.cinefinder.global.config;
 
+import com.cinefinder.movie.service.MovieDetailService;
 import com.cinefinder.theater.data.Brand;
 import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.service.TheaterService;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class BrandDataInitializer {
+@RequiredArgsConstructor
+public class DataInitConfig {
 
     @Value("${movie.cgv.name}")
     private String cgvBrandName;
@@ -21,10 +25,8 @@ public class BrandDataInitializer {
     private String lotteBrandName;
 
     private final BrandRepository brandRepository;
-
-    public BrandDataInitializer(BrandRepository brandRepository) {
-        this.brandRepository = brandRepository;
-    }
+    private final TheaterService theaterService;
+    private final MovieDetailService movieDetailService;
 
     @PostConstruct
     public void init() {
@@ -36,5 +38,9 @@ public class BrandDataInitializer {
             );
             brandRepository.saveAll(initialBrands);
         }
+
+        theaterService.getTheaterInfosAfterSync();
+
+        movieDetailService.fetchMultiflexMovieDetails();
     }
 }
