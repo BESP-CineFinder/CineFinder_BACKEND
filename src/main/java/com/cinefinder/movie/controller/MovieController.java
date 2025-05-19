@@ -20,19 +20,19 @@ public class MovieController {
     private final BoxOfficeService boxOfficeService;
     private final MovieDetailService movieDetailService;
 
-    @GetMapping("/daily-box-office")
+    @GetMapping("/box-office/daily")
     public ResponseEntity<BaseResponse<List<BoxOffice>>> fetchDailyBoxOfficeInfo() {
         return ResponseMapper.successOf(ApiStatus._OK, boxOfficeService.getDailyBoxOfficeInfo(), MovieController.class);
     }
 
-    @GetMapping("/movie-details")
+    @GetMapping("/details")
     public ResponseEntity<BaseResponse<MovieDetails>> fetchMovieDetails(@RequestParam String title) {
         return ResponseMapper.successOf(ApiStatus._OK, movieDetailService.getMovieDetails(title), MovieController.class);
     }
 
-    @PostMapping("/multiflexMovieDetails")
-    public ResponseEntity<BaseResponse<Void>> fetchMultiflexMovieDetails() {
-        movieDetailService.fetchMultiflexMovieDetails();
+    @PostMapping("/details/multiplex")
+    public ResponseEntity<BaseResponse<Void>> fetchMultiplexMovieDetails() {
+        movieDetailService.fetchMultiplexMovieDetails();
         return ResponseMapper.successOf(ApiStatus._OK, null, MovieController.class);
     }
 }

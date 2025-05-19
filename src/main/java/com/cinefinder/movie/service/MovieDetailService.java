@@ -15,9 +15,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -49,6 +51,7 @@ public class MovieDetailService {
     private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
 
+    @Transactional(readOnly = true)
     public MovieDetails getMovieDetails(String title) {
         ObjectMapper mapper = new ObjectMapper();
         String movieKey = UtilString.normalizeMovieKey(title);
@@ -68,6 +71,7 @@ public class MovieDetailService {
         }
     }
 
+    @Transactional(readOnly = true)
     public MovieDetails getMovieDetailsFromDB(String movieKey, String title) {
         try {
             log.info("🔑 [영화 상세정보 데이터베이스 조회] 영화키 이름 : {}", movieKey);
@@ -107,10 +111,10 @@ public class MovieDetailService {
 
             // 4. 응답 결과가 2개 이상이라면
             if (movieDetailsList.size() >= 2) {
-                log.warn("❌ API 1개의 요청 파라미터에 응답 결과가 2개 이상");
+                log.warn("❌ API 응답 결과가 2개 이상");
 
                 for (MovieDetails movieDetails : movieDetailsList) log.warn("{}", movieDetails.getTitle());
-                throw new IllegalArgumentException("영화 상세정보 데이터 캐싱 전 프로세스 중단");
+                throw new IllegalArgumentException();
             }
 
             // 5. Redis 데이터 저장 및 만료일자 설정
@@ -123,13 +127,18 @@ public class MovieDetailService {
             }
 
             return returnMovieDetails;
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ApiStatus._INTERNAL_SERVER_ERROR, "영화 상세정보 저장 중 API 응답 결과가 2개 이상으로 데이터 정합성 위배");
+        } catch (URISyntaxException e) {
+            throw new CustomException(ApiStatus._INVALID_URI_FORMAT, "영화 상세정보 저장 중 URI 구분 분석 오류 발생");
+        } catch (RestClientException e) {
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "영화 상세정보 저장 중 KMDB API 호출 오류 발생");
         } catch (Exception e) {
-            // TODO: API 1개의 요청 파라미터에 응답 결과가 2개 이상일 경우 예외 처리
-            throw new RuntimeException("영화 상세정보 저장 중 오류 발생", e);
+            throw new CustomException(ApiStatus._OPERATION_FAIL, "영화 상세정보 저장 중 오류 발생");
         }
     }
 
-    public void fetchMultiflexMovieDetails() {
+    public void fetchMultiplexMovieDetails() {
         // 1. CGV API 요청
         List<MovieDetails> totalMovieDetails = movieHelperService.requestMovieCgvApi();
 
@@ -176,6 +185,7 @@ public class MovieDetailService {
                 if (optionalOriginMovie.isPresent()) {
                     Movie originMovie = optionalOriginMovie.get();
                     originMovie.updateMovie(movie);
+                    movieRepository.save(originMovie);
 
                     log.info("⭕ 중복 영화 정보 업데이트 완료 {}", movie.getTitle());
                 } else {
@@ -185,6 +195,7 @@ public class MovieDetailService {
         }
     }
 
+    @Transactional(readOnly = true)
     public Movie fetchMovieByBrandMovieCode(String brandName, String movieCode) {
         if (brandName.equals(cgvBrandName)) {
             return movieRepository.findByCgvCode(movieCode);
