@@ -41,6 +41,6 @@ public class DataInitConfig {
 
         theaterService.getTheaterInfosAfterSync();
 
-        movieDetailService.fetchMultiflexMovieDetails();
+        movieDetailService.fetchMultiplexMovieDetails();
     }
 }
