@@ -1,6 +1,6 @@
 package com.cinefinder.favorite.mapper;
 
-import com.cinefinder.favorite.Favorite;
+import com.cinefinder.favorite.data.Favorite;
 import com.cinefinder.favorite.data.dto.FavoriteRequestDto;
 import com.cinefinder.favorite.model.FavoriteMovie;
 import com.cinefinder.movie.data.Movie;
