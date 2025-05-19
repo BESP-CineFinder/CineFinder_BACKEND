@@ -47,3 +47,7 @@ db
 infra/db/
 infra/.env
 infra/db/
+
+
+## certKey ##
+infra/certs/local*
