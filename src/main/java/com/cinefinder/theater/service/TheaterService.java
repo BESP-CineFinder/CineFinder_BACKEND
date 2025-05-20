@@ -9,7 +9,11 @@ import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.UnexpectedRollbackException;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cinefinder.global.exception.custom.CustomException;
@@ -31,13 +35,11 @@ import lombok.RequiredArgsConstructor;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class TheaterService {
 
 	private final TheaterRepository theaterRepository;
-	private final Map<String, TheaterCrawlerService> theaterCrawlerServices;
 	private final ElasticsearchClient elasticsearchClient;
-	private final ElasticsearchTheaterRepository elasticsearchTheaterRepository;
+	private final TheaterSyncService theaterSyncService;
 
 	public Theater getTheaterInfo(String brand, String theaterId) {
 		return theaterRepository.findByBrandNameAndCode(brand, theaterId)
@@ -97,46 +99,13 @@ public class TheaterService {
 	}
 
 	public Map<String, List<Theater>> getTheaterInfosAfterSync() {
-		Map<String, List<Theater>> theaterInfos = new HashMap<>();
-
-		for (TheaterCrawlerService crawler : theaterCrawlerServices.values()) {
-
-			List<Theater> dbTheaters = theaterRepository.findByBrandName(crawler.getBrandName());
-
-			List<Theater> crawled = crawler.getCrawlData();
-			List<Theater> saved = new ArrayList<>();
-
-			for (Theater theater : crawled) {
-				Theater savedTheater = saveIfNotExists(theater);
-				saved.add(savedTheater);
-			}
-
-			List<Theater> closedTheaters = dbTheaters.stream()
-					.filter(dbTheater -> crawled.stream().noneMatch(crawledTheater ->
-							crawledTheater.getCode().equals(dbTheater.getCode())))
-					.toList();
-
-			theaterRepository.deleteAll(closedTheaters);
-			crawler.replaceElasticsearchData(saved, elasticsearchTheaterRepository);
-			log.info("🗑️ {} 브랜드의 폐업한 영화관 {}개 삭제 완료", crawler.getBrandName(), closedTheaters.size());
-
-			theaterInfos.put(crawler.getBrandName(), saved);
+		try {
+			Map<String, List<Theater>> theaterInfos = theaterSyncService.theaterSyncLogic();
+			log.info("✅[영화관 초기화] 영화관 데이터를 갱신했습니다.");
+			return theaterInfos;
+		}catch (DataIntegrityViolationException | CannotAcquireLockException e) {
+			log.warn("⚠️[영화관 초기화] 다른 서버에서 영화관을 이미 갱신하고 있어서 초기화를 스킵합니다.");
 		}
-
-		return theaterInfos;
-	}
-
-	@Transactional
-	public Theater saveIfNotExists(Theater newTheater) {
-		return theaterRepository
-				.findByBrandNameAndCode(newTheater.getBrand().getName(), newTheater.getCode())
-				.map(existingTheater -> {
-					log.info("⚠️[중복 영화관] 브랜드: {}, 영화관: {}, 코드: {} 이미 존재!", existingTheater.getBrand().getName(), existingTheater.getName(), existingTheater.getCode());
-					return existingTheater;
-				})
-				.orElseGet(() -> {
-					log.info("🆕[신규 영화관] 브랜드: {}, 영화관: {}, 코드: {} 저장 완료!", newTheater.getBrand().getName(), newTheater.getName(), newTheater.getCode());
-					return theaterRepository.save(newTheater);
-				});
+		return new HashMap<>();
 	}
 }
