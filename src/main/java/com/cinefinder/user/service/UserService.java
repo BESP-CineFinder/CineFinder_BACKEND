@@ -55,15 +55,17 @@ public class UserService {
 
 	public UserInfoResponseDto getUserInfo(User user) {
 		return UserInfoResponseDto.builder()
-			.nickname(user.getNickname())
-			.build();
+				.nickname(user.getNickname())
+				.userId(user.getId())
+				.build();
 	}
 
 	public UserInfoResponseDto getUserInfoById(Long userId) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ApiStatus._NOT_FOUND, "User not found"));
 		return UserInfoResponseDto.builder()
-			.nickname(user.getNickname())
-			.build();
+				.userId(user.getId())
+				.nickname(user.getNickname())
+				.build();
 	}
 }
