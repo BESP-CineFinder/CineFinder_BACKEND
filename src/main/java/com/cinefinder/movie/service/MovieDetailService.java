@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MovieDetailService {
     @Value("${api.kmdb.request-url}")
@@ -51,42 +52,35 @@ public class MovieDetailService {
     private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
 
-    @Transactional(readOnly = true)
     public MovieDetails getMovieDetails(String title) {
-        ObjectMapper mapper = new ObjectMapper();
-        String movieKey = UtilString.normalizeMovieKey(title);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String movieKey = UtilString.normalizeMovieKey(title);
+            String redisKey = "movieDetails:" + movieKey;
 
-        String redisKey = "movieDetails:" + movieKey;
-        log.info("🔑 [영화 상세정보 캐시 조회] REDIS 키 이름 : {}", redisKey);
-
-        if (redisTemplate.hasKey(redisKey)) {
-            log.info("✅ {} 키 존재 ... 캐시된 데이터 조회", redisKey);
-            
-            Object object = redisTemplate.opsForHash().get(redisKey, movieKey);
-            return mapper.convertValue(object, MovieDetails.class);
-        } else {
-            log.info("✅ {} 키 없음 ... 영화 상세정보 데이터베이스 조회", redisKey);
-            
-            return getMovieDetailsFromDB(movieKey, title);
+            if (redisTemplate.hasKey(redisKey)) {
+                Object object = redisTemplate.opsForHash().get(redisKey, movieKey);
+                MovieDetails movieDetails = mapper.convertValue(object, MovieDetails.class);
+                movieDetails.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
+                return movieDetails;
+            } else {
+                return getMovieDetailsFromDB(movieKey, title);
+            }
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._READ_FAIL, "영화 상세정보 캐시 조회 중 오류 발생");
         }
     }
 
-    @Transactional(readOnly = true)
     public MovieDetails getMovieDetailsFromDB(String movieKey, String title) {
         try {
-            log.info("🔑 [영화 상세정보 데이터베이스 조회] 영화키 이름 : {}", movieKey);
-
-            Optional<Movie> optionalMovie = movieRepository.findByTitle(movieKey);
+            Optional<Movie> optionalMovie = movieRepository.findByMovieKey(movieKey);
             if (optionalMovie.isPresent()) {
-                log.info("✅ 데이터 존재 ... 영화 상세정보 데이터베이스 조회");
                 return MovieMapper.toMovieDetails(optionalMovie.get());
             } else {
-                log.info("✅ 데이터 없음 ... KMDB API 호출 후 캐싱");
                 return fetchMovieDetails(movieKey, title);
             }
         } catch (Exception e) {
-            // TODO: 데이터베이스 조회 시 오류 예외 처리
-            throw new RuntimeException("영화 상세정보 데이터베이스 조회 중 오류 발생", e);
+            throw new CustomException(ApiStatus._READ_FAIL, "영화 상세정보 데이터베이스 조회 중 오류 발생");
         }
     }
 
@@ -94,33 +88,16 @@ public class MovieDetailService {
         try {
             String redisKey = "movieDetails:" + movieKey;
             MovieDetails returnMovieDetails = null;
-            log.info("🔑 [영화 상세정보 저장] REDIS 키 이름 : {}", redisKey);
-
-            // 1. 요청 URL 생성
             String url = String.format(
                 kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&sort=repRlsDate,1&listCount=1",
                 kmdbServiceKey,
                 URLEncoder.encode(title, StandardCharsets.UTF_8)
             );
 
-            // 2. API 요청
             String response = restTemplate.getForObject(new URI(url), String.class);
 
-            // 3. 저장 List 생성
-            List<MovieDetails> movieDetailsList = UtilParse.extractMovieDetailsList(response);
-
-            // 4. 응답 결과가 2개 이상이라면
-            if (movieDetailsList.size() >= 2) {
-                log.warn("❌ API 응답 결과가 2개 이상");
-
-                for (MovieDetails movieDetails : movieDetailsList) log.warn("{}", movieDetails.getTitle());
-                throw new IllegalArgumentException();
-            }
-
-            // 5. Redis 데이터 저장 및 만료일자 설정
+            List<MovieDetails> movieDetailsList = UtilParse.extractMovieDetailsList(response, movieKey);
             for (MovieDetails movieDetails : movieDetailsList) {
-                log.info("⭕ 영화 상세정보 데이터 캐싱 성공");
-
                 redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
                 redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
                 returnMovieDetails = movieDetails;
@@ -138,64 +115,41 @@ public class MovieDetailService {
         }
     }
 
+    @Transactional
     public void fetchMultiplexMovieDetails() {
-        // 1. CGV API 요청
-        List<MovieDetails> totalMovieDetails = movieHelperService.requestMovieCgvApi();
+        try {
+            List<MovieDetails> totalMovieDetails = movieHelperService.requestMultiplexMovieApi();
 
-        // 2. MegaBox API 요청
-        totalMovieDetails.addAll(movieHelperService.requestMovieMegaBoxApi());
+            Map<String, MovieDetails> map = movieHelperService.mergeAndDeduplicateMovieDetails(totalMovieDetails);
+            for (Map.Entry<String, MovieDetails> entry : map.entrySet()) {
+                MovieDetails movieDetails = entry.getValue();
+                String movieKey = entry.getKey();
+                String redisKey = "movieDetails:" + movieKey;
+                String title = movieDetails.getTitle();
 
-        // 3. LotteCinema API 요청
-        totalMovieDetails.addAll(movieHelperService.requestMovieLotteCinemaApi());
+                MovieDetails response = getMovieDetails(title);
 
-        // 4. 3사 응답 결과 중복 제거하여 병합
-        Map<String, MovieDetails> map = movieHelperService.mergeAndDeduplicateMovieDetails(totalMovieDetails);
+                if (response == null) continue;
 
-        // 5. KMDB API 요청 및 저장
-        for (Map.Entry<String, MovieDetails> entry : map.entrySet()) {
-            MovieDetails movieDetails = entry.getValue();
-            String movieKey = entry.getKey();
-            String redisKey = "movieDetails:" + movieKey;
-            String title = movieDetails.getTitle();
+                MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
+                if (originMovieDetails != null) {
+                    originMovieDetails.updateCodes(movieDetails);
+                    redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
+                }
 
-            // API 요청
-            MovieDetails response = getMovieDetails(title);
-
-            // API 응답이 없을 경우 건너뛰기
-            if (response == null) continue;
-
-            // REDIS 각 멀티플렉스 영화코드 데이터 갱신
-            MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
-            if (originMovieDetails != null) {
-                originMovieDetails.setCgvCode(movieDetails.getCgvCode());
-                originMovieDetails.setMegaBoxCode(movieDetails.getMegaBoxCode());
-                originMovieDetails.setLotteCinemaCode(movieDetails.getLotteCinemaCode());
-
-                redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
-            }
-
-            // 엔티티로 변환 후 목록에 추가
-            Movie movie = MovieMapper.toEntity(movieDetails, response);
-            try {
-                movieRepository.save(movie);
-            } catch (Exception e) {
-                log.warn("‼️ {} 중복된 영화명 존재", movie.getTitle());
-
-                Optional<Movie> optionalOriginMovie = movieRepository.findByTitle(title);
+                Movie movie = MovieMapper.toEntity(movieDetails, response);
+                Optional<Movie> optionalOriginMovie = movieRepository.findByMovieKey(movieKey);
                 if (optionalOriginMovie.isPresent()) {
-                    Movie originMovie = optionalOriginMovie.get();
-                    originMovie.updateMovie(movie);
-                    movieRepository.save(originMovie);
-
-                    log.info("⭕ 중복 영화 정보 업데이트 완료 {}", movie.getTitle());
+                    movie.updateMovie(optionalOriginMovie.get());
                 } else {
-                    log.error("❌ 중복 예외 후 기존 영화 조회 실패 {}", movie.getTitle());
+                    movieRepository.save(movie);
                 }
             }
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._READ_FAIL, "멀티플렉스 영화 상세정보 저장 중 오류 발생");
         }
     }
 
-    @Transactional(readOnly = true)
     public Movie fetchMovieByBrandMovieCode(String brandName, String movieCode) {
         if (brandName.equals(cgvBrandName)) {
             return movieRepository.findByCgvCode(movieCode);
@@ -208,7 +162,6 @@ public class MovieDetailService {
         }
     }
 
-    @Transactional(readOnly = true)
     public List<Movie> getFavoriteMovieList(List<Long> movieIdList) {
         try {
             return movieRepository.findByMovieIdList(movieIdList);
