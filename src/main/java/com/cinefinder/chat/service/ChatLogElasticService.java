@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
 @Service
@@ -30,17 +31,24 @@ public class ChatLogElasticService {
 
     private final ElasticsearchOperations elasticsearchOperations;
 
-    private final Map<String, List<ChatMessage>> buffer = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ConcurrentLinkedQueue<ChatMessage>> buffer = new ConcurrentHashMap<>();
 
-    @Scheduled(fixedRate = 10000) // 10초마다 flush
-    public void flushToElasticsearch() {
-        buffer.forEach((movieId, messages) -> {
+    @Scheduled(fixedRate = 10000)
+    private void flushToElasticsearch() {
+        buffer.forEach((movieId, queue) -> {
+            List<ChatMessage> messages = new ArrayList<>();
+            ChatMessage msg;
+            while ((msg = queue.poll()) != null) {
+                messages.add(msg);
+            }
+
             if (messages.isEmpty()) return;
 
             String indexName = "chat-log-" + movieId;
             IndexCoordinates index = IndexCoordinates.of(indexName);
             IndexOperations indexOps = elasticsearchOperations.indexOps(index);
             if (!indexOps.exists()) indexOps.create();
+
             List<IndexQuery> bulkQueries = messages.stream()
                 .map(message -> {
                     IndexQuery query = new IndexQuery();
@@ -51,20 +59,17 @@ public class ChatLogElasticService {
                 .toList();
 
             elasticsearchOperations.bulkIndex(bulkQueries, index);
-            messages.clear();
         });
     }
 
     public void add(ChatMessage dto) {
         String movieId = dto.getMovieId();
-        buffer.putIfAbsent(movieId, Collections.synchronizedList(new ArrayList<>()));
 
-        buffer.get(movieId).add(new ChatMessage(
-            dto.getSenderId(),
-            dto.getMessage(),
-            dto.getMovieId(),
-            dto.getCreatedAt()
-        ));
+        // movieId에 해당하는 큐가 없으면 새로 생성
+        buffer.putIfAbsent(movieId, new ConcurrentLinkedQueue<>());
+
+        // 큐에 메시지 추가
+        buffer.get(movieId).add(dto);
     }
 
     public List<ChatLogEntity> findAll(String movieId) {
