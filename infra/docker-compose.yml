@@ -90,6 +90,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile_nginx
+    container_name: CF_nginx
     ports:
       - "80:80"
       - "443:443"
