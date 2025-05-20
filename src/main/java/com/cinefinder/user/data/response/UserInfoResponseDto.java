@@ -6,5 +6,6 @@ import lombok.Getter;
 @Builder
 @Getter
 public class UserInfoResponseDto {
+	private Long userId;
 	private String nickname;
 }
