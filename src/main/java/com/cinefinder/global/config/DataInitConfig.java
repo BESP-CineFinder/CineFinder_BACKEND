@@ -1,6 +1,6 @@
 package com.cinefinder.global.config;
 
-import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.theater.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
 import jakarta.annotation.PostConstruct;
@@ -15,7 +15,7 @@ public class DataInitConfig {
 
     private final BrandService brandService;
     private final TheaterService theaterService;
-    private final MovieDetailService movieDetailService;
+    private final MovieService movieService;
 
     @PostConstruct
     public void init() {
@@ -23,6 +23,6 @@ public class DataInitConfig {
 
         theaterService.getTheaterInfosAfterSync();
 
-        movieDetailService.fetchMultiplexMovieDetails();
+        movieService.fetchMultiplexMovieDetails();
     }
 }

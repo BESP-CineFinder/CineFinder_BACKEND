@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,13 +22,11 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MovieDetailService {
     @Value("${api.kmdb.request-url}")
@@ -37,19 +34,9 @@ public class MovieDetailService {
 
     @Value("${api.kmdb.service-key}")
     private String kmdbServiceKey;
-
-    @Value("${movie.cgv.name}")
-    private String cgvBrandName;
-
-    @Value("${movie.mega.name}")
-    private String megaBrandName;
-
-    @Value("${movie.lotte.name}")
-    private String lotteBrandName;
-
+    
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, Object> redisTemplate;
-    private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
 
     public MovieDetails getMovieDetails(String title) {
@@ -92,9 +79,9 @@ public class MovieDetailService {
             String redisKey = "movieDetails:" + movieKey;
             MovieDetails returnMovieDetails = null;
             String url = String.format(
-                kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&sort=repRlsDate,1&listCount=1",
-                kmdbServiceKey,
-                URLEncoder.encode(title, StandardCharsets.UTF_8)
+                    kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&sort=repRlsDate,1&listCount=1",
+                    kmdbServiceKey,
+                    URLEncoder.encode(title, StandardCharsets.UTF_8)
             );
 
             String response = restTemplate.getForObject(new URI(url), String.class);
@@ -115,61 +102,6 @@ public class MovieDetailService {
             throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "영화 상세정보 저장 중 KMDB API 호출 오류 발생");
         } catch (Exception e) {
             throw new CustomException(ApiStatus._OPERATION_FAIL, "영화 상세정보 저장 중 오류 발생");
-        }
-    }
-
-    @Transactional
-    public void fetchMultiplexMovieDetails() {
-        try {
-            List<MovieDetails> totalMovieDetails = movieHelperService.requestMultiplexMovieApi();
-
-            Map<String, MovieDetails> map = movieHelperService.mergeAndDeduplicateMovieDetails(totalMovieDetails);
-            for (Map.Entry<String, MovieDetails> entry : map.entrySet()) {
-                MovieDetails movieDetails = entry.getValue();
-                String movieKey = entry.getKey();
-                String redisKey = "movieDetails:" + movieKey;
-                String title = movieDetails.getTitle();
-
-                MovieDetails response = getMovieDetails(title);
-
-                if (response == null) continue;
-
-                MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
-                if (originMovieDetails != null) {
-                    originMovieDetails.updateCodes(movieDetails);
-                    redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
-                }
-
-                Movie movie = MovieMapper.toEntity(movieDetails, response);
-                Optional<Movie> optionalOriginMovie = movieRepository.findByMovieKey(movieKey);
-                if (optionalOriginMovie.isPresent()) {
-                    movie.updateMovie(optionalOriginMovie.get());
-                } else {
-                    movieRepository.save(movie);
-                }
-            }
-        } catch (Exception e) {
-            throw new CustomException(ApiStatus._READ_FAIL, "멀티플렉스 영화 상세정보 저장 중 오류 발생");
-        }
-    }
-
-    public Movie fetchMovieByBrandMovieCode(String brandName, String movieCode) {
-        if (brandName.equals(cgvBrandName)) {
-            return movieRepository.findByCgvCode(movieCode);
-        } else if (brandName.equals(lotteBrandName)) {
-            return movieRepository.findByLotteCinemaCode(movieCode);
-        } else if (brandName.equals(megaBrandName)) {
-            return movieRepository.findByMegaBoxCode(movieCode);
-        } else {
-            return null;
-        }
-    }
-
-    public List<Movie> getFavoriteMovieList(List<Long> movieIdList) {
-        try {
-            return movieRepository.findByMovieIdList(movieIdList);
-        } catch (Exception e) {
-            throw new CustomException(ApiStatus._READ_FAIL, "좋아요 등록한 영화 ID 목록 조회 중 오류 발생");
         }
     }
 }

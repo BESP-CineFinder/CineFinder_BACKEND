@@ -5,8 +5,7 @@ import com.cinefinder.global.response.BaseResponse;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.model.BoxOffice;
 import com.cinefinder.movie.data.model.MovieDetails;
-import com.cinefinder.movie.service.BoxOfficeService;
-import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,22 +16,21 @@ import java.util.List;
 @RequestMapping(value = "/api/movie")
 @RequiredArgsConstructor
 public class MovieController {
-    private final BoxOfficeService boxOfficeService;
-    private final MovieDetailService movieDetailService;
+    private final MovieService movieService;
 
     @GetMapping("/box-office/daily")
     public ResponseEntity<BaseResponse<List<BoxOffice>>> getDailyBoxOfficeInfo() {
-        return ResponseMapper.successOf(ApiStatus._OK, boxOfficeService.getDailyBoxOfficeInfo(), MovieController.class);
+        return ResponseMapper.successOf(ApiStatus._OK, movieService.fetchDailyBoxOfficeInfo(), MovieController.class);
     }
 
     @GetMapping("/details")
     public ResponseEntity<BaseResponse<MovieDetails>> fetchMovieDetails(@RequestParam String title) {
-        return ResponseMapper.successOf(ApiStatus._OK, movieDetailService.getMovieDetails(title), MovieController.class);
+        return ResponseMapper.successOf(ApiStatus._OK, movieService.fetchMovieDetails(title), MovieController.class);
     }
 
     @PostMapping("/details/multiplex")
     public ResponseEntity<BaseResponse<Void>> fetchMultiplexMovieDetails() {
-        movieDetailService.fetchMultiplexMovieDetails();
+        movieService.fetchMultiplexMovieDetails();
         return ResponseMapper.successOf(ApiStatus._OK, null, MovieController.class);
     }
 }
