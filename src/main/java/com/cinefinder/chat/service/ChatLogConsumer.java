@@ -1,12 +1,24 @@
 package com.cinefinder.chat.service;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.cinefinder.chat.data.entity.ChatMessage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -14,11 +26,41 @@ import org.springframework.stereotype.Component;
 public class ChatLogConsumer {
 
     private final ChatLogElasticService chatLogElasticService;
+    private final KafkaConsumer<String, ChatMessage> kafkaConsumer;
+    private final ObjectMapper objectMapper;
 
-    @KafkaListener(topicPattern = "chat-log-.*", groupId = "chat-log-group", containerFactory = "kafkaListenerContainerFactory")
-    public void listen(ChatMessage messageDto) {
-        chatLogElasticService.add(messageDto);
+    @Scheduled(fixedDelay = 5000)
+    public void consumeAndBulkInsert() {
+        ConsumerRecords<String, ChatMessage> records = kafkaConsumer.poll(Duration.ofMillis(3000));
+
+        if (!records.isEmpty()) {
+            try {
+                // 파티션 별로 처리
+                for (TopicPartition partition : records.partitions()) {
+                    List<ConsumerRecord<String, ChatMessage>> partitionRecords = records.records(partition);
+                    List<ChatMessage> messages = new ArrayList<>();
+
+                    for (ConsumerRecord<String, ChatMessage> record : partitionRecords) {
+                        messages.add(record.value());
+                    }
+
+                    // topic 이름 == Elasticsearch index 이름
+                    String indexName = partition.topic();
+
+                    // 개별 파티션별 저장 시도
+                    try {
+                        chatLogElasticService.saveBulk(indexName, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
+                        kafkaConsumer.commitSync(Collections.singletonMap(partition,
+                            new OffsetAndMetadata(partitionRecords.get(partitionRecords.size() - 1).offset() + 1)));
+                    } catch (Exception e) {
+                        log.error("Failed to save messages for index {}. Will seek back", indexName, e);
+                        long firstOffset = partitionRecords.get(0).offset();
+                        kafkaConsumer.seek(partition, firstOffset); // 실패 시 재처리 위해 seek
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Unexpected error during partitioned processing", e);
+            }
+        }
     }
-
-
 }
