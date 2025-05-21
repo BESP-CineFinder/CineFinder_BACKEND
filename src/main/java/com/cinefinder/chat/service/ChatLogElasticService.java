@@ -59,6 +59,7 @@ public class ChatLogElasticService {
                 .toList();
 
             elasticsearchOperations.bulkIndex(bulkQueries, index);
+            log.info("save es");
         });
     }
 

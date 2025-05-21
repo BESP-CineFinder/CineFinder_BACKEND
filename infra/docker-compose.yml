@@ -136,6 +136,11 @@ services:
           condition: service_healthy
       mysql:
           condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -s http://localhost:8081 || exit 1" ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
 
   backend2:
     build:
@@ -152,6 +157,8 @@ services:
       elasticsearch:
         condition: service_healthy
       mysql:
+        condition: service_healthy
+      backend1:
         condition: service_healthy
 
   Kafka00Service:
@@ -266,6 +273,16 @@ services:
     networks:
       - CineFinder_network
 
+  k6:
+    image: grafana/k6
+    volumes:
+      - ./scripts:/scripts
+    entrypoint: [ "k6", "run", "/scripts/ws-chat-test.js" ]
+    depends_on:
+      - backend1
+      - backend2
+    networks:
+      - CineFinder_network
 
 volumes:
   Kafka00:

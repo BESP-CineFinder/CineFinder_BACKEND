@@ -19,4 +19,6 @@ public class ChatLogConsumer {
     public void listen(ChatMessage messageDto) {
         chatLogElasticService.add(messageDto);
     }
+
+
 }

@@ -31,7 +31,7 @@ public class ChatController {
 		kafkaService.createTopicIfNotExists(message.getMovieId()); // 동적으로 토픽 생성
 		kafkaTemplate.send("chat-log-" + message.getMovieId(), message.getSenderId(), message);
 		// chatLogElasticService.save(message);
-		log.info("Save message: {}", message);
+		// log.info("Save message: {}", message);
 		messagingTemplate.convertAndSend("/topic/chat-" + movieId, message);
 	}
 }
