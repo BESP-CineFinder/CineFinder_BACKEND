@@ -59,6 +59,7 @@ public class MovieDetailService {
             String redisKey = "movieDetails:" + movieKey;
 
             if (redisTemplate.hasKey(redisKey)) {
+                log.info("✅ 영화 상세정보 캐시 조회 : {}", movieKey);
                 Object object = redisTemplate.opsForHash().get(redisKey, movieKey);
                 MovieDetails movieDetails = mapper.convertValue(object, MovieDetails.class);
                 movieDetails.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
@@ -75,6 +76,7 @@ public class MovieDetailService {
         try {
             Optional<Movie> optionalMovie = movieRepository.findByMovieKey(movieKey);
             if (optionalMovie.isPresent()) {
+                log.info("✅ 영화 상세정보 DB 조회 {} : ", movieKey);
                 return MovieMapper.toMovieDetails(optionalMovie.get());
             } else {
                 return fetchMovieDetails(movieKey, title);
@@ -86,6 +88,7 @@ public class MovieDetailService {
 
     public MovieDetails fetchMovieDetails(String movieKey, String title) {
         try {
+            log.info("✅ 영화 상세정보 KMDB API 호출 {} : ", movieKey);
             String redisKey = "movieDetails:" + movieKey;
             MovieDetails returnMovieDetails = null;
             String url = String.format(

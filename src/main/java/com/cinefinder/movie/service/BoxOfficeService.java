@@ -8,6 +8,7 @@ import com.cinefinder.movie.util.UtilParse;
 import com.cinefinder.movie.util.UtilString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BoxOfficeService {
@@ -41,7 +43,7 @@ public class BoxOfficeService {
         String latestDateRedisKey = "dailyBoxOffice:" + latestDate;
 
         if (redisTemplate.hasKey(latestDateRedisKey)) {
-
+            log.info("박스오피스 캐시 조회 : {}", latestDateRedisKey);
             return redisTemplate.opsForHash()
                 .entries(latestDateRedisKey)
                 .entrySet()
@@ -55,6 +57,7 @@ public class BoxOfficeService {
                 .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
                 .collect(Collectors.toList());
         } else {
+            log.info("박스오피스 캐싱 : {}", latestDateRedisKey);
             return fetchDailyBoxOfficeInfo();
         }
     }
