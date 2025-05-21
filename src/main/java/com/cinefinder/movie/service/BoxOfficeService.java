@@ -2,8 +2,10 @@ package com.cinefinder.movie.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
+import com.cinefinder.movie.data.Movie;
 import com.cinefinder.movie.data.model.BoxOffice;
 import com.cinefinder.movie.data.repository.MovieRepository;
+import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.util.UtilParse;
 import com.cinefinder.movie.util.UtilString;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +53,10 @@ public class BoxOfficeService {
                 .map(entry -> {
                     String rank = entry.getKey().toString();
                     BoxOffice boxOffice = mapper.convertValue(entry.getValue(), BoxOffice.class);
+                    Movie movie = movieRepository.findByMovieKey(boxOffice.getMovieKey())
+                        .orElseThrow(() -> new IllegalStateException("‼️ 해당 영화의 상세정보 없음"));
                     boxOffice.updateRank(rank);
+                    boxOffice.updateMovieDetails(MovieMapper.toMovieDetails(movie));
                     return boxOffice;
                 })
                 .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
@@ -80,7 +85,10 @@ public class BoxOfficeService {
 
             List<BoxOffice> dailyBoxOfficeList = UtilParse.extractDailyBoxOfficeInfoList(response);
             for (BoxOffice boxOffice : dailyBoxOfficeList) {
+                Movie movie = movieRepository.findByMovieKey(boxOffice.getMovieKey())
+                    .orElseThrow(() -> new IllegalStateException("‼️ 해당 영화의 상세정보 없음"));
                 boxOffice.updateMovieId(movieRepository.findMovieIdByMovieKey(boxOffice.getMovieKey()));
+                boxOffice.updateMovieDetails(MovieMapper.toMovieDetails(movie));
                 redisTemplate.opsForHash().put(latestDateRedisKey, boxOffice.getRank(), boxOffice);
             }
 
