@@ -131,15 +131,14 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
 
         List<CinemaScheduleApiResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
-            String startTime = item.path("PlayStartTm").asText();
-            String endTime = item.path("PlayEndTm").asText();
-
             String movieCode = item.path("MovieGroupCd").asText();
             var movie = movieDetailService.fetchMovieByBrandMovieCode(brandName, movieCode);
             if (movie == null) {
-                log.warn("CGV에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}, MovieName: {}", movieCode, item.path("MovieNmKor").asText());
+                log.warn("{}에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}, MovieName: {}", brandName, movieCode, item.path("MovieNmKor").asText());
                 continue;
             }
+            String startTime = item.path("PlayStartTm").asText();
+            String endTime = item.path("PlayEndTm").asText();
 
             CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
                     brandService.getBrandInfo(brandName),
