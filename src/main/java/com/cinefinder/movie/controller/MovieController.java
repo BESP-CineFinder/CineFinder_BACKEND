@@ -21,7 +21,7 @@ public class MovieController {
     private final MovieDetailService movieDetailService;
 
     @GetMapping("/box-office/daily")
-    public ResponseEntity<BaseResponse<List<BoxOffice>>> fetchDailyBoxOfficeInfo() {
+    public ResponseEntity<BaseResponse<List<BoxOffice>>> getDailyBoxOfficeInfo() {
         return ResponseMapper.successOf(ApiStatus._OK, boxOfficeService.getDailyBoxOfficeInfo(), MovieController.class);
     }
 

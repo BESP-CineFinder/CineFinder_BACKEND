@@ -17,15 +17,15 @@ public class MovieScheduler {
     @Scheduled(cron = "0 0 11 * * *")
     public void fetchMovieInfoScheduler() throws Exception {
         try {
-            boxOfficeService.fetchDailyBoxOfficeInfo();
-        } catch (Exception e) {
-            log.error("‼️ 박스오피스 정보 패치 중 오류 발생", e);
-        }
-
-        try {
             movieDetailService.fetchMultiplexMovieDetails();
         } catch (Exception e) {
             log.error("‼️ 멀티플렉스 3사 영화 상세정보 패치 중 오류 발생", e);
+        }
+
+        try {
+            boxOfficeService.fetchDailyBoxOfficeInfo();
+        } catch (Exception e) {
+            log.error("‼️ 박스오피스 정보 패치 중 오류 발생", e);
         }
     }
 }

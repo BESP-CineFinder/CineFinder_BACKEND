@@ -36,8 +36,16 @@ public class MovieHelperService {
     private String lotteCinemaRequestUrl;
 
     private static final List<String> IGNORE_TITLE_LIST = List.of("AD");
-
     private final RestTemplate restTemplate = new RestTemplate();
+
+    public List<MovieDetails> requestMultiplexMovieApi() {
+        List<MovieDetails> multiplexMovieList = new ArrayList<>();
+        multiplexMovieList.addAll(requestMovieCgvApi());
+        multiplexMovieList.addAll(requestMovieMegaBoxApi());
+        multiplexMovieList.addAll(requestMovieLotteCinemaApi());
+
+        return multiplexMovieList;
+    }
 
     public List<MovieDetails> requestMovieCgvApi() {
         try {
@@ -138,15 +146,15 @@ public class MovieHelperService {
 
                 if (originMovieDetails != null) {
                     if (!StringUtil.isNullOrEmpty(cgvCode)) {
-                        originMovieDetails.setCgvCode(movieDetails.getCgvCode());
+                        originMovieDetails.updateCgvCode(movieDetails.getCgvCode());
                     }
 
                     if (!StringUtil.isNullOrEmpty(megaBoxCode)) {
-                        originMovieDetails.setMegaBoxCode(movieDetails.getMegaBoxCode());
+                        originMovieDetails.updateMegaBoxCode(movieDetails.getMegaBoxCode());
                     }
 
                     if (!StringUtil.isNullOrEmpty(lotteCinemaCode)) {
-                        originMovieDetails.setLotteCinemaCode(movieDetails.getLotteCinemaCode());
+                        originMovieDetails.updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
                     }
 
                     if (originMovieDetails.getTitle().length() >= title.length()) {

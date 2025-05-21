@@ -7,11 +7,13 @@ import com.cinefinder.movie.data.model.MovieDetails;
 public class MovieMapper {
     public static MovieDetails toMovieDetails(Movie movie) {
         return MovieDetails.builder()
+            .movieId(movie.getId())
             .cgvCode(movie.getCgvCode())
             .megaBoxCode(movie.getMegaBoxCode())
             .lotteCinemaCode(movie.getLotteCinemaCode())
             .title(movie.getTitle())
             .titleEng(movie.getTitleEng())
+            .movieKey(movie.getMovieKey())
             .nation(movie.getNation())
             .genre(movie.getGenre())
             .posters(movie.getPosters())
@@ -28,6 +30,7 @@ public class MovieMapper {
 
     public static Movie toEntity(MovieDetails movieDetails, MovieDetails response) {
         return Movie.builder()
+            .movieKey(response.getMovieKey())
             .cgvCode(movieDetails.getCgvCode())
             .megaBoxCode(movieDetails.getMegaBoxCode())
             .lotteCinemaCode(movieDetails.getLotteCinemaCode())
