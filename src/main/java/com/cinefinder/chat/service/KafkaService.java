@@ -21,17 +21,19 @@ public class KafkaService {
         String topicName = "chat-log-" + movieId;
 
         try {
-            adminClient.describeTopics(Collections.singletonList(topicName)).allTopicNames().get();
-        } catch (Exception e) {
-            NewTopic topic = TopicBuilder.name(topicName)
+            Set<String> existingTopics = adminClient.listTopics().names().get();
+
+            if (!existingTopics.contains(topicName)) {
+                NewTopic topic = TopicBuilder.name(topicName)
                     .partitions(3)
                     .replicas(2)
                     .build();
-            try {
                 adminClient.createTopics(Collections.singletonList(topic)).all().get();
-            } catch (Exception ex) {
-                throw new CustomException(ApiStatus._CREATE_TOPIC_FAIL);
+                log.info("✅ Kafka topic {} created successfully", topicName);
             }
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._CREATE_TOPIC_FAIL);
         }
     }
+
 }

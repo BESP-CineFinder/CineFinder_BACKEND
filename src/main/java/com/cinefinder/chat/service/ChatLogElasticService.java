@@ -1,7 +1,7 @@
 package com.cinefinder.chat.service;
 
 import com.cinefinder.chat.data.entity.ChatMessage;
-import com.cinefinder.chat.data.repository.ChatLogEntity;
+import com.cinefinder.chat.data.entity.ChatLogEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -13,6 +13,7 @@ import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class ChatLogElasticService {
 			return;
 		}
 
-		IndexCoordinates indexCoordinates = IndexCoordinates.of("chat-log-" + movieId);
+		IndexCoordinates indexCoordinates = IndexCoordinates.of(movieId);
 		IndexOperations indexOps = elasticsearchOperations.indexOps(indexCoordinates);
 
 		if (!indexOps.exists()) {
@@ -54,5 +55,25 @@ public class ChatLogElasticService {
 		return searchHits.getSearchHits().stream()
 				.map(hit -> hit.getContent())
 				.toList();
+	}
+
+	public List<ChatLogEntity> findAll(String movieId) {
+		// 인덱스 이름 구성
+		String indexName = "chat-log-" + movieId;
+
+		// match_all 쿼리로 전체 조회
+		Query query = new StringQuery("{ \"match_all\": {} }");
+
+		// Elasticsearch에서 검색 수행
+		SearchHits<ChatLogEntity> searchHits = elasticsearchOperations.search(
+			query,
+			ChatLogEntity.class,
+			IndexCoordinates.of(indexName)
+		);
+
+		// 결과 수집
+		List<ChatLogEntity> result = new ArrayList<>();
+		searchHits.forEach(hit -> result.add(hit.getContent()));
+		return result;
 	}
 }

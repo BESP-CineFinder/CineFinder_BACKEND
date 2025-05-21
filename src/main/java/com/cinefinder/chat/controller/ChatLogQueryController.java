@@ -1,6 +1,6 @@
 package com.cinefinder.chat.controller;
 
-import com.cinefinder.chat.data.repository.ChatLogEntity;
+import com.cinefinder.chat.data.entity.ChatLogEntity;
 import com.cinefinder.chat.service.ChatLogElasticService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

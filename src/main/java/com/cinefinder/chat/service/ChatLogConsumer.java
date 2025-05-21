@@ -4,19 +4,20 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.cinefinder.chat.data.entity.ChatMessage;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +28,26 @@ public class ChatLogConsumer {
 
     private final ChatLogElasticService chatLogElasticService;
     private final KafkaConsumer<String, ChatMessage> kafkaConsumer;
-    private final ObjectMapper objectMapper;
+    private final AdminClient adminClient;
+
+    @PostConstruct
+    public void subscribeToAllChatTopics() {
+        try {
+            Set<String> topicNames = adminClient.listTopics().names().get();
+            List<String> chatTopics = topicNames.stream()
+                .filter(t -> t.startsWith("chat-log-"))
+                .toList();
+
+            if (!chatTopics.isEmpty()) {
+                kafkaConsumer.subscribe(chatTopics);
+                log.info("Subscribed to topics: {}", chatTopics);
+            } else {
+                log.warn("No chat topics found to subscribe.");
+            }
+        } catch (Exception e) {
+            log.error("Failed to subscribe to chat topics", e);
+        }
+    }
 
     @Scheduled(fixedDelay = 5000)
     public void consumeAndBulkInsert() {
@@ -49,6 +69,7 @@ public class ChatLogConsumer {
 
                     // 개별 파티션별 저장 시도
                     try {
+                        log.info("✅ Saving messages to index {}: {}", indexName, messages);
                         chatLogElasticService.saveBulk(indexName, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
                         kafkaConsumer.commitSync(Collections.singletonMap(partition,
                             new OffsetAndMetadata(partitionRecords.get(partitionRecords.size() - 1).offset() + 1)));
