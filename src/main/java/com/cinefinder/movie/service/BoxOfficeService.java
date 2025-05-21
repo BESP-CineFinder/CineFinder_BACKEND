@@ -45,7 +45,7 @@ public class BoxOfficeService {
         String latestDateRedisKey = "dailyBoxOffice:" + latestDate;
 
         if (redisTemplate.hasKey(latestDateRedisKey)) {
-            log.info("박스오피스 캐시 조회 : {}", latestDateRedisKey);
+            log.debug("✅ 박스오피스 캐시 조회 : {}", latestDateRedisKey);
             return redisTemplate.opsForHash()
                 .entries(latestDateRedisKey)
                 .entrySet()
@@ -62,7 +62,7 @@ public class BoxOfficeService {
                 .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
                 .collect(Collectors.toList());
         } else {
-            log.info("박스오피스 캐싱 : {}", latestDateRedisKey);
+            log.debug("✅ 박스오피스 캐싱 : {}", latestDateRedisKey);
             return fetchDailyBoxOfficeInfo();
         }
     }
