@@ -67,10 +67,11 @@ public class UserController {
 	}
 
 	@GetMapping("/user")
-	public ResponseEntity<BaseResponse<UserInfoResponseDto>> getUserNicknameById(@RequestParam Long userId) {
+	@LoginRequired
+	public ResponseEntity<BaseResponse<UserInfoResponseDto>> getUserNicknameById(@Login User user) {
 		return ResponseMapper.successOf(
 			ApiStatus._OK,
-			userService.getUserInfoById(userId),
+			userService.getUserInfoById(user.getId()),
 			UserController.class
 		);
 	}

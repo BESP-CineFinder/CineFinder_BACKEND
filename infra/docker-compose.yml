@@ -133,11 +133,11 @@ services:
       - .env
     depends_on:
       elasticsearch:
-          condition: service_healthy
+        condition: service_healthy
       mysql:
-          condition: service_healthy
+        condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -s http://localhost:8081 || exit 1" ]
+      test: ["CMD-SHELL", "curl -s http://localhost:8081 || exit 1"]
       interval: 20s
       timeout: 5s
       retries: 5
@@ -160,6 +160,7 @@ services:
         condition: service_healthy
       backend1:
         condition: service_healthy
+
 
   Kafka00Service:
     image: bitnami/kafka:3.7.0

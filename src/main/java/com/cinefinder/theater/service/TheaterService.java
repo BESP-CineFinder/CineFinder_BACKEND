@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.TheaterRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.theater.data.ElasticsearchTheater;
@@ -24,54 +27,54 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import lombok.RequiredArgsConstructor;
 
 
-
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class TheaterService {
 
+	private final RedissonClient redissonClient;
 	private final TheaterRepository theaterRepository;
-	private final Map<String, TheaterCrawlerService> theaterCrawlerServices;
 	private final ElasticsearchClient elasticsearchClient;
+	private final TheaterDbSyncService theaterDbSyncService;
 
 	public Theater getTheaterInfo(String brand, String theaterId) {
-		return theaterRepository.findByBrandNameAndCode(brand, theaterId);
+		return theaterRepository.findByBrandNameAndCode(brand, theaterId)
+				.orElseThrow(() -> new CustomException(ApiStatus._NOT_FOUND));
 	}
 
-	public Map<String,List<String>> getTheaterInfos(Double lat, Double lon, Double distance) {
+	public Map<String,List<String>> getNearbyTheaterCodes(Double lat, Double lon, Double distance) {
 		Map<String,List<String>> results = new HashMap<>();
 
 		try {
 			LatLonGeoLocation userLocation = new LatLonGeoLocation.Builder()
-				.lat(lat)
-				.lon(lon)
-				.build();
+					.lat(lat)
+					.lon(lon)
+					.build();
 
 			SearchRequest searchRequest = SearchRequest.of(s -> s
-				.index("theater")
-				.query(q -> q
-					.bool(b -> b
-						.filter(f -> f
-							.geoDistance(gd -> gd
-								.field("location")
-								.distance(distance + "km")
-								.location(loc -> loc
-									.latlon(userLocation)
-								)
+					.index("theater")
+					.query(q -> q
+							.bool(b -> b
+									.filter(f -> f
+											.geoDistance(gd -> gd
+													.field("location")
+													.distance(distance + "km")
+													.location(loc -> loc
+															.latlon(userLocation)
+													)
+											)
+									)
 							)
-						)
 					)
-				)
-				.sort(sort -> sort
-					.geoDistance(g -> g
-						.field("location")
-						.location(loc -> loc
-							.latlon(userLocation))
-						.unit(DistanceUnit.Kilometers)
-						.order(SortOrder.Asc)
+					.sort(sort -> sort
+							.geoDistance(g -> g
+									.field("location")
+									.location(loc -> loc
+											.latlon(userLocation))
+									.unit(DistanceUnit.Kilometers)
+									.order(SortOrder.Asc)
+							)
 					)
-				)
 			);
 
 			SearchResponse<ElasticsearchTheater> response = elasticsearchClient.search(searchRequest, ElasticsearchTheater.class);
@@ -92,13 +95,30 @@ public class TheaterService {
 	}
 
 	public Map<String, List<Theater>> getTheaterInfosAfterSync() {
-		Map<String, List<Theater>> theaterInfos = new HashMap<>();
-		for (TheaterCrawlerService theaterCrawlerService : theaterCrawlerServices.values()) {
-			List<Theater> theaters = theaterCrawlerService.getCrawlData();
-			theaterCrawlerService.syncRecentTheater(theaters);
-			theaterInfos.put(theaterCrawlerService.getBrandName(), theaters);
-		}
+		RLock lock = redissonClient.getLock("theater-sync-lock");
+		log.info("🔒[영화관 초기화] 락 시도중...");
+		boolean isLocked = false;
 
-		return theaterInfos;
+		try {
+			isLocked = lock.tryLock(10, 300, TimeUnit.SECONDS);
+
+			if (!isLocked) {
+				log.info("🔒[영화관 초기화] 다른 서버에서 영화관을 이미 갱신하고 있어서 초기화를 스킵합니다.");
+				return new HashMap<>();
+			}
+
+			log.info("🔒[영화관 초기화] 락 획득 성공!");
+			return theaterDbSyncService.theaterSyncLogic();
+
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new RuntimeException("동기화 중단됨", e);
+		} finally {
+			if (isLocked) {
+				lock.unlock();
+			}
+		}
 	}
+
+
 }

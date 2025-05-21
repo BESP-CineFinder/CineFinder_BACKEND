@@ -30,6 +30,7 @@ dependencies {
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.session:spring-session-data-redis'
+	implementation 'org.redisson:redisson-spring-boot-starter:3.23.5'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	implementation 'org.springframework.boot:spring-boot-starter-security'

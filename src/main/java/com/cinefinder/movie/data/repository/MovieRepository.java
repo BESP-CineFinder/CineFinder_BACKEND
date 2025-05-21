@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-    Optional<Movie> findByTitle(String title);
+    Optional<Movie> findByMovieKey(String movieKey);
     Movie findByCgvCode(String cgvCode);
     Movie findByLotteCinemaCode(String lotteCode);
     Movie findByMegaBoxCode(String megaCode);
@@ -22,4 +22,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
         WHERE id IN :movieIdList
     """, nativeQuery = true)
     List<Movie> findByMovieIdList(@Param("movieIdList") List<Long> movieIdList);
+
+    @Query(value = """
+        SELECT m.id
+        FROM Movie m
+        WHERE m.movieKey = :movieKey
+    """)
+    Long findMovieIdByMovieKey(@Param("movieKey") String movieKey);
 }

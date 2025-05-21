@@ -43,7 +43,7 @@ public class UtilParse {
         return list;
     }
 
-    public static List<MovieDetails> extractMovieDetailsList(String response) throws JsonProcessingException {
+    public static List<MovieDetails> extractMovieDetailsList(String response, String movieKey) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         List<MovieDetails> list = new ArrayList<>();
 
@@ -105,6 +105,7 @@ public class UtilParse {
             for (JsonNode vod : vodsNode) vods.add(vod.path("vodUrl").asText());
 
             MovieDetails movieDetails = MovieDetails.builder()
+                .movieKey(movieKey)
                 .title(title)
                 .titleEng(titleEng)
                 .nation(nation)
@@ -136,13 +137,13 @@ public class UtilParse {
         for (Element movie : movieItems) {
             MovieDetails movieDetails = new MovieDetails();
 
-            movieDetails.setTitle(movie.selectFirst("div.mm_list_item strong.tit").text());
+            movieDetails.updateTitle(movie.selectFirst("div.mm_list_item strong.tit").text());
 
             Element button = movie.selectFirst("a.btn_reserve");
             String onclick = button.attr("onclick");
             String[] argsArray = onclick.split("'");
             if (argsArray.length >= 4) {
-                movieDetails.setCgvCode(argsArray[3]);
+                movieDetails.updateCgvCode(argsArray[3]);
             }
 
             movieDetailsList.add(movieDetails);
@@ -160,8 +161,8 @@ public class UtilParse {
         for (JsonNode node : curationBannerListNodes) {
             MovieDetails movieDetails = new MovieDetails();
 
-            movieDetails.setTitle(decodeUnicode(node.path("movieNm").asText()));
-            movieDetails.setMegaBoxCode(node.path("movieNo").asText());
+            movieDetails.updateTitle(decodeUnicode(node.path("movieNm").asText()));
+            movieDetails.updateMegaBoxCode(node.path("movieNo").asText());
 
             movieDetailsList.add(movieDetails);
         }
@@ -180,8 +181,8 @@ public class UtilParse {
         for (JsonNode node : items) {
             MovieDetails movieDetails = new MovieDetails();
 
-            movieDetails.setTitle(decodeUnicode(node.path("MovieNameKR").asText()));
-            movieDetails.setLotteCinemaCode(node.path("RepresentationMovieCode").asText());
+            movieDetails.updateTitle(decodeUnicode(node.path("MovieNameKR").asText()));
+            movieDetails.updateLotteCinemaCode(node.path("RepresentationMovieCode").asText());
 
             movieDetailsList.add(movieDetails);
         }

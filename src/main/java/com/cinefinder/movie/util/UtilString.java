@@ -2,8 +2,15 @@ package com.cinefinder.movie.util;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class UtilString {
+    private static final List<String> NORMALIZE_STRING_LIST = List.of(
+        "[^\\p{IsHangul}\\p{IsAlphabetic}\\p{IsDigit}\\s]",
+        "\\s+",
+        "극장판"
+    );
+
     public static String getLatestDateString() {
         return getFormattedDateString(1);
     }
@@ -20,10 +27,11 @@ public class UtilString {
     }
 
     public static String normalizeMovieKey(String input) {
-        return input.toLowerCase()
-            .replaceAll("[^\\p{IsHangul}\\p{IsAlphabetic}\\p{IsDigit}\\s]", "")
-            .replaceAll("\\s+", "")
-            .trim();
+        for (String normalizeString : NORMALIZE_STRING_LIST) {
+            input = input.replaceAll(normalizeString, "");
+        }
+
+        return input.toLowerCase().trim();
     }
 
     public static String normalizeJsonNodeText(String input) {
