@@ -45,7 +45,7 @@ public class ScreenScheduleAggregatorService {
         List<String> movieNames = requestDto.getMovieNames();
 
         Map<String, List<String>> movieIds = getMovieIds(movieNames);
-        Map<String, List<String>> theaterIds = theaterService.getTheaterInfos(lat, lng, distance);
+        Map<String, List<String>> theaterIds = theaterService.getNearbyTheaterCodes(lat, lng, distance);
 
         List<CinemaScheduleApiResponseDto> schedules = getCinemaScheduleApiResponseDtos(screenScheduleServices, date, minTimeStr, maxTimeStr, theaterIds, movieIds);
 

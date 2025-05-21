@@ -11,7 +11,7 @@ public class TheaterScheduler {
     private final TheaterService theaterService;
 
     @Scheduled(cron = "0 0 11 * * *")
-    public void fetchMovieInfoScheduler() {
+    public void fetchTheaterInfoScheduler() {
         theaterService.getTheaterInfosAfterSync();
     }
 }

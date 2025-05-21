@@ -4,9 +4,6 @@ import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.theater.data.Theater;
 import com.cinefinder.theater.data.repository.BrandRepository;
-import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
-import com.cinefinder.theater.data.repository.TheaterRepository;
-import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +19,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,8 +39,6 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     private String theaterDetailEndpoint;
 
     private final BrandRepository brandRepository;
-    private final TheaterRepository theaterRepository;
-    private final ElasticsearchTheaterRepository elasticsearchTheaterRepository;
 
     private static final String USER_AGENT = "Mozilla/5.0";
 
@@ -69,33 +63,6 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         return theaters;
     }
 
-    @Override
-    @Transactional
-    public void syncRecentTheater(List<Theater> theaters) {
-        Set<String> existingCodes = getExistingTheaterCodes();
-        Set<String> newCodes = extractTheaterCodes(theaters);
-
-        if (existingCodes.isEmpty()) {
-            log.info("✅ CGV 영화관 정보가 없습니다. 새로 저장합니다.");
-            theaterRepository.saveAll(theaters);
-            elasticsearchTheaterRepository.saveAll(returnToElasticsearch(theaters, elasticsearchTheaterRepository));
-            return;
-        }
-
-        if (existingCodes.equals(newCodes)) {
-            log.info("✅ CGV 영화관 정보가 이미 최신입니다.");
-            return;
-        }
-
-        log.info("⁉️ CGV 영화관 정보 변경 확인! 업데이트 시작...");
-        theaterRepository.deleteByBrandName(brandName);
-        theaterRepository.saveAll(theaters);
-
-
-        replaceElasticsearchData(theaters, elasticsearchTheaterRepository);
-        log.info("✅ CGV 영화관 정보 업데이트 완료!");
-    }
-
     private List<Theater> crawlArea(Element areaLink) throws IOException {
         List<Theater> theaters = new ArrayList<>();
         String areaUrl = mainUrl + "/TheaterV4/" + areaLink.attr("href");
@@ -116,7 +83,7 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
         String code = getQueryParam(href, "tc");
         if (code == null) return theaters;
 
-        String name = extractTheaterName(theaterLink).replace("CGV", "").trim();
+        String name = extractTheaterName(theaterLink).replace(brandName, "").trim();
         LatLng latLng = fetchTheaterCoordinates(code);
 
         if (latLng != null) {
@@ -129,7 +96,6 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
                     .build();
 
             theaters.add(theater);
-            log.info("CGV 영화관 정보 가져오기 완료: {} - {}", name, code);
         }
         return theaters;
     }
@@ -170,16 +136,4 @@ public class CgvTheaterCrawlerServiceImpl implements TheaterCrawlerService {
     }
 
     private record LatLng(double lat, double lng) {}
-
-    private Set<String> getExistingTheaterCodes() {
-        return theaterRepository.findByBrandName(brandName).stream()
-                .map(Theater::getCode)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<String> extractTheaterCodes(List<Theater> theaters) {
-        return theaters.stream()
-                .map(Theater::getCode)
-                .collect(Collectors.toSet());
-    }
 }
