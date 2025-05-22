@@ -39,6 +39,11 @@ public enum ApiStatus {
 	_THEATER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 극장을 찾을 수 없습니다."),
 	_JSON_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "JSON 파싱 실패"),
 	_HTML_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "HTML 파싱 실패"),
+	_INVALID_WEBSOCKET_URI(HttpStatus.INTERNAL_SERVER_ERROR, 500, "존재하지 않는 웹소켓 URI 입니다."),
+	_NOT_EXIST_ACCESS_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Access토큰을 찾을 수 없습니다."),
+	_USER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "유저를 찾을 수 없습니다."),
+	_REDIS_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 저장 실패"),
+	_REDIS_CHECK_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 조회 실패"),
 	_SIMULTANEOUS_USE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 기능을 다른곳에서 사용중입니다.");
 
 	private final HttpStatus httpStatus;
