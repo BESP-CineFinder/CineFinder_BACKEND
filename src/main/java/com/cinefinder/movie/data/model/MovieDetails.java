@@ -1,7 +1,10 @@
 package com.cinefinder.movie.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.netty.util.internal.StringUtil;
 import lombok.*;
+
+import java.util.stream.Stream;
 
 @Getter
 @NoArgsConstructor
@@ -29,12 +32,18 @@ public class MovieDetails {
     private String actors;             /* 배우 */
     private String vods;               /* VOD URL 목록 */
 
-    public void updateMovieId(Long movieId) {
-        this.movieId = movieId;
+    public boolean hasMissingRequiredField() {
+        return Stream.of(nation, plotText, runtime, genre, releaseDate, ratingGrade)
+            .anyMatch(StringUtil::isNullOrEmpty);
     }
 
-    public void updateTitle(String title) {
-        this.title = title;
+    public void setMissingRequiredField(MovieDetails movieDetails) {
+        if (StringUtil.isNullOrEmpty(nation)) this.updateNation(movieDetails.getNation());
+        if (StringUtil.isNullOrEmpty(plotText)) this.updatePlotText(movieDetails.getPlotText());
+        if (StringUtil.isNullOrEmpty(runtime)) this.updateRuntime(movieDetails.getRuntime());
+        if (StringUtil.isNullOrEmpty(genre)) this.updateGenre(movieDetails.getGenre());
+        if (StringUtil.isNullOrEmpty(releaseDate)) this.updateReleaseDate(movieDetails.getReleaseDate());
+        if (StringUtil.isNullOrEmpty(ratingGrade)) this.updateRatingGrade(movieDetails.getRatingGrade());
     }
 
     public void updateCodes(MovieDetails movieDetails) {
@@ -43,15 +52,15 @@ public class MovieDetails {
         updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
     }
 
-    public void updateCgvCode(String cgvCode) {
-        this.cgvCode = cgvCode;
-    }
-
-    public void updateMegaBoxCode(String megaBoxCode) {
-        this.megaBoxCode = megaBoxCode;
-    }
-
-    public void updateLotteCinemaCode(String lotteCinemaCode) {
-        this.lotteCinemaCode = lotteCinemaCode;
-    }
+    public void updateMovieId(Long movieId) { this.movieId = movieId; }
+    public void updateTitle(String title) { this.title = title; }
+    public void updateReleaseDate(String releaseDate) { this.releaseDate = releaseDate; }
+    public void updatePlotText(String plotText) { this.plotText = plotText; }
+    public void updateNation(String nation) { this.nation = nation; }
+    public void updateRuntime(String runtime) { this.runtime = runtime; }
+    public void updateRatingGrade(String ratingGrade) { this.ratingGrade = ratingGrade; }
+    public void updateGenre(String genre) { this.genre = genre; }
+    public void updateCgvCode(String cgvCode) { this.cgvCode = cgvCode; }
+    public void updateMegaBoxCode(String megaBoxCode) { this.megaBoxCode = megaBoxCode; }
+    public void updateLotteCinemaCode(String lotteCinemaCode) { this.lotteCinemaCode = lotteCinemaCode; }
 }

@@ -27,6 +27,9 @@ public class MovieService {
     @Value("${api.kmdb.service-key}")
     private String kmdbServiceKey;
 
+    @Value("${api.daum.request-url}")
+    private String daumRequestUrl;
+
     @Value("${movie.cgv.name}")
     private String cgvBrandName;
 
@@ -60,6 +63,7 @@ public class MovieService {
 
             if (!isLocked) {
                 log.info("🔒[영화 상세정보 초기화] 다른 서버에서 영화 상세정보를 이미 갱신하고 있어서 초기화를 스킵합니다.");
+                return;
             }
 
             log.info("🔒[영화 상세정보 초기화] 락 획득 성공!");

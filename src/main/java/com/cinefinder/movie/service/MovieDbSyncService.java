@@ -42,6 +42,11 @@ public class MovieDbSyncService {
 
                 if (response == null) continue;
 
+                if (response.hasMissingRequiredField()) {
+                    MovieDetails daumMovieDetails = movieHelperService.requestMovieDaumApi(title);
+                    if (daumMovieDetails != null) { response.setMissingRequiredField(daumMovieDetails); }
+                }
+
                 MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
                 if (originMovieDetails != null) {
                     originMovieDetails.updateCodes(movieDetails);
