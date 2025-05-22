@@ -38,7 +38,8 @@ public enum ApiStatus {
 	_JSOUP_CONNECT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Jsoup 연결 실패"),
 	_THEATER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 극장을 찾을 수 없습니다."),
 	_JSON_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "JSON 파싱 실패"),
-	_HTML_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "HTML 파싱 실패");
+	_HTML_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "HTML 파싱 실패"),
+	_SIMULTANEOUS_USE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 기능을 다른곳에서 사용중입니다.");
 
 	private final HttpStatus httpStatus;
 	private final int code;

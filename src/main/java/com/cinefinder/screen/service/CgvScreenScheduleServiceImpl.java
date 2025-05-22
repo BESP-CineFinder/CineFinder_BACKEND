@@ -2,6 +2,7 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
+import com.cinefinder.movie.data.Movie;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.service.MovieDetailService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
@@ -132,7 +133,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
         List<CinemaScheduleApiResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
             String movieCode = item.path("MovieGroupCd").asText();
-            var movie = movieDetailService.fetchMovieByBrandMovieCode(brandName, movieCode);
+            Movie movie = movieDetailService.fetchMovieByBrandMovieCode(brandName, movieCode);
             if (movie == null) {
                 log.warn("{}에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}, MovieName: {}", brandName, movieCode, item.path("MovieNmKor").asText());
                 continue;
