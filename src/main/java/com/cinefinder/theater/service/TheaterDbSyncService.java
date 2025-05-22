@@ -42,7 +42,7 @@ public class TheaterDbSyncService {
             theaterInfos.put(brandName, savedTheaters);
         }
 
-        log.info("🏢[영화관 초기화] (완료) 현재 영화관 총 {}개 처리 완료", theaterInfos.values().stream().mapToInt(List::size).sum());
+        log.info("🏢[영화관 데이터 갱신 - 완료] 현재 영화관 총 {}개 처리 완료", theaterInfos.values().stream().mapToInt(List::size).sum());
         return theaterInfos;
     }
 
@@ -50,11 +50,11 @@ public class TheaterDbSyncService {
         theaterRepository
                 .findByBrandNameAndCode(newTheater.getBrand().getName(), newTheater.getCode())
                 .map(existingTheater -> {
-                    log.info("🏢[영화관 초기화] (중복) 브랜드: {}, 영화관: {}, 코드: {} 이미 존재", existingTheater.getBrand().getName(), existingTheater.getName(), existingTheater.getCode());
+                    log.debug("🏢[영화관 데이터 갱신 - 중복] 브랜드: {}, 영화관: {}, 코드: {} 이미 존재", existingTheater.getBrand().getName(), existingTheater.getName(), existingTheater.getCode());
                     return existingTheater;
                 })
                 .orElseGet(() -> {
-                    log.info("🏢[영화관 초기화] (신규) 브랜드: {}, 영화관: {}, 코드: {} 저장 완료", newTheater.getBrand().getName(), newTheater.getName(), newTheater.getCode());
+                    log.info("🏢[영화관 데이터 갱신 - 신규] 브랜드: {}, 영화관: {}, 코드: {} 저장 완료", newTheater.getBrand().getName(), newTheater.getName(), newTheater.getCode());
                     return theaterRepository.save(newTheater);
                 });
     }
@@ -65,13 +65,13 @@ public class TheaterDbSyncService {
                         crawledTheater.getCode().equals(dbTheater.getCode())))
                 .toList();
         theaterRepository.deleteAll(closedTheaters);
-        log.info("🏢[영화관 초기화] (폐업) {} 브랜드의 폐업한 영화관 {}개 삭제 완료", brandName, closedTheaters.size());
+        log.info("🏢[영화관 데이터 갱신 - 폐업] {} 브랜드의 폐업한 영화관 {}개 삭제 완료", brandName, closedTheaters.size());
     }
 
     private List<Theater> saveToElasticsearch(TheaterCrawlerService theaterCrawlerService) {
         List<Theater> saved = theaterRepository.findByBrandName(theaterCrawlerService.getBrandName());
         theaterCrawlerService.replaceElasticsearchData(saved, elasticsearchTheaterRepository);
-        log.info("🏢[영화관 초기화] (ES) {} 브랜드의 영화관 {}개 저장 완료", theaterCrawlerService.getBrandName(), saved.size());
+        log.info("🏢[영화관 데이터 갱신 - ES] {} 브랜드의 영화관 {}개 저장 완료", theaterCrawlerService.getBrandName(), saved.size());
         return saved;
     }
 }

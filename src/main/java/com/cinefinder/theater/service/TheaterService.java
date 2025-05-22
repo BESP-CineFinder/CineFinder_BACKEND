@@ -96,18 +96,18 @@ public class TheaterService {
 
 	public Map<String, List<Theater>> getTheaterInfosAfterSync() {
 		RLock lock = redissonClient.getLock("theater-sync-lock");
-		log.info("🔒[영화관 초기화] 락 시도중...");
+		log.info("🔒[영화관 데이터 갱신] 락 시도중...");
 		boolean isLocked = false;
 
 		try {
 			isLocked = lock.tryLock(10, 300, TimeUnit.SECONDS);
 
 			if (!isLocked) {
-				log.info("🔒[영화관 초기화] 다른 서버에서 영화관을 이미 갱신하고 있어서 초기화를 스킵합니다.");
-				return new HashMap<>();
+				log.info("🔒[영화관 데이터 갱신] 다른 서버에서 영화관을 이미 갱신하고 있어서 초기화를 스킵합니다.");
+				throw new CustomException(ApiStatus._SIMULTANEOUS_USE_ERROR);
 			}
 
-			log.info("🔒[영화관 초기화] 락 획득 성공!");
+			log.info("🔒[영화관 데이터 갱신] 락 획득 성공!");
 			return theaterDbSyncService.theaterSyncLogic();
 
 		} catch (InterruptedException e) {
