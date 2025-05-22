@@ -59,7 +59,7 @@ services:
       - .env
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" , "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
-      interval: 5s
+      interval: 15s
       timeout: 5s
       retries: 5
     networks:
@@ -98,7 +98,7 @@ services:
       - ./nginx_config/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - CineFinder_network
-    restart: always
+#    restart: always
     env_file:
       - .env
     depends_on:
@@ -136,11 +136,11 @@ services:
         condition: service_healthy
       mysql:
         condition: service_healthy
-#    healthcheck:
-#      test: ["CMD-SHELL", "curl -s http://localhost:8081 || exit 1"]
-#      interval: 20s
-#      timeout: 5s
-#      retries: 5
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:8081 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
 
   backend2:
     build:
@@ -158,8 +158,8 @@ services:
         condition: service_healthy
       mysql:
         condition: service_healthy
-#      backend1:
-#        condition: service_healthy
+      backend1:
+        condition: service_healthy
 
 
   Kafka00Service:
@@ -274,16 +274,16 @@ services:
     networks:
       - CineFinder_network
 
-#  k6:
-#    image: grafana/k6
-#    volumes:
-#      - ./scripts:/scripts
-#    entrypoint: [ "k6", "run", "/scripts/ws-chat-test.js" ]
-#    depends_on:
-#      - backend1
-#      - backend2
-#    networks:
-#      - CineFinder_network
+  k6:
+    image: grafana/k6
+    volumes:
+      - ./scripts:/scripts
+    entrypoint: [ "k6", "run", "/scripts/ws-chat-test.js" ]
+    depends_on:
+      - backend1
+      - backend2
+    networks:
+      - CineFinder_network
 
 volumes:
   Kafka00:

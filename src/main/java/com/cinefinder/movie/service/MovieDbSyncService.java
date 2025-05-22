@@ -64,7 +64,6 @@ public class MovieDbSyncService {
                     movieRepository.save(movie);
                     log.info("✅ 영화 상세정보 저장 완료 : {}", movie.getTitle());
                     kafkaService.createTopicIfNotExists(movie.getId().toString());
-
                     this.createElasticsearchChatIndex(movie.getId().toString());
                 }
             }
@@ -87,7 +86,7 @@ public class MovieDbSyncService {
                     "id", Map.of("type", "keyword"),
                     "senderId", Map.of("type", "keyword"),
                     "message", Map.of("type", "text", "analyzer", "standard"),
-                    "timestamp", Map.of("type", "date", "format", "strict_date_optional_time||epoch_millis")
+                    "createdAt", Map.of("type", "date", "format", "strict_date_optional_time||epoch_millis")
                 )
             );
 
