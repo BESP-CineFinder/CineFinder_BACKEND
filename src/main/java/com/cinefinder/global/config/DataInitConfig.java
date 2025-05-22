@@ -1,6 +1,6 @@
 package com.cinefinder.global.config;
 
-import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.theater.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class DataInitConfig implements ApplicationRunner {
 
     private final BrandService brandService;
     private final TheaterService theaterService;
-    private final MovieDetailService movieDetailService;
+    private final MovieService movieService;
 
     @Async
     @Override
@@ -30,6 +30,6 @@ public class DataInitConfig implements ApplicationRunner {
             log.info("({})의 이유로 다음 작업으로 넘어갑니다.", e.getMessage());
         }
 
-        movieDetailService.fetchMultiplexMovieDetails();
+        movieService.fetchMultiplexMovieDetails();
     }
 }

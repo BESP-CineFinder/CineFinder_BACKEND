@@ -4,7 +4,7 @@ import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.Movie;
 import com.cinefinder.movie.mapper.MovieMapper;
-import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.mapper.TheaterMapper;
 import com.cinefinder.theater.service.BrandService;
@@ -40,7 +40,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
     private final BrandService brandService;
     private final TheaterService theaterService;
-    private final MovieDetailService movieDetailService;
+    private final MovieService movieService;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -106,7 +106,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
 
         for (JsonNode item : items) {
             String movieCode = item.path("RepresentationMovieCode").asText();
-            Movie movie = movieDetailService.fetchMovieByBrandMovieCode(brandName, movieCode);
+            Movie movie = movieService.fetchMovieByBrandMovieCode(brandName, movieCode);
             if (movie == null) {
                 log.warn("{}에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}, MovieName: {}", brandName, movieCode, item.path("MovieNameKR").asText());
                 continue;
@@ -145,7 +145,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
             CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
                     brandService.getBrandInfo(brandName),
                     TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("CinemaID").asText())),
-                    MovieMapper.toSimplifiedMovieDto(movieDetailService.fetchMovieByBrandMovieCode(brandName, item.path("RepresentationMovieCode").asText())),
+                    MovieMapper.toSimplifiedMovieDto(movieService.fetchMovieByBrandMovieCode(brandName, item.path("RepresentationMovieCode").asText())),
                     item.path("FilmCode").asText(),
                     item.path("FilmNameKR").asText(),
                     item.path("ScreenID").asText(),
