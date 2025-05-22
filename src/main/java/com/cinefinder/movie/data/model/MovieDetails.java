@@ -1,23 +1,25 @@
 package com.cinefinder.movie.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.netty.util.internal.StringUtil;
 import lombok.*;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MovieDetails {
-    private String cgvCode;
-    private String megaBoxCode;
-    private String lotteCinemaCode;
+    private Long movieId;              /* 영화 ID */
+    private String cgvCode;            /* CGV 영화 코드 */
+    private String megaBoxCode;        /* 메가박스 영화 코드 */
+    private String lotteCinemaCode;    /* 롯데시네마 영화 코드 */
     private String title;              /* 제목 */
     private String titleEng;           /* 영문 제목 */
+    private String movieKey;           /* 정규화된 제목 */
     private String nation;             /* 국가 */
     private String genre;              /* 장르 */
     private String posters;            /* 포스터 URL 목록 */
@@ -29,4 +31,36 @@ public class MovieDetails {
     private String directors;          /* 감독 */
     private String actors;             /* 배우 */
     private String vods;               /* VOD URL 목록 */
+
+    public boolean hasMissingRequiredField() {
+        return Stream.of(nation, plotText, runtime, genre, releaseDate, ratingGrade)
+            .anyMatch(StringUtil::isNullOrEmpty);
+    }
+
+    public void setMissingRequiredField(MovieDetails movieDetails) {
+        if (StringUtil.isNullOrEmpty(nation)) this.updateNation(movieDetails.getNation());
+        if (StringUtil.isNullOrEmpty(plotText)) this.updatePlotText(movieDetails.getPlotText());
+        if (StringUtil.isNullOrEmpty(runtime)) this.updateRuntime(movieDetails.getRuntime());
+        if (StringUtil.isNullOrEmpty(genre)) this.updateGenre(movieDetails.getGenre());
+        if (StringUtil.isNullOrEmpty(releaseDate)) this.updateReleaseDate(movieDetails.getReleaseDate());
+        if (StringUtil.isNullOrEmpty(ratingGrade)) this.updateRatingGrade(movieDetails.getRatingGrade());
+    }
+
+    public void updateCodes(MovieDetails movieDetails) {
+        updateCgvCode(movieDetails.getCgvCode());
+        updateMegaBoxCode(movieDetails.getMegaBoxCode());
+        updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
+    }
+
+    public void updateMovieId(Long movieId) { this.movieId = movieId; }
+    public void updateTitle(String title) { this.title = title; }
+    public void updateReleaseDate(String releaseDate) { this.releaseDate = releaseDate; }
+    public void updatePlotText(String plotText) { this.plotText = plotText; }
+    public void updateNation(String nation) { this.nation = nation; }
+    public void updateRuntime(String runtime) { this.runtime = runtime; }
+    public void updateRatingGrade(String ratingGrade) { this.ratingGrade = ratingGrade; }
+    public void updateGenre(String genre) { this.genre = genre; }
+    public void updateCgvCode(String cgvCode) { this.cgvCode = cgvCode; }
+    public void updateMegaBoxCode(String megaBoxCode) { this.megaBoxCode = megaBoxCode; }
+    public void updateLotteCinemaCode(String lotteCinemaCode) { this.lotteCinemaCode = lotteCinemaCode; }
 }

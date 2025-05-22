@@ -43,7 +43,7 @@ public class UtilParse {
         return list;
     }
 
-    public static List<MovieDetails> extractMovieDetailsList(String response) throws JsonProcessingException {
+    public static List<MovieDetails> extractMovieDetailsList(String response, String movieKey) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         List<MovieDetails> list = new ArrayList<>();
 
@@ -53,10 +53,7 @@ public class UtilParse {
             .path("Result");
 
         // 2. 응답 결과가 없다면
-        if (result.isMissingNode()) {
-            log.warn("❌ [영화 상세정보 추출] API 응답 결과가 없음");
-            return list;
-        }
+        if (result.isMissingNode()) return list;
 
         // 3. 요청 및 응답 List 생성
         for (JsonNode node : result) {
@@ -105,6 +102,7 @@ public class UtilParse {
             for (JsonNode vod : vodsNode) vods.add(vod.path("vodUrl").asText());
 
             MovieDetails movieDetails = MovieDetails.builder()
+                .movieKey(movieKey)
                 .title(title)
                 .titleEng(titleEng)
                 .nation(nation)
@@ -126,6 +124,31 @@ public class UtilParse {
         return list;
     }
 
+    public static MovieDetails extractDaumMovieDetails(String response) {
+        Document doc = Jsoup.parse(response);
+        Elements dts = doc.select("dt");
+
+        if (dts.isEmpty()) return null;
+
+        MovieDetails movieDetails = new MovieDetails();
+        for (Element dt : dts) {
+            Element dd = dt.nextElementSibling();
+            if (dd == null) continue;
+
+            switch (dt.text()) {
+                case "개봉" -> movieDetails.updateReleaseDate(dd.text());
+                case "국가" -> movieDetails.updateNation(dd.text());
+                case "장르" -> movieDetails.updateGenre(dd.text());
+                case "등급" -> movieDetails.updateRatingGrade(dd.text());
+                case "시간" -> movieDetails.updateRuntime(dd.text());
+            }
+        }
+
+        Element summary = doc.selectFirst("c-summary");
+        if (summary != null) movieDetails.updatePlotText(summary.text());
+        return movieDetails;
+    }
+
     public static List<MovieDetails> extractCgvMovieList(String response) {
         if (response == null) return new ArrayList<>();
 
@@ -136,13 +159,13 @@ public class UtilParse {
         for (Element movie : movieItems) {
             MovieDetails movieDetails = new MovieDetails();
 
-            movieDetails.setTitle(movie.selectFirst("div.mm_list_item strong.tit").text());
+            movieDetails.updateTitle(movie.selectFirst("div.mm_list_item strong.tit").text());
 
             Element button = movie.selectFirst("a.btn_reserve");
             String onclick = button.attr("onclick");
             String[] argsArray = onclick.split("'");
             if (argsArray.length >= 4) {
-                movieDetails.setCgvCode(argsArray[3]);
+                movieDetails.updateCgvCode(argsArray[3]);
             }
 
             movieDetailsList.add(movieDetails);
@@ -160,8 +183,8 @@ public class UtilParse {
         for (JsonNode node : curationBannerListNodes) {
             MovieDetails movieDetails = new MovieDetails();
 
-            movieDetails.setTitle(decodeUnicode(node.path("movieNm").asText()));
-            movieDetails.setMegaBoxCode(node.path("movieNo").asText());
+            movieDetails.updateTitle(decodeUnicode(node.path("movieNm").asText()));
+            movieDetails.updateMegaBoxCode(node.path("movieNo").asText());
 
             movieDetailsList.add(movieDetails);
         }
@@ -180,8 +203,8 @@ public class UtilParse {
         for (JsonNode node : items) {
             MovieDetails movieDetails = new MovieDetails();
 
-            movieDetails.setTitle(decodeUnicode(node.path("MovieNameKR").asText()));
-            movieDetails.setLotteCinemaCode(node.path("RepresentationMovieCode").asText());
+            movieDetails.updateTitle(decodeUnicode(node.path("MovieNameKR").asText()));
+            movieDetails.updateLotteCinemaCode(node.path("RepresentationMovieCode").asText());
 
             movieDetailsList.add(movieDetails);
         }

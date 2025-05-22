@@ -1,28 +1,35 @@
 package com.cinefinder.global.config;
 
-import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.theater.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DataInitConfig {
+public class DataInitConfig implements ApplicationRunner {
 
     private final BrandService brandService;
     private final TheaterService theaterService;
-    private final MovieDetailService movieDetailService;
+    private final MovieService movieService;
 
-    @PostConstruct
-    public void init() {
+    @Async
+    @Override
+    public void run(ApplicationArguments args) {
         brandService.initializeBrands();
 
-        theaterService.getTheaterInfosAfterSync();
+        try {
+            theaterService.getTheaterInfosAfterSync();
+        } catch (Exception e) {
+            log.info("({})의 이유로 다음 작업으로 넘어갑니다.", e.getMessage());
+        }
 
-        movieDetailService.fetchMultiplexMovieDetails();
+        movieService.fetchMultiplexMovieDetails();
     }
 }

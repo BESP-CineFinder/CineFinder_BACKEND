@@ -1,7 +1,7 @@
 package com.cinefinder.screen.service;
 
 import com.cinefinder.movie.data.model.MovieDetails;
-import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.MovieGroupedScheduleResponseDto;
 import com.cinefinder.screen.data.dto.ScreenScheduleRequestDto;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
@@ -31,7 +31,7 @@ public class ScreenScheduleAggregatorService {
     private String megaBrandName;
 
     private final TheaterService theaterService;
-    private final MovieDetailService movieDetailService;
+    private final MovieService movieService;
     private final Map<String, ScreenScheduleService> screenScheduleServices;
 
     public List<MovieGroupedScheduleResponseDto> getCinemasSchedules(ScreenScheduleRequestDto requestDto) {
@@ -89,7 +89,7 @@ public class ScreenScheduleAggregatorService {
         }};
 
         for (String movieName : movieNames) {
-            MovieDetails movieDetail = movieDetailService.getMovieDetails(movieName);
+            MovieDetails movieDetail = movieService.fetchMovieDetails(movieName);
             String cgvCode = movieDetail.getCgvCode();
             String lotteCode = movieDetail.getLotteCinemaCode();
             String megaCode = movieDetail.getMegaBoxCode();

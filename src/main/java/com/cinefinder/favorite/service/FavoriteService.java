@@ -7,7 +7,7 @@ import com.cinefinder.favorite.model.FavoriteMovie;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.Movie;
-import com.cinefinder.movie.service.MovieDetailService;
+import com.cinefinder.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class FavoriteService {
     private final FavoriteRepository favoriteRepository;
-    private final MovieDetailService movieDetailService;
+    private final MovieService movieService;
 
     @Transactional
     public void updateFavoriteInfo(FavoriteRequestDto favoriteRequestDto) {
@@ -71,7 +71,7 @@ public class FavoriteService {
             }
 
             // 3.  영화 ID 목록에 해당하는 정보 조회
-            List<Movie> movieList = movieDetailService.getFavoriteMovieList(movieIdList);
+            List<Movie> movieList = movieService.getFavoriteMovieList(movieIdList);
             log.info("✅ ID 기반으로 조회한 영화정보 목록 개수 : {}", movieIdList.size());
 
             // 4. 영화 ID 목록 개수와 영화정보 목록 개수가 일치하지 않을 경우

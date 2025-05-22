@@ -43,8 +43,8 @@ public enum ApiStatus {
 	_NOT_EXIST_ACCESS_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Access토큰을 찾을 수 없습니다."),
 	_USER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "유저를 찾을 수 없습니다."),
 	_REDIS_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 저장 실패"),
-	_REDIS_CHECK_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 조회 실패");
-
+	_REDIS_CHECK_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 조회 실패"),
+	_SIMULTANEOUS_USE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 기능을 다른곳에서 사용중입니다.");
 
 	private final HttpStatus httpStatus;
 	private final int code;

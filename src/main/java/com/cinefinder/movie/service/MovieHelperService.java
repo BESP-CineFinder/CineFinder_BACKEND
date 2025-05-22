@@ -8,9 +8,7 @@ import com.cinefinder.movie.util.UtilString;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -26,6 +24,9 @@ import java.util.Map;
 @Service
 @Slf4j
 public class MovieHelperService {
+    @Value("${api.daum.request-url}")
+    private String daumRequestUrl;
+
     @Value("${api.cgv.code.request-url}")
     private String cgvRequestUrl;
 
@@ -36,14 +37,22 @@ public class MovieHelperService {
     private String lotteCinemaRequestUrl;
 
     private static final List<String> IGNORE_TITLE_LIST = List.of("AD");
-
     private final RestTemplate restTemplate = new RestTemplate();
+
+    public List<MovieDetails> requestMultiplexMovieApi() {
+        List<MovieDetails> multiplexMovieList = new ArrayList<>();
+        multiplexMovieList.addAll(requestMovieCgvApi());
+        multiplexMovieList.addAll(requestMovieMegaBoxApi());
+        multiplexMovieList.addAll(requestMovieLotteCinemaApi());
+
+        return multiplexMovieList;
+    }
 
     public List<MovieDetails> requestMovieCgvApi() {
         try {
-            String cgvResponse = restTemplate.getForObject(cgvRequestUrl, String.class);
+            String response = restTemplate.getForObject(cgvRequestUrl, String.class);
 
-            return UtilParse.extractCgvMovieList(cgvResponse);
+            return UtilParse.extractCgvMovieList(response);
         } catch (RestClientException e) {
             throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "CGV 영화목록 API 호출 실패");
         } catch (Exception e) {
@@ -138,15 +147,15 @@ public class MovieHelperService {
 
                 if (originMovieDetails != null) {
                     if (!StringUtil.isNullOrEmpty(cgvCode)) {
-                        originMovieDetails.setCgvCode(movieDetails.getCgvCode());
+                        originMovieDetails.updateCgvCode(movieDetails.getCgvCode());
                     }
 
                     if (!StringUtil.isNullOrEmpty(megaBoxCode)) {
-                        originMovieDetails.setMegaBoxCode(movieDetails.getMegaBoxCode());
+                        originMovieDetails.updateMegaBoxCode(movieDetails.getMegaBoxCode());
                     }
 
                     if (!StringUtil.isNullOrEmpty(lotteCinemaCode)) {
-                        originMovieDetails.setLotteCinemaCode(movieDetails.getLotteCinemaCode());
+                        originMovieDetails.updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
                     }
 
                     if (originMovieDetails.getTitle().length() >= title.length()) {
@@ -160,6 +169,25 @@ public class MovieHelperService {
             return distinctMap;
         } catch (Exception e) {
             throw new CustomException(ApiStatus._INTERNAL_SERVER_ERROR, "멀티플렉스 영화목록 병합 중 알 수 없는 오류 발생");
+        }
+    }
+
+    public MovieDetails requestMovieDaumApi(String title) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36");
+            headers.set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+            headers.set("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.5,en;q=0.3");
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            String url = String.format(daumRequestUrl, title);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+            return UtilParse.extractDaumMovieDetails(response.getBody());
+        } catch (RestClientException e) {
+            throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "Daum 영화 상세정보 API 호출 실패");
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._INTERNAL_SERVER_ERROR, "Daum 영화 상세정보 API 호출 중 알 수 없는 오류 발생");
         }
     }
 }
