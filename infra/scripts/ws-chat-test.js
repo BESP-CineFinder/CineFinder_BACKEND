@@ -5,8 +5,8 @@ import {Counter} from 'k6/metrics';
 import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
 
 const duration = 30
-const subId = '21';
-const vus = 10000;
+const subId = '5';
+const vus = 5000;
 
 
 export const options = {

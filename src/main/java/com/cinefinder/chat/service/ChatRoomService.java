@@ -2,6 +2,8 @@ package com.cinefinder.chat.service;
 
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatType;
+import com.cinefinder.global.util.service.BadWordFilterService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -20,6 +22,7 @@ public class ChatRoomService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RedisSessionService redisSessionService;
     private final RedisTemplate<String, String> redisTemplate;
+    private final BadWordFilterService badWordFilterService;
     private static final String CHAT_ROOM_PREFIX = "chat:room:";
     private static final String CHAT_ROOM_PARTICIPANTS = ":participants";
 
@@ -27,6 +30,7 @@ public class ChatRoomService {
         // 메시지 타입에 따른 처리
         if (message.getType() == ChatType.CHAT) {
             // 일반 채팅 메시지 처리
+            message.maskMessage(badWordFilterService.maskBadWords(message.getMessage(), "*"));
             kafkaService.sendMessage(message);
             log.info("Save chat message: {}", message);
         }

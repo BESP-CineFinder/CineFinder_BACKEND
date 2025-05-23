@@ -1,0 +1,22 @@
+config:
+  target: "https://CF_nginx"
+  phases:
+    - duration: 60      # 1분 동안 500명 → 1000명으로 증가
+      arrivalRate: 500
+      rampTo: 1000
+    - duration: 300     # 5분 동안 1000명 유지
+      arrivalRate: 1000
+  tls:
+    rejectUnauthorized: false
+  defaults:
+    headers:
+      Content-Type: application/json
+
+scenarios:
+  - name: "Fetch main"
+    flow:
+      - get:
+          url: "/api/movie/box-office/daily"
+          expect:
+            - statusCode: 200
+      - think: 1         # 요청 후 1초 대기
