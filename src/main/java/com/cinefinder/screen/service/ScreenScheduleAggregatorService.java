@@ -48,8 +48,18 @@ public class ScreenScheduleAggregatorService {
         Map<String, List<String>> theaterIds = theaterService.getNearbyTheaterCodes(lat, lng, distance);
 
         List<CinemaScheduleApiResponseDto> schedules = getCinemaScheduleApiResponseDtos(screenScheduleServices, date, minTimeStr, maxTimeStr, theaterIds, movieIds);
+        List<MovieGroupedScheduleResponseDto> groupedSchedules = ScreenMapper.toGroupedSchedule(schedules);
+        groupedSchedules.sort((a, b) -> {
+            int scheduleCountA = a.getSchedule().values().stream()
+                    .mapToInt(List::size)
+                    .sum();
+            int scheduleCountB = b.getSchedule().values().stream()
+                    .mapToInt(List::size)
+                    .sum();
+            return Integer.compare(scheduleCountB, scheduleCountA);
+        });
 
-        return ScreenMapper.toGroupedSchedule(schedules);
+        return groupedSchedules;
     }
 
     private static List<CinemaScheduleApiResponseDto> getCinemaScheduleApiResponseDtos(Map<String, ScreenScheduleService> screenScheduleServices, String date, String minTimeStr, String maxTimeStr, Map<String, List<String>> theaterIds, Map<String, List<String>> movieIds) {
