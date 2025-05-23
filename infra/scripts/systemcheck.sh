@@ -7,7 +7,7 @@ OUTPUT_FILE="docker_stats_log.csv"
 CONTAINERS=("backend1" "backend2" "frontend" "CF_nginx")
 
 # CSV 헤더 작성
-echo "timestamp,container,name,cpu_perc,mem_usage,mem_limit,mem_perc,net_io,block_io,pids" > "$OUTPUT_FILE"
+echo "timestamp,container,cpu_perc,mem_usage,mem_limit,mem_perc,net_io" > "$OUTPUT_FILE"
 
 # 무한 루프: 1초마다 실행
 while true; do
@@ -15,8 +15,10 @@ while true; do
 
   for CONTAINER in "${CONTAINERS[@]}"; do
     docker stats --no-stream --format \
-      "$TIMESTAMP,{{.Container}},{{.Name}},{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}},{{.NetIO}},{{.BlockIO}},{{.PIDs}}" "$CONTAINER" \
+      "$TIMESTAMP,{{.Container}},{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}},{{.NetIO}},{{.BlockIO}},{{.PIDs}}" "$CONTAINER" \
       >> "$OUTPUT_FILE"
+
+      echo "$LINE" >> "$OUTPUT_FILE"
   done
 
   sleep 1
