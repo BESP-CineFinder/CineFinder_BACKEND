@@ -28,15 +28,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 			.setSystemLogin(login)
 			.setSystemPasscode(passcode)
 			.setClientLogin(login)
-			.setClientPasscode(passcode);
+			.setClientPasscode(passcode)
+			.setSystemHeartbeatReceiveInterval(10000) // 10초
+			.setSystemHeartbeatSendInterval(10000);  // 10초
 		config.setApplicationDestinationPrefixes("/app");
 	}
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint(WEBSOCKET_ENDPOINT)
-			.setAllowedOriginPatterns("*")
-			.withSockJS();
+			.setAllowedOriginPatterns("*");
+			// .withSockJS();
 	}
 
 }

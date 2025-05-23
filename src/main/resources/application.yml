@@ -140,6 +140,7 @@ logging-level:
   org.hibernate.SQL: debug
   org.hibernate.type: trace
   org.springframework.data.elasticsearch.client: debug
+  org.springframework.web: debug
 
 # =======================================  MAIN  =======================================
 ---

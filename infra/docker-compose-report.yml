@@ -1,0 +1,9 @@
+services:
+  artillery:
+    image: artilleryio/artillery:2.0.21
+    container_name: artillery
+    volumes:
+      - ./scripts:/src
+    working_dir: /src
+    command: ["report", "report.json", "--output", "report.html"]
+
