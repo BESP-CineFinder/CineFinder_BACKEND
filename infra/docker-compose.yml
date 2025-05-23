@@ -285,17 +285,17 @@ services:
 #    networks:
 #      - CineFinder_network
 
-  artillery:
-    image: artilleryio/artillery
-    container_name: artillery
-    volumes:
-      - ./scripts:/src
-    working_dir: /src
-    command: ["run",  "--output", "report.json",  "loadtest.yml"]
-    depends_on:
-      - nginx
-    networks:
-      - CineFinder_network
+#  artillery:
+#    image: artilleryio/artillery
+#    container_name: artillery
+#    volumes:
+#      - ./scripts:/src
+#    working_dir: /src
+#    command: ["run",  "--output", "report.json",  "loadtest.yml"]
+#    depends_on:
+#      - nginx
+#    networks:
+#      - CineFinder_network
 
 volumes:
   Kafka00:

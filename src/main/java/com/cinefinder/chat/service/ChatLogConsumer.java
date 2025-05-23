@@ -32,7 +32,6 @@ public class ChatLogConsumer {
     @Scheduled(fixedDelay = 5000)
     public void consumeAndBulkInsert() {
         ConsumerRecords<String, ChatMessage> records = kafkaConsumer.poll(Duration.ofMillis(3000));
-        log.info("Polled {} records", records.count());
         if (!records.isEmpty()) {
             try {
                 // 파티션 별로 처리
@@ -50,11 +49,9 @@ public class ChatLogConsumer {
                     // 개별 파티션별 저장 시도
                     try {
                         log.info("✅ Saving messages to index {} : {}", indexName, messages.size());
-                        log.info("start offset : {}", partitionRecords.get(0).offset());
                         chatLogElasticService.saveBulk(indexName, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
                         kafkaConsumer.commitSync(Collections.singletonMap(partition,
                             new OffsetAndMetadata(partitionRecords.get(partitionRecords.size() - 1).offset() + 1)));
-                        log.info("end offset : {}", partitionRecords.get(0).offset());
                     } catch (Exception e) {
                         log.error("Failed to save messages for index {}. Will seek back", indexName, e);
                         long firstOffset = partitionRecords.get(0).offset();
