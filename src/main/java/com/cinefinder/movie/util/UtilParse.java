@@ -53,10 +53,7 @@ public class UtilParse {
             .path("Result");
 
         // 2. 응답 결과가 없다면
-        if (result.isMissingNode()) {
-            log.warn("❌ [영화 상세정보 추출] API 응답 결과가 없음");
-            return list;
-        }
+        if (result.isMissingNode()) return list;
 
         // 3. 요청 및 응답 List 생성
         for (JsonNode node : result) {
@@ -125,6 +122,31 @@ public class UtilParse {
         }
 
         return list;
+    }
+
+    public static MovieDetails extractDaumMovieDetails(String response) {
+        Document doc = Jsoup.parse(response);
+        Elements dts = doc.select("dt");
+
+        if (dts.isEmpty()) return null;
+
+        MovieDetails movieDetails = new MovieDetails();
+        for (Element dt : dts) {
+            Element dd = dt.nextElementSibling();
+            if (dd == null) continue;
+
+            switch (dt.text()) {
+                case "개봉" -> movieDetails.updateReleaseDate(dd.text());
+                case "국가" -> movieDetails.updateNation(dd.text());
+                case "장르" -> movieDetails.updateGenre(dd.text());
+                case "등급" -> movieDetails.updateRatingGrade(dd.text());
+                case "시간" -> movieDetails.updateRuntime(dd.text());
+            }
+        }
+
+        Element summary = doc.selectFirst("c-summary");
+        if (summary != null) movieDetails.updatePlotText(summary.text());
+        return movieDetails;
     }
 
     public static List<MovieDetails> extractCgvMovieList(String response) {

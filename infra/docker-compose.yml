@@ -274,16 +274,16 @@ services:
     networks:
       - CineFinder_network
 
-  k6:
-    image: grafana/k6
-    volumes:
-      - ./scripts:/scripts
-    entrypoint: [ "k6", "run", "/scripts/ws-chat-test.js" ]
-    depends_on:
-      - backend1
-      - backend2
-    networks:
-      - CineFinder_network
+#  k6:
+#    image: grafana/k6
+#    volumes:
+#      - ./scripts:/scripts
+#    entrypoint: [ "k6", "run", "/scripts/ws-chat-test.js" ]
+#    depends_on:
+#      - backend1
+#      - backend2
+#    networks:
+#      - CineFinder_network
 
 volumes:
   Kafka00:

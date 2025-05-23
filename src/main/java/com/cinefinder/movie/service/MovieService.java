@@ -27,6 +27,9 @@ public class MovieService {
     @Value("${api.kmdb.service-key}")
     private String kmdbServiceKey;
 
+    @Value("${api.daum.request-url}")
+    private String daumRequestUrl;
+
     @Value("${movie.cgv.name}")
     private String cgvBrandName;
 

@@ -23,6 +23,8 @@ public class ChatMessage extends BaseTimeEntity {
 
 	private String message;
 
+	private ChatType type;
+
 	@Builder.Default
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime createdAt = LocalDateTime.now();

@@ -39,7 +39,6 @@ public class MovieDetailService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieRepository movieRepository;
 
-
     public MovieDetails getMovieDetails(String title) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -105,5 +104,4 @@ public class MovieDetailService {
             throw new CustomException(ApiStatus._OPERATION_FAIL, "영화 상세정보 저장 중 오류 발생");
         }
     }
-
 }
