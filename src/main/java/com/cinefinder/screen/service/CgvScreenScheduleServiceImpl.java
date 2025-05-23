@@ -133,14 +133,24 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
         List<CinemaScheduleApiResponseDto> result = new ArrayList<>();
         for (JsonNode item : scheduleList) {
             String movieCode = item.path("MovieGroupCd").asText();
-            Movie movie = movieDetailService.fetchMovieByBrandMovieCode(brandName, movieCode);
-
+            Movie movie = movieService.fetchMovieByBrandMovieCode(brandName, movieCode);
             if (movie == null) {
                 log.warn("{}에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}, MovieName: {}", brandName, movieCode, item.path("MovieNmKor").asText());
                 continue;
             }
             String startTime = item.path("PlayStartTm").asText();
             String endTime = item.path("PlayEndTm").asText();
+            try {
+                int remainSeat = item.path("SeatRemainCnt").asInt();
+                int capacitySeat = item.path("SeatCapacity").asInt();
+                if (remainSeat > capacitySeat || remainSeat <= 0 || capacitySeat <= 0) {
+                    log.warn("{}에서 예약이 불가능한 상영 일정 정보가 있습니다. MovieCode: {}, MovieName: {}, RemainingSeat: {}, CapacitySeat: {}", brandName, movieCode, item.path("MovieNmKor").asText(), remainSeat, capacitySeat);
+                    continue;
+                }
+            } catch (Exception e) {
+                log.warn("{}에서 예약이 불가능한 상영 일정 정보가 있습니다. MovieCode: {}, MovieName: {}, RemainingSeat: {}, CapacitySeat: {}", brandName, movieCode, item.path("MovieNmKor").asText(), item.path("SeatRemainCnt").asText(), item.path("SeatCapacity").asText());
+                continue;
+            }
 
             CinemaScheduleApiResponseDto dto = new CinemaScheduleApiResponseDto(
                     brandService.getBrandInfo(brandName),
