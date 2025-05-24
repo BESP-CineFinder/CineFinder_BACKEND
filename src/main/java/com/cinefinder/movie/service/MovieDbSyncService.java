@@ -38,29 +38,27 @@ public class MovieDbSyncService {
                 String redisKey = "movieDetails:" + movieKey;
                 String title = movieDetails.getTitle();
 
-                MovieDetails response = movieDetailService.getMovieDetails(title);
-
+                MovieDetails response = resolveMovieDetails(movieKey, title);
                 if (response == null) continue;
-
-                if (response.hasMissingRequiredField()) {
-                    MovieDetails daumMovieDetails = movieHelperService.requestMovieDaumApi(title);
-                    if (daumMovieDetails != null) { response.setMissingRequiredField(daumMovieDetails); }
-                }
 
                 MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
                 if (originMovieDetails != null) {
                     originMovieDetails.updateCodes(movieDetails);
+                    if (originMovieDetails.hasMissingRequiredField()) originMovieDetails.setMissingRequiredField(response);
                     redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
                 }
 
                 Movie movie = MovieMapper.toEntity(movieDetails, response);
                 Optional<Movie> optionalOriginMovie = movieRepository.findByMovieKey(movieKey);
                 if (optionalOriginMovie.isPresent()) {
-                    movie.updateMovie(optionalOriginMovie.get());
+                    Movie originMovie = optionalOriginMovie.get();
+                    originMovie.updateMovie(movie);
                 } else {
                     movieRepository.save(movie);
                 }
             }
+
+            log.info("⭕ 영화 상세정보 초기화 완료");
         } catch (Exception e) {
             log.error("오류: {}", e.getMessage());
             log.error("stackTrace: {}", Arrays.toString(e.getStackTrace()));
@@ -68,5 +66,20 @@ public class MovieDbSyncService {
         }
     }
 
+    private MovieDetails resolveMovieDetails(String movieKey, String title) {
+        MovieDetails kmdbMovieDetails = movieDetailService.fetchMovieDetails(movieKey, title);
 
+        if (kmdbMovieDetails == null) {
+            MovieDetails daumMovieDetails = movieHelperService.requestMovieDaumApi(title);
+            if (daumMovieDetails != null) daumMovieDetails.updateMovieKey(movieKey);
+            return daumMovieDetails;
+        }
+
+        if (kmdbMovieDetails.hasMissingRequiredField()) {
+            MovieDetails daumMovieDetails = movieHelperService.requestMovieDaumApi(title);
+            if (daumMovieDetails != null) kmdbMovieDetails.setMissingRequiredField(daumMovieDetails);
+        }
+
+        return kmdbMovieDetails;
+    }
 }

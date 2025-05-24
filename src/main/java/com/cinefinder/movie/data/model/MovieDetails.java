@@ -53,6 +53,7 @@ public class MovieDetails {
     }
 
     public void updateMovieId(Long movieId) { this.movieId = movieId; }
+    public void updateMovieKey(String movieKey) { this.movieKey = movieKey; }
     public void updateTitle(String title) { this.title = title; }
     public void updateReleaseDate(String releaseDate) { this.releaseDate = releaseDate; }
     public void updatePlotText(String plotText) { this.plotText = plotText; }
@@ -60,6 +61,9 @@ public class MovieDetails {
     public void updateRuntime(String runtime) { this.runtime = runtime; }
     public void updateRatingGrade(String ratingGrade) { this.ratingGrade = ratingGrade; }
     public void updateGenre(String genre) { this.genre = genre; }
+    public void updateStlls(String stlls) { this.stlls = stlls; }
+    public void updateVods(String vods) { this.vods = vods; }
+    public void updatePosters(String posters) { this.posters = posters; }
     public void updateCgvCode(String cgvCode) { this.cgvCode = cgvCode; }
     public void updateMegaBoxCode(String megaBoxCode) { this.megaBoxCode = megaBoxCode; }
     public void updateLotteCinemaCode(String lotteCinemaCode) { this.lotteCinemaCode = lotteCinemaCode; }

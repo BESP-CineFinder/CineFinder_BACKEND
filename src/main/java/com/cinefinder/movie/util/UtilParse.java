@@ -5,7 +5,6 @@ import com.cinefinder.movie.data.model.MovieDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,17 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-@Slf4j
 public class UtilParse {
     public static List<BoxOffice> extractDailyBoxOfficeInfoList(String response) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
-        // 1. 일간 박스오피스 목록 파싱
         JsonNode root = mapper.readTree(response);
         JsonNode dailyBoxOfficeList = root.path("boxOfficeResult")
                 .path("dailyBoxOfficeList");
 
-        // 2. 요청 및 응답 List 생성
         List<BoxOffice> list = new ArrayList<>();
         for (JsonNode node : dailyBoxOfficeList) {
             String movieNm = node.path("movieNm").asText();
@@ -47,15 +43,12 @@ public class UtilParse {
         ObjectMapper mapper = new ObjectMapper();
         List<MovieDetails> list = new ArrayList<>();
 
-        // 1. 일간 박스오피스 목록 파싱
         JsonNode result = mapper.readTree(response)
             .path("Data").get(0)
             .path("Result");
 
-        // 2. 응답 결과가 없다면
         if (result.isMissingNode()) return list;
 
-        // 3. 요청 및 응답 List 생성
         for (JsonNode node : result) {
             String plotText = "";
             String runtime = "";
@@ -136,11 +129,46 @@ public class UtilParse {
             if (dd == null) continue;
 
             switch (dt.text()) {
-                case "개봉" -> movieDetails.updateReleaseDate(dd.text());
+                case "개봉" -> movieDetails.updateReleaseDate(String.format("%-8s", dd.text().replace(".", "")).replace(" ", "0"));
                 case "국가" -> movieDetails.updateNation(dd.text());
                 case "장르" -> movieDetails.updateGenre(dd.text());
                 case "등급" -> movieDetails.updateRatingGrade(dd.text());
-                case "시간" -> movieDetails.updateRuntime(dd.text());
+                case "시간" -> movieDetails.updateRuntime(dd.text().replace("분", ""));
+            }
+        }
+
+        Element content = doc.selectFirst("c-doc-content");
+        if (content != null) {
+            Element thumb = content.selectFirst("c-thumb");
+            if (thumb != null) {
+                String src = thumb.attr("data-original-src");
+                movieDetails.updatePosters(src);
+            }
+        }
+
+        Elements pannels = doc.select("c-tab-pannel");
+        for (Element pannel : pannels) {
+            Element pannelTitle = pannel.selectFirst("Strong");
+            if (pannelTitle != null) {
+                List<String> vods = new ArrayList<>();
+                List<String> stlls = new ArrayList<>();
+
+                Elements thumbs = pannel.select("c-thumb");
+                for (Element thumb : thumbs) {
+                    switch (pannelTitle.text()) {
+                        case "영상" -> {
+                            if (thumb.attr("data-href").startsWith("https")) vods.add(thumb.attr("data-href"));
+                        }
+
+                        case "포토" -> {
+                            if (thumb.attr("data-original-src").startsWith("https"))
+                                stlls.add(thumb.attr("data-original-src"));
+                        }
+                    }
+                }
+
+                movieDetails.updateVods(String.join("|", vods));
+                movieDetails.updateStlls(String.join("|", stlls));
             }
         }
 

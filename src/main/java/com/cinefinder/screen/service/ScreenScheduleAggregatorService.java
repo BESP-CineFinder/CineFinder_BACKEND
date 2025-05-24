@@ -78,9 +78,14 @@ public class ScreenScheduleAggregatorService {
                 if (screenScheduleService.getBrandName().equals(brandName)) {
                     List<CinemaScheduleApiResponseDto> schedule = screenScheduleService.getTheaterSchedule(date, movieValues, theaterValues).stream()
                             .filter(dto -> {
-                                LocalTime startTime = dto.getPlayStartTime().equals("24:00") ? LocalTime.MAX : LocalTime.parse(dto.getPlayStartTime(), dateTimeFormatter);
-                                return (startTime.equals(minTime) || startTime.isAfter(minTime)) &&
-                                        (startTime.equals(maxTime) || startTime.isBefore(maxTime));
+                                try {
+                                    int startTimeHour = Integer.parseInt(dto.getPlayStartTime().split(":")[0]);
+                                    LocalTime startTime = startTimeHour >= 24 ? LocalTime.MAX : LocalTime.parse(dto.getPlayStartTime(), dateTimeFormatter);
+                                    return (startTime.equals(minTime) || startTime.isAfter(minTime)) &&
+                                            (startTime.equals(maxTime) || startTime.isBefore(maxTime));
+                                } catch (NumberFormatException e) {
+                                    return false;
+                                }
                             })
                             .toList();
 
