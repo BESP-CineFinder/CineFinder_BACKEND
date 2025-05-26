@@ -5,6 +5,7 @@ import com.cinefinder.movie.data.model.MovieDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -136,16 +137,46 @@ public class UtilParse {
             if (dd == null) continue;
 
             switch (dt.text()) {
-                case "개봉" -> movieDetails.updateReleaseDate(dd.text());
                 case "국가" -> movieDetails.updateNation(dd.text());
                 case "장르" -> movieDetails.updateGenre(dd.text());
                 case "등급" -> movieDetails.updateRatingGrade(dd.text());
-                case "시간" -> movieDetails.updateRuntime(dd.text());
+                case "시간" -> movieDetails.updateRuntime(dd.text().replace("분", ""));
+                case "개봉" -> movieDetails.updateReleaseDate(dd.text().replace(".", ""));
             }
         }
 
-        Element summary = doc.selectFirst("c-summary");
-        if (summary != null) movieDetails.updatePlotText(summary.text());
+        if (StringUtil.isNullOrEmpty(movieDetails.getPlotText())) {
+            Element summary = doc.selectFirst("c-summary");
+            if (summary != null) movieDetails.updatePlotText(summary.text());
+        }
+
+        if (StringUtil.isNullOrEmpty(movieDetails.getPosters())) {
+            Element cContainer = doc.selectFirst("c-container[data-dc=EM1]");
+            if (cContainer != null) {
+                Element cThumb = cContainer.selectFirst("c-thumb");
+                if (cThumb != null) movieDetails.updatePosters(cThumb.attr("data-original-src"));
+            }
+        }
+
+        Elements tabs = doc.select("c-tab-pannel");
+        if (!tabs.isEmpty()) {
+            List<String> vodList = new ArrayList<>();
+            List<String> stllList = new ArrayList<>();
+            for (Element tab : tabs) {
+                Element tabElement = tab.selectFirst("strong");
+                if (tabElement == null) continue;
+
+                String tabText = tabElement.text();
+                switch (tabText) {
+                    case "영상" -> vodList.add(tab.select("c-thumb").attr("data-href"));
+                    case "포토" -> stllList.add(tab.select("c-thumb").attr("data-origin-src"));
+                }
+            }
+
+            movieDetails.updateVods(String.join("|", vodList));
+            movieDetails.updateStlls(String.join("|", stllList));
+        }
+
         return movieDetails;
     }
 

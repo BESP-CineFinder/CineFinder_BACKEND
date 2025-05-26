@@ -52,6 +52,10 @@ public class MovieDetails {
         updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
     }
 
+    public void updateStlls(String stlls) { this.stlls = stlls;}
+    public void updateVods(String vods) { this.vods = vods; }
+    public void updatePosters(String posters) { this.posters = posters; }
+    public void updateMovieKey(String movieKey) { this.movieKey = movieKey; }
     public void updateMovieId(Long movieId) { this.movieId = movieId; }
     public void updateTitle(String title) { this.title = title; }
     public void updateReleaseDate(String releaseDate) { this.releaseDate = releaseDate; }

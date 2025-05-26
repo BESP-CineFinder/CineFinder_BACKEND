@@ -46,7 +46,7 @@ public class MovieDbSyncService {
                 String redisKey = "movieDetails:" + movieKey;
                 String title = movieDetails.getTitle();
 
-                MovieDetails response = movieDetailService.getMovieDetails(title);
+                MovieDetails response = resolveMovieDetails(movieKey, title);
 
                 if (response == null) continue;
 
@@ -64,7 +64,8 @@ public class MovieDbSyncService {
                 Movie movie = MovieMapper.toEntity(movieDetails, response);
                 Optional<Movie> optionalOriginMovie = movieRepository.findByMovieKey(movieKey);
                 if (optionalOriginMovie.isPresent()) {
-                    movie.updateMovie(optionalOriginMovie.get());
+                    Movie originMovie = optionalOriginMovie.get();
+                    originMovie.updateMovie(movie);
                 } else {
                     movieRepository.save(movie);
                     log.info("✅ 영화 상세정보 저장 완료 : {}", movie.getTitle());
@@ -98,5 +99,22 @@ public class MovieDbSyncService {
             Document mappingDoc = Document.from(mapping);
             indexOps.putMapping(mappingDoc);
         }
+    }
+
+    public MovieDetails resolveMovieDetails(String movieKey, String title) {
+        MovieDetails movieDetails = movieDetailService.fetchMovieDetails(movieKey, title);
+
+        if (movieDetails == null) {
+            movieDetails = movieHelperService.requestMovieDaumApi(title);
+            if (movieDetails != null) movieDetails.updateMovieKey(movieKey);
+            return movieDetails;
+        }
+
+        if (movieDetails.hasMissingRequiredField()) {
+            MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
+            if (daumDetails != null) movieDetails.setMissingRequiredField(daumDetails);
+        }
+
+        return movieDetails;
     }
 }
