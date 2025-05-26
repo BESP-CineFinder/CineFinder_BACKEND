@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.core.query.Query;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -82,5 +84,45 @@ public class ChatLogElasticService {
 	public List<ChatResponseDto> getMessages(ChatRequestDto dto) {
 		List<ChatResponseDto> a = new ArrayList<>();
 		return a;
+	}
+
+	public void createElasticsearchChatIndex(String movieId) {
+		String indexName = "chat-log-" + movieId;
+
+		IndexOperations indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
+		if (!indexOps.exists()) {
+			indexOps.create();
+
+			Map<String, Object> mapping = Map.of(
+				"properties", Map.of(
+					"id", Map.of("type", "keyword"),
+					"senderId", Map.of("type", "keyword"),
+					"message", Map.of("type", "text", "analyzer", "standard"),
+					"createdAt", Map.of("type", "date", "format", "strict_date_optional_time||epoch_millis")
+				)
+			);
+
+			Document mappingDoc = Document.from(mapping);
+			indexOps.putMapping(mappingDoc);
+		}
+	}
+
+	public void createElasticsearchSentimentIndex(String movieId) {
+		String indexName = "chat-sentiment-" + movieId;
+
+		IndexOperations indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
+		if (!indexOps.exists()) {
+			indexOps.create();
+
+			Map<String, Object> mapping = Map.of(
+				"properties", Map.of(
+					"score", Map.of("type", "long"),
+					"count", Map.of("type", "long")
+				)
+			);
+
+			Document mappingDoc = Document.from(mapping);
+			indexOps.putMapping(mappingDoc);
+		}
 	}
 }

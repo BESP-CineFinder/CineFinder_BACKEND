@@ -1,0 +1,31 @@
+# 베이스 이미지: transformers, torch 포함된 공식 이미지 사용
+FROM python:3.10-slim
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 필요 패키지 설치를 위한 pip 관련 설정
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# pip 업그레이드 및 기본 도구 설치
+RUN apt-get update && apt-get install -y \
+    git \
+    && pip install --upgrade pip
+
+# requirements 미리 작성 (아래 참조)
+COPY ./python/requirements.txt .
+
+# requirements 설치
+RUN pip install -r requirements.txt
+
+# 앱 코드 복사
+COPY ./python/sentiment_api.py .
+
+# 모델 캐시 미리 다운 (옵션)
+RUN python -c "from transformers import AutoTokenizer, AutoModelForSequenceClassification; \
+               AutoTokenizer.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment'); \
+               AutoModelForSequenceClassification.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment')"
+
+# FastAPI 서버 실행
+CMD ["uvicorn", "sentiment_api:app", "--host", "0.0.0.0", "--port", "8000"]

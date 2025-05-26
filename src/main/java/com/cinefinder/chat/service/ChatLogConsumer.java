@@ -68,6 +68,6 @@ public class ChatLogConsumer {
     }
 
     private String extractMovieIdFromTopic(String topic) {
-        return topic.replace("chat-", "");
+        return topic.replace("chat-log-", "");
     }
 }
