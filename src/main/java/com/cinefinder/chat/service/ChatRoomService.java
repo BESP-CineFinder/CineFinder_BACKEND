@@ -7,7 +7,6 @@ import com.cinefinder.global.util.service.BadWordFilterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -29,14 +28,16 @@ public class ChatRoomService {
     public void sendMessage(String movieId, ChatMessage message) {
         // 메시지 타입에 따른 처리
         if (message.getType() == ChatType.CHAT) {
+            // 메세지 필터링 처리
+            String filteredMessage = badWordFilterService.maskBadWords(message.getMessage());
             // 일반 채팅 메시지 처리
-            message.maskMessage(badWordFilterService.maskBadWords(message.getMessage(), "*"));
+            message.maskMessage(filteredMessage);
             kafkaService.sendMessage(message);
             // redis에 5초 캐싱 메세지 데이터 저장
             redisSessionService.cacheMessage(movieId, message);
             log.info("Save chat message: {}", message);
+            messagingTemplate.convertAndSend("/topic/chat-" + movieId, message);
         }
-        messagingTemplate.convertAndSend("/topic/chat-" + movieId, message);
     }
 
     public void handleJoin(String sessionId, String movieId, ChatMessage message) {

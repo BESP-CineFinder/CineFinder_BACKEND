@@ -44,7 +44,11 @@ public enum ApiStatus {
 	_USER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "유저를 찾을 수 없습니다."),
 	_REDIS_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 저장 실패"),
 	_REDIS_CHECK_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 조회 실패"),
-	_SIMULTANEOUS_USE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 기능을 다른곳에서 사용중입니다.");
+	_SIMULTANEOUS_USE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 기능을 다른곳에서 사용중입니다."),
+	_FILTERING_FAIL_REQUEST_JSON(HttpStatus.INTERNAL_SERVER_ERROR, 5001, "비속어 필터링 요청 JSON 생성 중 오류가 발생했습니다."),
+	_FILTERING_FAIL_API_COMMUNICATION(HttpStatus.INTERNAL_SERVER_ERROR, 5002, "비속어 필터링 API 통신 중 오류가 발생했습니다."),
+	_FILTERING_FAIL_RESPONSE_PARSING(HttpStatus.INTERNAL_SERVER_ERROR, 5003, "비속어 필터링 응답 파싱 중 오류가 발생했습니다."),
+	_FILTERING_FAIL_UNKNOWN(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "비속어 필터링 도중 알 수 없는 오류가 발생했습니다.");
 
 	private final HttpStatus httpStatus;
 	private final int code;
