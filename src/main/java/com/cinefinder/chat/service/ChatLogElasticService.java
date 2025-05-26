@@ -1,13 +1,15 @@
 package com.cinefinder.chat.service;
 
 import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
-import com.cinefinder.chat.data.dto.request.ChatRequestDto;
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatLogEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
@@ -15,9 +17,14 @@ import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -79,8 +86,39 @@ public class ChatLogElasticService {
 		return result;
 	}
 
-	public List<ChatResponseDto> getMessages(ChatRequestDto dto) {
-		List<ChatResponseDto> a = new ArrayList<>();
-		return a;
+	public List<ChatLogEntity> getMessagesFromElasticsearch(String movieId, LocalDateTime cursorCreatedAt, int size) {
+		String indexName = "chat-log-" + movieId;
+
+		long cursorCreatedAtEpochMilli = cursorCreatedAt
+				.atZone(ZoneId.of("Asia/Seoul"))
+				.withZoneSameInstant(ZoneOffset.UTC)
+				.toInstant()
+				.toEpochMilli();
+
+		String jsonQuery = (cursorCreatedAt != null)
+				? String.format("""
+            {
+              "range": {
+                "createdAt": {
+                  "lt": "%s"
+                }
+              }
+            }
+          """, cursorCreatedAtEpochMilli)
+				: "{ \"match_all\": {} }";
+
+		Query query = new StringQuery(jsonQuery);
+		query.addSort(Sort.by(Sort.Order.desc("createdAt")));
+		query.setPageable(PageRequest.of(0, size));
+
+		SearchHits<ChatLogEntity> searchHits = elasticsearchOperations.search(
+				query,
+				ChatLogEntity.class,
+				IndexCoordinates.of(indexName)
+		);
+
+		return searchHits.stream()
+				.map(SearchHit::getContent)
+				.collect(Collectors.toList());
 	}
 }

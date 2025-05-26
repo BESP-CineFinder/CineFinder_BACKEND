@@ -1,9 +1,9 @@
 package com.cinefinder.chat.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.cinefinder.chat.data.dto.SessionInfo;
 import com.cinefinder.global.exception.custom.CustomException;
@@ -69,19 +69,23 @@ public class RedisSessionService {
         }
     }
 
-    public List<ChatMessage> getCacheMessage(String movieId) {
+    public List<ChatMessage> getMessagesFromRedis(String movieId, LocalDateTime cursorCreatedAt, int size) {
         String key = CHAT_PREFIX + movieId;
         RList<String> chatList = redissonClient.getList(key);
-        return chatList.stream()
-            .map(json -> {
-                try {
-                    return objectMapper.readValue(json, ChatMessage.class);
-                } catch (Exception e) {
-                    return null;
+
+        List<ChatMessage> result = new ArrayList<>();
+        for (int i = chatList.size() - 1; i >= 0 && result.size() < size; i--) {
+            try {
+                ChatMessage msg = objectMapper.readValue(chatList.get(i), ChatMessage.class);
+
+                if (cursorCreatedAt == null || msg.getCreatedAt().isBefore(cursorCreatedAt)) {
+                    result.add(msg);
                 }
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            } catch (Exception e) {
+                log.error("Redis에서 메시지 변환 실패: {}", chatList.get(i), e);
+            }
+        }
+        return result;
     }
 
     public void clearCachedMessages(String movieId) {
