@@ -32,6 +32,8 @@ public class ChatRoomService {
             // 일반 채팅 메시지 처리
             message.maskMessage(badWordFilterService.maskBadWords(message.getMessage(), "*"));
             kafkaService.sendMessage(message);
+            // redis에 5초 캐싱 메세지 데이터 저장
+            redisSessionService.cacheMessage(movieId, message);
             log.info("Save chat message: {}", message);
         }
         messagingTemplate.convertAndSend("/topic/chat-" + movieId, message);

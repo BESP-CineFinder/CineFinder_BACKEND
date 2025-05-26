@@ -1,5 +1,7 @@
 package com.cinefinder.chat.service;
 
+import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
+import com.cinefinder.chat.data.dto.request.ChatRequestDto;
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatLogEntity;
 import lombok.RequiredArgsConstructor;
@@ -75,5 +77,10 @@ public class ChatLogElasticService {
 		List<ChatLogEntity> result = new ArrayList<>();
 		searchHits.forEach(hit -> result.add(hit.getContent()));
 		return result;
+	}
+
+	public List<ChatResponseDto> getMessages(ChatRequestDto dto) {
+		List<ChatResponseDto> a = new ArrayList<>();
+		return a;
 	}
 }

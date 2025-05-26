@@ -86,7 +86,7 @@ public class KafkaService {
 					scheduler.schedule(() -> sendMessageWithRetry(message, attempt + 1), delay, TimeUnit.SECONDS);
 				} else {
 					log.error("Max retry attempts reached. Could not send message: {}", message);
-					chatLogElasticService.saveBulk(message.getMovieId(), Collections.singletonList(message));
+					chatLogElasticService.saveBulk("chat-log-" + message.getMovieId(), Collections.singletonList(message));
 				}
 			}
 		});

@@ -28,6 +28,7 @@ public class ChatLogConsumer {
 
     private final ChatLogElasticService chatLogElasticService;
     private final KafkaConsumer<String, ChatMessage> kafkaConsumer;
+    private final RedisSessionService redisSessionService;
 
     @Scheduled(fixedDelay = 5000)
     public void consumeAndBulkInsert() {
@@ -50,6 +51,8 @@ public class ChatLogConsumer {
                     try {
                         log.info("✅ Saving messages to index {} : {}", indexName, messages.size());
                         chatLogElasticService.saveBulk(indexName, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
+                        String movieId = extractMovieIdFromTopic(indexName); // topic이 "chat-{movieId}"라면 movieId만 추출
+                        redisSessionService.clearCachedMessages(movieId);
                         kafkaConsumer.commitSync(Collections.singletonMap(partition,
                             new OffsetAndMetadata(partitionRecords.get(partitionRecords.size() - 1).offset() + 1)));
                     } catch (Exception e) {
@@ -62,5 +65,9 @@ public class ChatLogConsumer {
                 log.error("Unexpected error during partitioned processing", e);
             }
         }
+    }
+
+    private String extractMovieIdFromTopic(String topic) {
+        return topic.replace("chat-", "");
     }
 }
