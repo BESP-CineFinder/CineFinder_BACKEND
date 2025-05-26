@@ -59,7 +59,7 @@ services:
       - .env
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" , "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}" ]
-      interval: 5s
+      interval: 15s
       timeout: 5s
       retries: 5
     networks:
@@ -90,6 +90,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile_nginx
+    container_name: CF_nginx
     ports:
       - "80:80"
       - "443:443"
@@ -97,7 +98,7 @@ services:
       - ./nginx_config/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - CineFinder_network
-    restart: always
+#    restart: always
     env_file:
       - .env
     depends_on:
@@ -273,6 +274,28 @@ services:
     networks:
       - CineFinder_network
 
+#  k6:
+#    image: grafana/k6
+#    volumes:
+#      - ./scripts:/scripts
+#    entrypoint: [ "k6", "run", "/scripts/ws-chat-test.js" ]
+#    depends_on:
+#      - backend1
+#      - backend2
+#    networks:
+#      - CineFinder_network
+
+#  artillery:
+#    image: artilleryio/artillery
+#    container_name: artillery
+#    volumes:
+#      - ./scripts:/src
+#    working_dir: /src
+#    command: ["run",  "--output", "report.json",  "loadtest.yml"]
+#    depends_on:
+#      - nginx
+#    networks:
+#      - CineFinder_network
 
 volumes:
   Kafka00:

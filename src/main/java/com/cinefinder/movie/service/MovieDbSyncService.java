@@ -1,5 +1,6 @@
 package com.cinefinder.movie.service;
 
+import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.Movie;
@@ -8,6 +9,11 @@ import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.IndexOperations;
+import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +32,8 @@ public class MovieDbSyncService {
     private final MovieDetailService movieDetailService;
     private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
+    private final KafkaService kafkaService;
+    private final ElasticsearchOperations elasticsearchOperations;
 
     public void fetchMultiplexMovieDetails() {
         try {
@@ -59,6 +67,9 @@ public class MovieDbSyncService {
                     movie.updateMovie(optionalOriginMovie.get());
                 } else {
                     movieRepository.save(movie);
+                    log.info("✅ 영화 상세정보 저장 완료 : {}", movie.getTitle());
+                    kafkaService.createTopicIfNotExists(movie.getId().toString());
+                    this.createElasticsearchChatIndex(movie.getId().toString());
                 }
             }
         } catch (Exception e) {
@@ -68,5 +79,24 @@ public class MovieDbSyncService {
         }
     }
 
+    private void createElasticsearchChatIndex(String movieId) {
+        String indexName = "chat-log-" + movieId;
 
+        IndexOperations indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
+        if (!indexOps.exists()) {
+            indexOps.create();
+
+            Map<String, Object> mapping = Map.of(
+                "properties", Map.of(
+                    "id", Map.of("type", "keyword"),
+                    "senderId", Map.of("type", "keyword"),
+                    "message", Map.of("type", "text", "analyzer", "standard"),
+                    "createdAt", Map.of("type", "date", "format", "strict_date_optional_time||epoch_millis")
+                )
+            );
+
+            Document mappingDoc = Document.from(mapping);
+            indexOps.putMapping(mappingDoc);
+        }
+    }
 }

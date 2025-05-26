@@ -34,7 +34,7 @@ public class MovieDetailService {
 
     @Value("${api.kmdb.service-key}")
     private String kmdbServiceKey;
-    
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieRepository movieRepository;

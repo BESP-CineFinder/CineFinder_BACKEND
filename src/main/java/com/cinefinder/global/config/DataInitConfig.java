@@ -1,6 +1,8 @@
 package com.cinefinder.global.config;
 
 import com.cinefinder.movie.service.MovieService;
+import com.cinefinder.chat.service.KafkaService;
+import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.theater.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class DataInitConfig implements ApplicationRunner {
     private final BrandService brandService;
     private final TheaterService theaterService;
     private final MovieService movieService;
+    private final KafkaService kafkaService;
 
     @Async
     @Override
@@ -31,5 +34,7 @@ public class DataInitConfig implements ApplicationRunner {
         }
 
         movieService.fetchMultiplexMovieDetails();
+
+        kafkaService.subscribeToAllChatTopics();
     }
 }

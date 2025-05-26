@@ -2,6 +2,8 @@ package com.cinefinder.chat.service;
 
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatType;
+import com.cinefinder.global.util.service.BadWordFilterService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,12 +18,11 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class ChatRoomService {
-    private final KafkaTemplate<String, ChatMessage> kafkaTemplate;
     private final KafkaService kafkaService;
-    private final ChatLogElasticService chatLogElasticService;
     private final SimpMessagingTemplate messagingTemplate;
     private final RedisSessionService redisSessionService;
     private final RedisTemplate<String, String> redisTemplate;
+    private final BadWordFilterService badWordFilterService;
     private static final String CHAT_ROOM_PREFIX = "chat:room:";
     private static final String CHAT_ROOM_PARTICIPANTS = ":participants";
 
@@ -29,9 +30,10 @@ public class ChatRoomService {
         // 메시지 타입에 따른 처리
         if (message.getType() == ChatType.CHAT) {
             // 일반 채팅 메시지 처리
-            kafkaService.createTopicIfNotExists(message.getMovieId());
-            kafkaTemplate.send("chat-log-" + message.getMovieId(), message.getSenderId(), message);
-            chatLogElasticService.save(message);
+            message.maskMessage(badWordFilterService.maskBadWords(message.getMessage(), "*"));
+            kafkaService.sendMessage(message);
+            // redis에 5초 캐싱 메세지 데이터 저장
+            redisSessionService.cacheMessage(movieId, message);
             log.info("Save chat message: {}", message);
         }
         messagingTemplate.convertAndSend("/topic/chat-" + movieId, message);
