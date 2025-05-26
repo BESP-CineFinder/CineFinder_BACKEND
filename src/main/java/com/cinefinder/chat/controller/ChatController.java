@@ -14,12 +14,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.cinefinder.chat.data.entity.ChatMessage;
 
-import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.global.mapper.ResponseMapper;
 import com.cinefinder.global.response.BaseResponse;
 import com.cinefinder.global.util.statuscode.ApiStatus;

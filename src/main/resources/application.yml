@@ -79,6 +79,10 @@ api:
   lotte-cinema:
     code:
       request-url: ${LOTTE_CINEMA_CODE_REQUEST_URL}
+  bad-word-filter:
+    code:
+      request-url: ${BAD_WORD_FILTER_URL}
+      service-key: ${BAD_WORD_FILTER_KEY}
 
 movie:
   cgv:
