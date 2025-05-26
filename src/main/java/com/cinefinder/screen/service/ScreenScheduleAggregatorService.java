@@ -1,5 +1,7 @@
 package com.cinefinder.screen.service;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.MovieGroupedScheduleResponseDto;
@@ -78,9 +80,14 @@ public class ScreenScheduleAggregatorService {
                 if (screenScheduleService.getBrandName().equals(brandName)) {
                     List<CinemaScheduleApiResponseDto> schedule = screenScheduleService.getTheaterSchedule(date, movieValues, theaterValues).stream()
                             .filter(dto -> {
-                                LocalTime startTime = dto.getPlayStartTime().equals("24:00") ? LocalTime.MAX : LocalTime.parse(dto.getPlayStartTime(), dateTimeFormatter);
-                                return (startTime.equals(minTime) || startTime.isAfter(minTime)) &&
-                                        (startTime.equals(maxTime) || startTime.isBefore(maxTime));
+                                try {
+                                    int startTimeHour = Integer.parseInt(dto.getPlayStartTime().split(":")[0]);
+                                    LocalTime startTime = startTimeHour >= 24 ? LocalTime.MAX : LocalTime.parse(dto.getPlayStartTime(), dateTimeFormatter);
+                                    return (startTime.equals(minTime) || startTime.isAfter(minTime)) &&
+                                            (startTime.equals(maxTime) || startTime.isBefore(maxTime));
+                                } catch (NullPointerException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
+                                    throw new CustomException(ApiStatus._INTERNAL_SERVER_ERROR, "시간 형식이 이상한 상영 정보가 있습니다.\n startTime: " + dto.getPlayStartTime() + " endTime: " + dto.getPlayEndTime());
+                                }
                             })
                             .toList();
 
