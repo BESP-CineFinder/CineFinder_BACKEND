@@ -11,7 +11,7 @@ import java.time.ZoneId;
 public class ChatMapper {
 
     public static ChatResponseDto toChatResponseDto(ChatLogEntity chatLogEntity) {
-        LocalDateTime createdAt = Instant.ofEpochMilli(Long.parseLong(chatLogEntity.getTimestamp()))
+        LocalDateTime createdAt = Instant.ofEpochMilli(Long.parseLong(chatLogEntity.getCreatedAt()))
                 .atZone(ZoneId.of("Asia/Seoul"))
                 .toLocalDateTime();
 

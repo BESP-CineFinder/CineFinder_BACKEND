@@ -4,15 +4,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import com.cinefinder.chat.data.entity.ChatMessage;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -54,10 +51,10 @@ public class ChatLogConsumer {
                         String movieId = extractMovieIdFromTopic(indexName); // topic이 "chat-{movieId}"라면 movieId만 추출
                         redisSessionService.clearCachedMessages(movieId);
                         kafkaConsumer.commitSync(Collections.singletonMap(partition,
-                            new OffsetAndMetadata(partitionRecords.get(partitionRecords.size() - 1).offset() + 1)));
+                            new OffsetAndMetadata(partitionRecords.getLast().offset() + 1)));
                     } catch (Exception e) {
                         log.error("Failed to save messages for index {}. Will seek back", indexName, e);
-                        long firstOffset = partitionRecords.get(0).offset();
+                        long firstOffset = partitionRecords.getFirst().offset();
                         kafkaConsumer.seek(partition, firstOffset); // 실패 시 재처리 위해 seek
                     }
                 }
@@ -68,6 +65,6 @@ public class ChatLogConsumer {
     }
 
     private String extractMovieIdFromTopic(String topic) {
-        return topic.replace("chat-", "");
+        return topic.replace("chat-log-", "");
     }
 }

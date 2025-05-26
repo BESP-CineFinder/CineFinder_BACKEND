@@ -3,6 +3,7 @@ package com.cinefinder.chat.service;
 import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatLogEntity;
+import com.cinefinder.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 public class ChatLogElasticService {
 
     private final ElasticsearchOperations elasticsearchOperations;
+	private final UserService userService;
 
 	public void saveBulk(String movieId, List<ChatMessage> messages) {
 		if (messages.isEmpty()) {
@@ -86,15 +89,18 @@ public class ChatLogElasticService {
 		return result;
 	}
 
-	public List<ChatLogEntity> getMessagesFromElasticsearch(String movieId, LocalDateTime cursorCreatedAt, int size) {
+	public List<ChatMessage> getMessagesFromElasticsearch(String movieId, LocalDateTime cursorCreatedAt, int size) {
 		String indexName = "chat-log-" + movieId;
 
-		long cursorCreatedAtEpochMilli = cursorCreatedAt
+		Long cursorCreatedAtEpochMilli = (cursorCreatedAt != null)
+				? cursorCreatedAt
 				.atZone(ZoneId.of("Asia/Seoul"))
 				.withZoneSameInstant(ZoneOffset.UTC)
 				.toInstant()
-				.toEpochMilli();
+				.toEpochMilli()
+				: null;
 
+		// TODO: 동일한 시간의 채팅에 대해서 처리 필요
 		String jsonQuery = (cursorCreatedAt != null)
 				? String.format("""
             {
@@ -119,6 +125,18 @@ public class ChatLogElasticService {
 
 		return searchHits.stream()
 				.map(SearchHit::getContent)
+				.map(chatLog -> {
+					LocalDateTime createdAt = Instant.ofEpochMilli(Long.parseLong(chatLog.getCreatedAt()))
+							.atZone(ZoneOffset.UTC)
+							.toLocalDateTime();
+
+					return ChatMessage.builder()
+						.senderId(chatLog.getSenderId())
+						.nickName(userService.getUserInfoById(Long.valueOf(chatLog.getSenderId())).getNickname())
+						.message(chatLog.getMessage())
+						.createdAt(createdAt)
+						.build();
+				})
 				.collect(Collectors.toList());
 	}
 }

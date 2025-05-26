@@ -96,16 +96,15 @@ public class RedisSessionService {
 
         boolean isLocked = false;
         try {
-            // 최대 1초 동안 lock 획득 시도, 락 유지 시간은 3초
             isLocked = lock.tryLock(1, 3, TimeUnit.SECONDS);
             if (isLocked) {
                 redissonClient.getList(redisKey).clear();
             } else {
-                log.warn("Lock 획득 실패: 다른 인스턴스가 메시지를 처리 중입니다. movieId={}", movieId);
+                log.warn("[Message cache clear] Lock 획득 실패: 다른 인스턴스가 메시지를 처리 중입니다. movieId={}", movieId);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Redis 분산 락 획득 중 인터럽트 발생", e);
+            throw new RuntimeException("[Message cache clear] Redis 분산 락 획득 중 인터럽트 발생", e);
         } finally {
             if (isLocked) {
                 lock.unlock();
