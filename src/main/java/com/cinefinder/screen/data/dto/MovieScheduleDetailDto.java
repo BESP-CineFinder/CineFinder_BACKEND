@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class MovieScheduleDetailDto {
+    private String multiplexMovieCode;
     private SimplifiedTheaterDto theater;
     private String film;
     private String screen;

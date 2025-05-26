@@ -156,6 +156,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
                     brandService.getBrandInfo(brandName),
                     TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("TheaterCd").asText())),
                     MovieMapper.toSimplifiedMovieDto(movie),
+                    item.path("MovieGroupCd").asText(),
                     item.path("PlatformCd").asText(),
                     item.path("PlatformNm").asText(),
                     item.path("ScreenCd").asText(),

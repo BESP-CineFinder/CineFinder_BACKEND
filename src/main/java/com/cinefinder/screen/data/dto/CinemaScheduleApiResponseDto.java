@@ -12,6 +12,7 @@ public class CinemaScheduleApiResponseDto {
     private Brand brand;
     private SimplifiedTheaterDto theater;
     private SimplifiedMovieDto movie;
+    private String multiplexMovieCode;
     private String filmCd;
     private String filmNm;
     private String screenCd;
