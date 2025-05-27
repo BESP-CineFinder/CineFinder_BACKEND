@@ -74,13 +74,22 @@ public class RedisSessionService {
         RList<String> chatList = redissonClient.getList(key);
 
         List<ChatMessage> result = new ArrayList<>();
-        for (int i = chatList.size() - 1; i >= 0 && result.size() < size; i--) {
+        LocalDateTime lastCreatedAt = null;
+        for (int i = chatList.size() - 1; i >= 0; i--) {
             try {
                 ChatMessage msg = objectMapper.readValue(chatList.get(i), ChatMessage.class);
 
                 if (cursorCreatedAt == null || msg.getCreatedAt().isBefore(cursorCreatedAt)) {
-                    result.add(msg);
+                    if (result.size() < size) {
+                        result.add(msg);
+                        lastCreatedAt = msg.getCreatedAt();
+                    } else if (lastCreatedAt != null && msg.getCreatedAt().isEqual(lastCreatedAt)) {
+                        result.add(msg);
+                    } else {
+                        break;
+                    }
                 }
+
             } catch (Exception e) {
                 log.error("Redis에서 메시지 변환 실패: {}", chatList.get(i), e);
             }

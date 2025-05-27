@@ -1,6 +1,5 @@
 package com.cinefinder.chat.service;
 
-import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatLogEntity;
 import com.cinefinder.user.service.UserService;
@@ -22,11 +21,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -100,17 +96,16 @@ public class ChatLogElasticService {
 				.toEpochMilli()
 				: null;
 
-		// TODO: 동일한 시간의 채팅에 대해서 처리 필요
 		String jsonQuery = (cursorCreatedAt != null)
 				? String.format("""
-            {
-              "range": {
-                "createdAt": {
-                  "lt": "%s"
-                }
-              }
-            }
-          """, cursorCreatedAtEpochMilli)
+				  {
+				    "range": {
+				      "createdAt": {
+				        "lt": "%s"
+				      }
+				    }
+				  }
+				""", cursorCreatedAtEpochMilli)
 				: "{ \"match_all\": {} }";
 
 		Query query = new StringQuery(jsonQuery);
@@ -123,20 +118,50 @@ public class ChatLogElasticService {
 				IndexCoordinates.of(indexName)
 		);
 
-		return searchHits.stream()
+		List<ChatLogEntity> mainHits = searchHits.stream()
 				.map(SearchHit::getContent)
+				.toList();
+
+		if (mainHits.isEmpty()) return Collections.emptyList();
+
+		String lastCreatedAt = mainHits.getLast().getCreatedAt();
+		String tieQuery = String.format("""
+				  {
+				    "term": {
+				      "createdAt": "%s"
+				    }
+				  }
+				""", lastCreatedAt);
+
+		Query tieBreakerQuery = new StringQuery(tieQuery);
+		tieBreakerQuery.addSort(Sort.by(Sort.Order.desc("createdAt")));
+
+		SearchHits<ChatLogEntity> tieHits = elasticsearchOperations.search(
+				tieBreakerQuery,
+				ChatLogEntity.class,
+				IndexCoordinates.of(indexName)
+		);
+
+		Set<String> seenMessageIds = new HashSet<>();
+		List<ChatMessage> results = new ArrayList<>();
+
+		Stream.concat(mainHits.stream(), tieHits.stream().map(SearchHit::getContent))
+				.filter(hit -> seenMessageIds.add(hit.getId()))
+				.sorted(Comparator.comparing(ChatLogEntity::getCreatedAt).reversed())
 				.map(chatLog -> {
 					LocalDateTime createdAt = Instant.ofEpochMilli(Long.parseLong(chatLog.getCreatedAt()))
 							.atZone(ZoneOffset.UTC)
 							.toLocalDateTime();
 
 					return ChatMessage.builder()
-						.senderId(chatLog.getSenderId())
-						.nickName(userService.getUserInfoById(Long.valueOf(chatLog.getSenderId())).getNickname())
-						.message(chatLog.getMessage())
-						.createdAt(createdAt)
-						.build();
+							.senderId(chatLog.getSenderId())
+							.nickName(userService.getUserInfoById(Long.valueOf(chatLog.getSenderId())).getNickname())
+							.message(chatLog.getMessage())
+							.createdAt(createdAt)
+							.build();
 				})
-				.collect(Collectors.toList());
+				.forEach(results::add);
+
+		return results;
 	}
 }

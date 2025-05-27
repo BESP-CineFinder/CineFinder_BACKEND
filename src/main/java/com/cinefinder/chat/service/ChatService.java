@@ -37,6 +37,7 @@ public class ChatService {
         if (remaining > 0) {
             esMessages = chatElasticService.getMessagesFromElasticsearch(movieId, cursorCreatedAt, remaining);
         }
+        log.info("Redis messages: {}, ES messages: {}", redisMessages.size(), esMessages.size());
 
         List<ChatResponseDto> combined = new ArrayList<>();
         combined.addAll(redisMessages.stream().map(ChatMapper::toChatResponseDto).toList());
