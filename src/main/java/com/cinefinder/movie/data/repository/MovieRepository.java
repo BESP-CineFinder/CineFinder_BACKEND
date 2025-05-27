@@ -29,4 +29,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
         WHERE m.movieKey = :movieKey
     """)
     Long findMovieIdByMovieKey(@Param("movieKey") String movieKey);
+
+    @Query("SELECT m.id FROM Movie m")
+    List<Long> findAllMovieIds();
 }

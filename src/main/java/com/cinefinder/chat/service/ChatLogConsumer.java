@@ -47,8 +47,8 @@ public class ChatLogConsumer {
                     // 개별 파티션별 저장 시도
                     try {
                         log.info("✅ Saving messages to index {} : {}", indexName, messages.size());
-                        chatLogElasticService.saveBulk(indexName, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
                         String movieId = extractMovieIdFromTopic(indexName); // topic이 "chat-{movieId}"라면 movieId만 추출
+                        chatLogElasticService.saveBulk(movieId, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
                         redisSessionService.clearCachedMessages(movieId);
                         kafkaConsumer.commitSync(Collections.singletonMap(partition,
                             new OffsetAndMetadata(partitionRecords.get(partitionRecords.size() - 1).offset() + 1)));

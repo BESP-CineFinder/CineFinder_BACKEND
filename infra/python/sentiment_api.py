@@ -18,8 +18,8 @@ class ChatRequest(BaseModel):
 
 # 응답 데이터 형식
 class ChatResponse(BaseModel):
-    scores: int  # 누적 감정 점수
-    size: int    # 메시지 개수
+    score: int  # 누적 감정 점수
+    count: int    # 메시지 개수
 
 # 예측 함수
 def predict_sentiment(texts: list[str]) -> list[int]:
@@ -33,6 +33,4 @@ def predict_sentiment(texts: list[str]) -> list[int]:
 @app.post("/predict", response_model=ChatResponse)
 async def predict(chat_req: ChatRequest):
     results = predict_sentiment(chat_req.messages)
-    size = len(results)
-    scores = sum(results)
-    return ChatResponse(scores=scores, size=size)
+    return ChatResponse(score=sum(results), count=len(results))
