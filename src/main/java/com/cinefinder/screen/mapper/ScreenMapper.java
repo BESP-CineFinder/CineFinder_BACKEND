@@ -31,6 +31,7 @@ public class ScreenMapper {
                 String brandName = dto.getBrand().getName();
 
                 MovieScheduleDetailDto detailDto = new MovieScheduleDetailDto(
+                        dto.getMultiplexMovieCode(),
                         dto.getTheater(),
                         dto.getFilmNm(),
                         dto.getScreenNm(),

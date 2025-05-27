@@ -151,9 +151,9 @@ public class UtilParse {
         }
 
         if (StringUtil.isNullOrEmpty(movieDetails.getPosters())) {
-            Element cContainer = doc.selectFirst("c-container[data-dc=EM1]");
-            if (cContainer != null) {
-                Element cThumb = cContainer.selectFirst("c-thumb");
+            Element cDocContent = doc.selectFirst("c-doc-content");
+            if (cDocContent != null) {
+                Element cThumb = cDocContent.selectFirst("c-thumb");
                 if (cThumb != null) movieDetails.updatePosters(cThumb.attr("data-original-src"));
             }
         }
@@ -169,7 +169,7 @@ public class UtilParse {
                 String tabText = tabElement.text();
                 switch (tabText) {
                     case "영상" -> vodList.add(tab.select("c-thumb").attr("data-href"));
-                    case "포토" -> stllList.add(tab.select("c-thumb").attr("data-origin-src"));
+                    case "포토" -> stllList.add(tab.select("c-thumb").attr("data-original-src"));
                 }
             }
 

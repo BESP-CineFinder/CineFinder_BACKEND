@@ -158,6 +158,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     brandService.getBrandInfo(brandName),
                     TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("CinemaID").asText())),
                     MovieMapper.toSimplifiedMovieDto(movieService.fetchMovieByBrandMovieCode(brandName, item.path("RepresentationMovieCode").asText())),
+                    item.path("RepresentationMovieCode").asText(),
                     item.path("FilmCode").asText(),
                     item.path("FilmNameKR").asText(),
                     item.path("ScreenID").asText(),
