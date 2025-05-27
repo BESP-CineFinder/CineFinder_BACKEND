@@ -32,17 +32,14 @@ public class FavoriteService {
                     favoriteRequestDto.getUserId(),
                     favoriteRequestDto.getMovieId()
             );
-            log.info("✅ 좋아요 여부 {}", isExistFavorite);
 
             if (isExistFavorite) {
                 favoriteRepository.deleteByUserIdAndMovieId(
                         favoriteRequestDto.getUserId(),
                         favoriteRequestDto.getMovieId()
                 );
-                log.info("👎 좋아요 존재 ... 좋아요 취소");
             } else {
                 favoriteRepository.save(FavoriteMapper.toEntity(favoriteRequestDto));
-                log.info("👍 좋아요 없음 ... 좋아요 등록");
             }
         } catch (Exception e) {
             throw new CustomException(ApiStatus._OPERATION_FAIL, "좋아요 데이터 갱신 중 오류 발생");
@@ -69,7 +66,6 @@ public class FavoriteService {
     public List<FavoriteMovie> getFavoriteMovieListByUser(Long userId) {
         try {
             List<Long> movieIdList = favoriteRepository.findMovieIdListByUserId(userId);
-            log.info("✅ ID {} 사용자의 좋아요 등록 영화 개수 : {}", userId, movieIdList.size());
 
             if (movieIdList.isEmpty()) {
                 log.info("‼️ 영화 ID 목록 없음");
@@ -77,7 +73,6 @@ public class FavoriteService {
             }
 
             List<Movie> movieList = movieService.getFavoriteMovieList(movieIdList);
-            log.info("✅ ID 기반으로 조회한 영화정보 목록 개수 : {}", movieIdList.size());
 
             if (movieIdList.size() != movieList.size()) {
                 throw new RuntimeException("ID에 해당하는 영화정보를 모두 찾을 수 없음");
