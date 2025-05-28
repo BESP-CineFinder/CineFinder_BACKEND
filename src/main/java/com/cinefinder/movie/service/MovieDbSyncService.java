@@ -10,11 +10,6 @@ import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.IndexOperations;
-import org.springframework.data.elasticsearch.core.document.Document;
-import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,12 +46,6 @@ public class MovieDbSyncService {
 
                 if (response == null) continue;
 
-                MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
-                if (originMovieDetails != null) {
-                    originMovieDetails.updateCodes(movieDetails);
-                    redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
-                }
-
                 Movie movie = MovieMapper.toEntity(movieDetails, response);
                 Optional<Movie> optionalOriginMovie = movieRepository.findByMovieKey(movieKey);
                 if (optionalOriginMovie.isPresent()) {
@@ -68,6 +57,14 @@ public class MovieDbSyncService {
                     kafkaService.createTopicIfNotExists(movie.getId().toString());
                     chatLogElasticService.createElasticsearchChatIndex(movie.getId().toString());
                     chatLogElasticService.createElasticsearchSentimentIndex(movie.getId().toString());
+                }
+
+                MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
+                if (originMovieDetails != null) {
+                    originMovieDetails.updateCodes(movieDetails);
+                    originMovieDetails.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
+                    originMovieDetails.setMissingRequiredField(response);
+                    redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
                 }
             }
         } catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.cinefinder.movie.service;
 
+import com.cinefinder.favorite.data.repository.FavoriteRepository;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.Movie;
@@ -38,6 +39,7 @@ public class MovieDetailService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieRepository movieRepository;
+    private final FavoriteRepository favoriteRepository;
 
     public MovieDetails getMovieDetails(String title) {
         try {
@@ -49,7 +51,7 @@ public class MovieDetailService {
                 log.debug("✅ 영화 상세정보 캐시 조회 : {}", movieKey);
                 Object object = redisTemplate.opsForHash().get(redisKey, movieKey);
                 MovieDetails movieDetails = mapper.convertValue(object, MovieDetails.class);
-                movieDetails.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
+                movieDetails.updateFavoriteCount(favoriteRepository.countByMovieId(movieDetails.getMovieId()));
                 return movieDetails;
             } else {
                 return getMovieDetailsFromDB(movieKey, title);
@@ -63,7 +65,7 @@ public class MovieDetailService {
         try {
             Optional<Movie> optionalMovie = movieRepository.findByMovieKey(movieKey);
             if (optionalMovie.isPresent()) {
-                log.debug("✅ 영화 상세정보 DB 조회 {} : ", movieKey);
+                log.debug("✅ 영화 상세정보 DB 조회 : {}", movieKey);
                 return MovieMapper.toMovieDetails(optionalMovie.get());
             } else {
                 return fetchMovieDetails(movieKey, title);
