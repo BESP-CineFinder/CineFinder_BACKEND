@@ -38,6 +38,7 @@ public class MovieDetailService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final RedisTemplate<String, Object> redisTemplate;
+    private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
     private final FavoriteRepository favoriteRepository;
 
@@ -66,7 +67,9 @@ public class MovieDetailService {
             Optional<Movie> optionalMovie = movieRepository.findByMovieKey(movieKey);
             if (optionalMovie.isPresent()) {
                 log.debug("✅ 영화 상세정보 DB 조회 : {}", movieKey);
-                return MovieMapper.toMovieDetails(optionalMovie.get());
+                MovieDetails movieDetails = MovieMapper.toMovieDetails(optionalMovie.get());
+                movieDetails.updateFavoriteCount(favoriteRepository.countByMovieId(movieDetails.getMovieId()));
+                return movieDetails;
             } else {
                 return fetchMovieDetails(movieKey, title);
             }
@@ -90,6 +93,11 @@ public class MovieDetailService {
 
             List<MovieDetails> movieDetailsList = UtilParse.extractMovieDetailsList(response, movieKey);
             for (MovieDetails movieDetails : movieDetailsList) {
+                if (movieDetails.hasMissingRequiredField()) {
+                    MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
+                    if (daumDetails != null) movieDetails.setMissingRequiredField(daumDetails);
+                }
+
                 redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
                 redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
                 returnMovieDetails = movieDetails;

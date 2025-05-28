@@ -77,13 +77,7 @@ public class MovieDbSyncService {
     public MovieDetails resolveMovieDetails(String movieKey, String title) {
         MovieDetails movieDetails = movieDetailService.fetchMovieDetails(movieKey, title);
 
-        if (movieDetails == null) {
-            movieDetails = movieHelperService.requestMovieDaumApi(title);
-            if (movieDetails != null) movieDetails.updateMovieKey(movieKey);
-            return movieDetails;
-        }
-
-        if (movieDetails.hasMissingRequiredField()) {
+        if (movieDetails != null && movieDetails.hasMissingRequiredField()) {
             MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
             if (daumDetails != null) movieDetails.setMissingRequiredField(daumDetails);
         }
