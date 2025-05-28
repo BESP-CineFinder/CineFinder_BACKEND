@@ -5,6 +5,7 @@ import com.cinefinder.chat.data.dto.request.ChatRequestDto;
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatType;
 import com.cinefinder.chat.data.mapper.ChatMapper;
+import com.cinefinder.global.util.service.BadWordFilterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class ChatService {
 
     private final ChatLogElasticService chatElasticService;
     private final RedisSessionService chatSessionService;
+    private final BadWordFilterService badWordFilterService;
 
     public List<ChatResponseDto> getChatMessages(ChatRequestDto chatRequestDto) {
         String movieId = chatRequestDto.getMovieId();
@@ -53,7 +55,7 @@ public class ChatService {
                     return ChatResponseDto.builder()
                             .senderId(dto.getSenderId())
                             .nickName(dto.getNickName())
-                            .message(dto.getMessage())
+                            .message(badWordFilterService.maskBadWords(dto.getMessage()))
                             .type(ChatType.PREV)
                             .createdAt(seoulTime)
                             .build();
