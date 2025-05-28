@@ -1,5 +1,6 @@
 package com.cinefinder.movie.service;
 
+import com.cinefinder.chat.service.ChatLogElasticService;
 import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
@@ -33,7 +34,7 @@ public class MovieDbSyncService {
     private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
     private final KafkaService kafkaService;
-    private final ElasticsearchOperations elasticsearchOperations;
+    private final ChatLogElasticService chatLogElasticService;
 
     public void fetchMultiplexMovieDetails() {
         try {
@@ -65,34 +66,14 @@ public class MovieDbSyncService {
                     movieRepository.save(movie);
                     log.info("✅ 영화 상세정보 저장 완료 : {}", movie.getTitle());
                     kafkaService.createTopicIfNotExists(movie.getId().toString());
-                    this.createElasticsearchChatIndex(movie.getId().toString());
+                    chatLogElasticService.createElasticsearchChatIndex(movie.getId().toString());
+                    chatLogElasticService.createElasticsearchSentimentIndex(movie.getId().toString());
                 }
             }
         } catch (Exception e) {
             log.error("오류: {}", e.getMessage());
             log.error("stackTrace: {}", Arrays.toString(e.getStackTrace()));
             throw new CustomException(ApiStatus._READ_FAIL, "멀티플렉스 영화 상세정보 저장 중 오류 발생");
-        }
-    }
-
-    private void createElasticsearchChatIndex(String movieId) {
-        String indexName = "chat-log-" + movieId;
-
-        IndexOperations indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
-        if (!indexOps.exists()) {
-            indexOps.create();
-
-            Map<String, Object> mapping = Map.of(
-                "properties", Map.of(
-                    "id", Map.of("type", "keyword"),
-                    "senderId", Map.of("type", "keyword"),
-                    "message", Map.of("type", "text", "analyzer", "standard"),
-                    "createdAt", Map.of("type", "date", "format", "strict_date_optional_time||epoch_millis")
-                )
-            );
-
-            Document mappingDoc = Document.from(mapping);
-            indexOps.putMapping(mappingDoc);
         }
     }
 
