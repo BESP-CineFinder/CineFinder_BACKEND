@@ -99,4 +99,11 @@ public class MovieService {
             throw new CustomException(ApiStatus._READ_FAIL, "좋아요 등록한 영화 ID 목록 조회 중 오류 발생");
         }
     }
+
+    public List<String> searchMovies(String keyword) {
+        List<Movie> movies = movieRepository.searchMoviesByKeyword(keyword);
+        return movies.stream()
+                .map(Movie::getTitle)
+                .toList();
+    }
 }
