@@ -1,9 +1,9 @@
 package com.cinefinder.chat.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.cinefinder.chat.data.dto.SessionInfo;
 import com.cinefinder.global.exception.custom.CustomException;
@@ -69,19 +69,32 @@ public class RedisSessionService {
         }
     }
 
-    public List<ChatMessage> getCacheMessage(String movieId) {
+    public List<ChatMessage> getMessagesFromRedis(String movieId, LocalDateTime cursorCreatedAt, int size) {
         String key = CHAT_PREFIX + movieId;
         RList<String> chatList = redissonClient.getList(key);
-        return chatList.stream()
-            .map(json -> {
-                try {
-                    return objectMapper.readValue(json, ChatMessage.class);
-                } catch (Exception e) {
-                    return null;
+
+        List<ChatMessage> result = new ArrayList<>();
+        LocalDateTime lastCreatedAt = null;
+        for (int i = chatList.size() - 1; i >= 0; i--) {
+            try {
+                ChatMessage msg = objectMapper.readValue(chatList.get(i), ChatMessage.class);
+
+                if (cursorCreatedAt == null || msg.getCreatedAt().isBefore(cursorCreatedAt)) {
+                    if (result.size() < size) {
+                        result.add(msg);
+                        lastCreatedAt = msg.getCreatedAt();
+                    } else if (lastCreatedAt != null && msg.getCreatedAt().isEqual(lastCreatedAt)) {
+                        result.add(msg);
+                    } else {
+                        break;
+                    }
                 }
-            })
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+
+            } catch (Exception e) {
+                log.error("Redis에서 메시지 변환 실패: {}", chatList.get(i), e);
+            }
+        }
+        return result;
     }
 
     public void clearCachedMessages(String movieId) {
@@ -92,16 +105,15 @@ public class RedisSessionService {
 
         boolean isLocked = false;
         try {
-            // 최대 1초 동안 lock 획득 시도, 락 유지 시간은 3초
             isLocked = lock.tryLock(1, 3, TimeUnit.SECONDS);
             if (isLocked) {
                 redissonClient.getList(redisKey).clear();
             } else {
-                log.warn("Lock 획득 실패: 다른 인스턴스가 메시지를 처리 중입니다. movieId={}", movieId);
+                log.warn("[Message cache clear] Lock 획득 실패: 다른 인스턴스가 메시지를 처리 중입니다. movieId={}", movieId);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Redis 분산 락 획득 중 인터럽트 발생", e);
+            throw new RuntimeException("[Message cache clear] Redis 분산 락 획득 중 인터럽트 발생", e);
         } finally {
             if (isLocked) {
                 lock.unlock();

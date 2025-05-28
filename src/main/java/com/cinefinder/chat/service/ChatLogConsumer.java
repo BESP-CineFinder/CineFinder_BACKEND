@@ -51,10 +51,10 @@ public class ChatLogConsumer {
                         chatLogElasticService.saveBulk(movieId, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
                         redisSessionService.clearCachedMessages(movieId);
                         kafkaConsumer.commitSync(Collections.singletonMap(partition,
-                            new OffsetAndMetadata(partitionRecords.get(partitionRecords.size() - 1).offset() + 1)));
+                            new OffsetAndMetadata(partitionRecords.getLast().offset() + 1)));
                     } catch (Exception e) {
                         log.error("Failed to save messages for index {}. Will seek back", indexName, e);
-                        long firstOffset = partitionRecords.get(0).offset();
+                        long firstOffset = partitionRecords.getFirst().offset();
                         kafkaConsumer.seek(partition, firstOffset); // 실패 시 재처리 위해 seek
                     }
                 }

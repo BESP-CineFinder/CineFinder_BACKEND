@@ -10,6 +10,6 @@ import lombok.Getter;
 public class ChatRequestDto {
 
 	private String movieId;
-
-	private LocalDateTime timestamp;
+	private LocalDateTime cursorCreatedAt;
+	private int size;
 }
