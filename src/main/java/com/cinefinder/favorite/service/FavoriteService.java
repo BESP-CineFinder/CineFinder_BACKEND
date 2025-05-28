@@ -86,4 +86,12 @@ public class FavoriteService {
             throw new CustomException(ApiStatus._READ_FAIL, "좋아요 영화목록 조회 중 오류 발생");
         }
     }
+
+    public Long countFavoriteMovieList(Long movieId) {
+        try {
+            return favoriteRepository.countByMovieId(movieId);
+        } catch (Exception e) {
+            throw new CustomException(ApiStatus._READ_FAIL, "ID에 해당하는 영화의 좋아요 개수 조회 중 오류 발생");
+        }
+    }
 }

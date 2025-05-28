@@ -1,6 +1,5 @@
 package com.cinefinder.movie.scheduler;
 
-import com.cinefinder.movie.service.BoxOfficeService;
 import com.cinefinder.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 public class MovieScheduler {
-    private final BoxOfficeService boxOfficeService;
     private final MovieService movieService;
 
     @Scheduled(cron = "0 0 11 * * *")

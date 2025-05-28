@@ -6,6 +6,7 @@ import com.cinefinder.movie.data.Movie;
 import com.cinefinder.movie.data.model.BoxOffice;
 import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.data.repository.MovieRepository;
+import com.cinefinder.movie.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -76,6 +77,20 @@ public class MovieService {
                 lock.unlock();
             }
         }
+    }
+
+    @Transactional(readOnly = true)
+    public MovieDetails getMovieDetailsByMovieId(Long movieId) {
+        return MovieMapper.toMovieDetails(
+            movieRepository.findById(movieId).orElseThrow(() ->
+                new CustomException(ApiStatus._NOT_FOUND, "해당 영화를 찾을 수 없습니다.")
+            )
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> findAllMovieIds() {
+        return movieRepository.findAllMovieIds();
     }
 
     @Transactional(readOnly = true)
