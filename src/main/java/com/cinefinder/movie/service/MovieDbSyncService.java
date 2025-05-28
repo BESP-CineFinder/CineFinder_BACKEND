@@ -1,5 +1,6 @@
 package com.cinefinder.movie.service;
 
+import com.cinefinder.chat.service.ChatLogElasticService;
 import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
@@ -33,7 +34,7 @@ public class MovieDbSyncService {
     private final MovieHelperService movieHelperService;
     private final MovieRepository movieRepository;
     private final KafkaService kafkaService;
-    private final ElasticsearchOperations elasticsearchOperations;
+    private final ChatLogElasticService chatLogElasticService;
 
     public void fetchMultiplexMovieDetails() {
         try {
@@ -46,14 +47,9 @@ public class MovieDbSyncService {
                 String redisKey = "movieDetails:" + movieKey;
                 String title = movieDetails.getTitle();
 
-                MovieDetails response = movieDetailService.getMovieDetails(title);
+                MovieDetails response = resolveMovieDetails(movieKey, title);
 
                 if (response == null) continue;
-
-                if (response.hasMissingRequiredField()) {
-                    MovieDetails daumMovieDetails = movieHelperService.requestMovieDaumApi(title);
-                    if (daumMovieDetails != null) { response.setMissingRequiredField(daumMovieDetails); }
-                }
 
                 MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
                 if (originMovieDetails != null) {
@@ -64,12 +60,14 @@ public class MovieDbSyncService {
                 Movie movie = MovieMapper.toEntity(movieDetails, response);
                 Optional<Movie> optionalOriginMovie = movieRepository.findByMovieKey(movieKey);
                 if (optionalOriginMovie.isPresent()) {
-                    movie.updateMovie(optionalOriginMovie.get());
+                    Movie originMovie = optionalOriginMovie.get();
+                    originMovie.updateMovie(movie);
                 } else {
                     movieRepository.save(movie);
                     log.info("✅ 영화 상세정보 저장 완료 : {}", movie.getTitle());
                     kafkaService.createTopicIfNotExists(movie.getId().toString());
-                    this.createElasticsearchChatIndex(movie.getId().toString());
+                    chatLogElasticService.createElasticsearchChatIndex(movie.getId().toString());
+                    chatLogElasticService.createElasticsearchSentimentIndex(movie.getId().toString());
                 }
             }
         } catch (Exception e) {
@@ -79,24 +77,20 @@ public class MovieDbSyncService {
         }
     }
 
-    private void createElasticsearchChatIndex(String movieId) {
-        String indexName = "chat-log-" + movieId;
+    public MovieDetails resolveMovieDetails(String movieKey, String title) {
+        MovieDetails movieDetails = movieDetailService.fetchMovieDetails(movieKey, title);
 
-        IndexOperations indexOps = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
-        if (!indexOps.exists()) {
-            indexOps.create();
-
-            Map<String, Object> mapping = Map.of(
-                "properties", Map.of(
-                    "id", Map.of("type", "keyword"),
-                    "senderId", Map.of("type", "keyword"),
-                    "message", Map.of("type", "text", "analyzer", "standard"),
-                    "createdAt", Map.of("type", "date", "format", "strict_date_optional_time||epoch_millis")
-                )
-            );
-
-            Document mappingDoc = Document.from(mapping);
-            indexOps.putMapping(mappingDoc);
+        if (movieDetails == null) {
+            movieDetails = movieHelperService.requestMovieDaumApi(title);
+            if (movieDetails != null) movieDetails.updateMovieKey(movieKey);
+            return movieDetails;
         }
+
+        if (movieDetails.hasMissingRequiredField()) {
+            MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
+            if (daumDetails != null) movieDetails.setMissingRequiredField(daumDetails);
+        }
+
+        return movieDetails;
     }
 }

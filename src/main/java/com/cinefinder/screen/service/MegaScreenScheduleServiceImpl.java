@@ -106,6 +106,7 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
                     brandService.getBrandInfo(brandName),
                     TheaterMapper.toSimplifiedTheaterDto(theaterService.getTheaterInfo(brandName, item.path("brchNo").asText())),
                     MovieMapper.toSimplifiedMovieDto(movieService.fetchMovieByBrandMovieCode(brandName, item.path("rpstMovieNo").asText())),
+                    item.path("rpstMovieNo").asText(),
                     item.path("theabKindCd").asText(),
                     item.path("playKindNm").asText(),
                     item.path("theabNo").asText(),

@@ -33,7 +33,7 @@ public class MovieDetails {
     private String vods;               /* VOD URL 목록 */
 
     public boolean hasMissingRequiredField() {
-        return Stream.of(nation, plotText, runtime, genre, releaseDate, ratingGrade)
+        return Stream.of(nation, plotText, runtime, genre, releaseDate, ratingGrade, posters, stlls, vods)
             .anyMatch(StringUtil::isNullOrEmpty);
     }
 
@@ -44,6 +44,9 @@ public class MovieDetails {
         if (StringUtil.isNullOrEmpty(genre)) this.updateGenre(movieDetails.getGenre());
         if (StringUtil.isNullOrEmpty(releaseDate)) this.updateReleaseDate(movieDetails.getReleaseDate());
         if (StringUtil.isNullOrEmpty(ratingGrade)) this.updateRatingGrade(movieDetails.getRatingGrade());
+        if (StringUtil.isNullOrEmpty(posters)) this.updatePosters(movieDetails.getPosters());
+        if (StringUtil.isNullOrEmpty(stlls)) this.updateStlls(movieDetails.getStlls());
+        if (StringUtil.isNullOrEmpty(vods)) this.updateVods(movieDetails.getVods());
     }
 
     public void updateCodes(MovieDetails movieDetails) {
@@ -52,6 +55,10 @@ public class MovieDetails {
         updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
     }
 
+    public void updateStlls(String stlls) { this.stlls = stlls;}
+    public void updateVods(String vods) { this.vods = vods; }
+    public void updatePosters(String posters) { this.posters = posters; }
+    public void updateMovieKey(String movieKey) { this.movieKey = movieKey; }
     public void updateMovieId(Long movieId) { this.movieId = movieId; }
     public void updateTitle(String title) { this.title = title; }
     public void updateReleaseDate(String releaseDate) { this.releaseDate = releaseDate; }

@@ -51,7 +51,7 @@ spring:
             user-name-attribute: id
 
   kafka:
-    bootstrap-servers: Kafka00Service:10000,Kafka01Service:10001,Kafka02Service:10002 # 카프카 서버 주소
+    bootstrap-servers: Kafka00Service:10000,Kafka01Service:10001 # 카프카 서버 주소
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -79,6 +79,10 @@ api:
   lotte-cinema:
     code:
       request-url: ${LOTTE_CINEMA_CODE_REQUEST_URL}
+  bad-word-filter:
+    code:
+      request-url: ${BAD_WORD_FILTER_URL}
+      service-key: ${BAD_WORD_FILTER_KEY}
 
 movie:
   cgv:

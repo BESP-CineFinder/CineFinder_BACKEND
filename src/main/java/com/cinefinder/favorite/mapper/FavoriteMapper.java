@@ -4,6 +4,7 @@ import com.cinefinder.favorite.data.Favorite;
 import com.cinefinder.favorite.data.dto.FavoriteRequestDto;
 import com.cinefinder.favorite.model.FavoriteMovie;
 import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.mapper.MovieMapper;
 import io.netty.util.internal.StringUtil;
 
 public class FavoriteMapper {
@@ -16,6 +17,7 @@ public class FavoriteMapper {
                 .movieId(movie.getId())
                 .title(movie.getTitle())
                 .poster(poster)
+                .movieDetails(MovieMapper.toMovieDetails(movie))
                 .build();
     }
 
