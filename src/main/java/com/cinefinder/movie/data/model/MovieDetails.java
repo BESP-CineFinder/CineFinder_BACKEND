@@ -31,6 +31,7 @@ public class MovieDetails {
     private String directors;          /* 감독 */
     private String actors;             /* 배우 */
     private String vods;               /* VOD URL 목록 */
+    private Long favoriteCount;        /* 좋아요 개수 */
 
     public boolean hasMissingRequiredField() {
         return Stream.of(nation, plotText, runtime, genre, releaseDate, ratingGrade, posters, stlls, vods)
@@ -67,6 +68,7 @@ public class MovieDetails {
     public void updateRuntime(String runtime) { this.runtime = runtime; }
     public void updateRatingGrade(String ratingGrade) { this.ratingGrade = ratingGrade; }
     public void updateGenre(String genre) { this.genre = genre; }
+    public void updateFavoriteCount(Long favoriteCount) { this.favoriteCount = favoriteCount; }
     public void updateCgvCode(String cgvCode) { this.cgvCode = cgvCode; }
     public void updateMegaBoxCode(String megaBoxCode) { this.megaBoxCode = megaBoxCode; }
     public void updateLotteCinemaCode(String lotteCinemaCode) { this.lotteCinemaCode = lotteCinemaCode; }
