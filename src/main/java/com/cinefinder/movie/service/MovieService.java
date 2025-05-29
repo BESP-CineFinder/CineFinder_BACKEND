@@ -115,10 +115,10 @@ public class MovieService {
         }
     }
 
-    public List<String> searchMovies(String keyword) {
+    public List<Long> searchMovies(String keyword) {
         List<Movie> movies = movieRepository.searchMoviesByKeyword(keyword);
         return movies.stream()
-                .map(Movie::getTitle)
+                .map(Movie::getId)
                 .toList();
     }
 }

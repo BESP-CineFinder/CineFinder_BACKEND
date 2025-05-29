@@ -44,12 +44,12 @@ public class ScreenScheduleAggregatorService {
         double lat = requestDto.getLat();
         double lng = requestDto.getLng();
         double distance = requestDto.getDistance();
-        List<String> movieNames = requestDto.getMovieNames();
+        List<Long> movieIds = requestDto.getMovieIds();
 
-        Map<String, List<String>> movieIds = getMovieIds(movieNames);
+        Map<String, List<String>> movieIdsByMultiplex = getMovieIdsByMultiplex(movieIds);
         Map<String, List<String>> theaterIds = theaterService.getNearbyTheaterCodes(lat, lng, distance);
 
-        List<CinemaScheduleApiResponseDto> schedules = getCinemaScheduleApiResponseDtos(screenScheduleServices, date, minTimeStr, maxTimeStr, theaterIds, movieIds);
+        List<CinemaScheduleApiResponseDto> schedules = getCinemaScheduleApiResponseDtos(screenScheduleServices, date, minTimeStr, maxTimeStr, theaterIds, movieIdsByMultiplex);
         List<MovieGroupedScheduleResponseDto> groupedSchedules = ScreenMapper.toGroupedSchedule(schedules);
         groupedSchedules.sort((a, b) -> {
             int scheduleCountA = a.getSchedule().values().stream()
@@ -98,30 +98,30 @@ public class ScreenScheduleAggregatorService {
         return schedules;
     }
 
-    private Map<String, List<String>> getMovieIds(List<String> movieNames) {
-        Map<String, List<String>> movieIds = new HashMap<>() {{
+    private Map<String, List<String>> getMovieIdsByMultiplex(List<Long> movieIds) {
+        Map<String, List<String>> movieIdsByMultiplex = new HashMap<>() {{
             put(cgvBrandName, new ArrayList<>());
             put(lotteBrandName, new ArrayList<>());
             put(megaBrandName, new ArrayList<>());
         }};
 
-        for (String movieName : movieNames) {
-            MovieDetails movieDetail = movieService.fetchMovieDetails(movieName);
+        for (Long movieId : movieIds) {
+            MovieDetails movieDetail = movieService.getMovieDetailsByMovieId(movieId);
             String cgvCode = movieDetail.getCgvCode();
             String lotteCode = movieDetail.getLotteCinemaCode();
             String megaCode = movieDetail.getMegaBoxCode();
 
             if (cgvCode != null) {
-                movieIds.get(cgvBrandName).add(cgvCode);
+                movieIdsByMultiplex.get(cgvBrandName).add(cgvCode);
             }
             if (lotteCode != null) {
-                movieIds.get(lotteBrandName).add(lotteCode);
+                movieIdsByMultiplex.get(lotteBrandName).add(lotteCode);
             }
             if (megaCode != null) {
-                movieIds.get(megaBrandName).add(megaCode);
+                movieIdsByMultiplex.get(megaBrandName).add(megaCode);
             }
         }
 
-        return movieIds;
+        return movieIdsByMultiplex;
     }
 }

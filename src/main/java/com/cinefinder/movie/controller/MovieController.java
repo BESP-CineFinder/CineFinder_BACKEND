@@ -36,7 +36,7 @@ public class MovieController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<BaseResponse<List<String>>> search(@RequestParam String keyword) {
+    public ResponseEntity<BaseResponse<List<Long>>> search(@RequestParam String keyword) {
         return ResponseMapper.successOf(ApiStatus._OK, movieService.searchMovies(keyword), MovieController.class);
     }
 }
