@@ -113,12 +113,18 @@ public class ScreenScheduleAggregatorService {
 
             if (cgvCode != null) {
                 movieIdsByMultiplex.get(cgvBrandName).add(cgvCode);
+            } else {
+                movieIdsByMultiplex.get(cgvBrandName).add("NONE");
             }
             if (lotteCode != null) {
                 movieIdsByMultiplex.get(lotteBrandName).add(lotteCode);
+            } else {
+                movieIdsByMultiplex.get(lotteBrandName).add("NONE");
             }
             if (megaCode != null) {
                 movieIdsByMultiplex.get(megaBrandName).add(megaCode);
+            } else {
+                movieIdsByMultiplex.get(megaBrandName).add("NONE");
             }
         }
 
