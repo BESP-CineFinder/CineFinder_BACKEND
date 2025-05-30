@@ -1,9 +1,13 @@
 package com.cinefinder.movie.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
+@Slf4j
 public class UtilString {
     private static final List<String> NORMALIZE_STRING_LIST = List.of(
         "[^\\p{IsHangul}\\p{IsAlphabetic}\\p{IsDigit}\\s]",
@@ -20,8 +24,8 @@ public class UtilString {
     }
 
     private static String getFormattedDateString(int daysOffset) {
-        LocalDateTime dateTime = LocalDateTime.now();
-        LocalDate calculatedDate = dateTime.minusDays(dateTime.getHour() < 11 ? daysOffset + 1 : daysOffset).toLocalDate();
+        ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+        LocalDate calculatedDate = zonedDateTime.minusDays(zonedDateTime.getHour() < 11 ? daysOffset + 1 : daysOffset).toLocalDate();
 
         return calculatedDate.toString().replaceAll("-", "");
     }

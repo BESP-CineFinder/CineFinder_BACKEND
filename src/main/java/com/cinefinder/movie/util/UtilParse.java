@@ -103,7 +103,6 @@ public class UtilParse {
             for (JsonNode vod : vodsNode) vods.add(vod.path("vodUrl").asText());
 
             MovieDetails movieDetails = MovieDetails.builder()
-                .movieKey(movieKey)
                 .title(title)
                 .titleEng(titleEng)
                 .nation(nation)
