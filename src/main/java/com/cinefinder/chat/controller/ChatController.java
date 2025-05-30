@@ -3,8 +3,8 @@ package com.cinefinder.chat.controller;
 import java.util.List;
 import java.util.Map;
 
-import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
-import com.cinefinder.chat.data.dto.request.ChatRequestDto;
+import com.cinefinder.chat.data.dto.ChatResponseDto;
+import com.cinefinder.chat.data.dto.ChatRequestDto;
 import com.cinefinder.chat.service.ChatLogElasticService;
 import com.cinefinder.chat.service.ChatRoomService;
 

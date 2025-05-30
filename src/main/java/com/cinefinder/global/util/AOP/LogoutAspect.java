@@ -34,6 +34,7 @@ public class LogoutAspect {
 	public Object handleLogout(ProceedingJoinPoint joinPoint) throws Throwable {
 		// 1. 로그인 여부 확인
 		var authentication = SecurityContextHolder.getContext().getAuthentication();
+		// TODO : 업보
 		if (authentication == null || !authentication.isAuthenticated()) {
 			throw new RuntimeException("로그인된 사용자가 아닙니다.");
 		}
@@ -41,10 +42,12 @@ public class LogoutAspect {
 		// 2. 현재 요청 객체 가져오기
 		ServletRequestAttributes sra = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 		if (sra == null) {
+			// TODO : 업보
 			throw new IllegalStateException("Request context is not available");
 		}
 		HttpServletRequest request = sra.getRequest();
 		HttpServletResponse response = sra.getResponse();
+		// TODO : 업보
 		if (response == null) {
 			throw new IllegalStateException("Response object is not available");
 		}
@@ -54,6 +57,7 @@ public class LogoutAspect {
 		log.info("Logout token: {}", token);
 
 		if (token == null || !jwtUtil.validateToken(token)) {
+			// TODO : 업보
 			throw new RuntimeException("유효하지 않은 토큰입니다.");
 		}
 

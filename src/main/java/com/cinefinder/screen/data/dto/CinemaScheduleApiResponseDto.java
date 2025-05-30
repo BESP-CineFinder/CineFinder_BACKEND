@@ -1,7 +1,7 @@
 package com.cinefinder.screen.data.dto;
 
-import com.cinefinder.movie.data.SimplifiedMovieDto;
-import com.cinefinder.brand.data.Brand;
+import com.cinefinder.movie.data.dto.SimplifiedMovieDto;
+import com.cinefinder.brand.data.entity.Brand;
 import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

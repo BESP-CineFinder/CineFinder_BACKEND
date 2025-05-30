@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
-import com.cinefinder.theater.data.ElasticsearchTheater;
+import com.cinefinder.theater.data.entity.ElasticsearchTheater;
 
 @Repository
 public interface ElasticsearchTheaterRepository extends ElasticsearchRepository<ElasticsearchTheater, String> {

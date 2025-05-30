@@ -116,6 +116,7 @@ public class RecommendService {
             return recommendResponseDtoList;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            // TODO : 업보
             throw new RuntimeException("동기화 중단됨", e);
         } finally {
             if (isLocked) {

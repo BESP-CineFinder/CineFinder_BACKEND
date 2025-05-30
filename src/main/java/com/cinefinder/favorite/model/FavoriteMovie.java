@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
+// TODO: 업보
 public class FavoriteMovie {
     private Long movieId;
     private String title;

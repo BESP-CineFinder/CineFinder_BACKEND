@@ -2,7 +2,7 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;

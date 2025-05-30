@@ -1,6 +1,6 @@
-package com.cinefinder.theater.data;
+package com.cinefinder.theater.data.entity;
 
-import com.cinefinder.brand.data.Brand;
+import com.cinefinder.brand.data.entity.Brand;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

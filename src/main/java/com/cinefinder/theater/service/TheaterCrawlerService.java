@@ -1,7 +1,7 @@
 package com.cinefinder.theater.service;
 
-import com.cinefinder.theater.data.ElasticsearchTheater;
-import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.entity.ElasticsearchTheater;
+import com.cinefinder.theater.data.entity.Theater;
 import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
 import com.cinefinder.theater.mapper.TheaterMapper;
 

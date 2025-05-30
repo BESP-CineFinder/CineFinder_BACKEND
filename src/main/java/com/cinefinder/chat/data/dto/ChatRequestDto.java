@@ -1,4 +1,4 @@
-package com.cinefinder.chat.data.dto.request;
+package com.cinefinder.chat.data.dto;
 
 import java.time.LocalDateTime;
 

@@ -1,4 +1,4 @@
-package com.cinefinder.brand.data;
+package com.cinefinder.favorite.data.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,13 +11,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "BRAND", uniqueConstraints = {@UniqueConstraint(columnNames = "name")})
-public class Brand {
-
+@Table(name = "FAVORITE")
+public class Favorite {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
+    @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
+    private Long movieId;
 }

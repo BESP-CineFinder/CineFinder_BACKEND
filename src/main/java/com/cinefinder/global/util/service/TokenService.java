@@ -38,6 +38,6 @@ public class TokenService {
 
 	// 블랙리스트 여부 확인
 	public boolean isBlacklisted(String accessToken) {
-		return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + accessToken));
+		return redisTemplate.hasKey(BLACKLIST_PREFIX + accessToken);
 	}
 }

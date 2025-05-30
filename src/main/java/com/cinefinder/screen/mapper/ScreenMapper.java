@@ -1,6 +1,6 @@
 package com.cinefinder.screen.mapper;
 
-import com.cinefinder.movie.data.SimplifiedMovieDto;
+import com.cinefinder.movie.data.dto.SimplifiedMovieDto;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.screen.data.dto.MovieGroupedScheduleResponseDto;
 import com.cinefinder.screen.data.dto.MovieScheduleDetailDto;

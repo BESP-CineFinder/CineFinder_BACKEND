@@ -1,4 +1,4 @@
-package com.cinefinder.movie.data;
+package com.cinefinder.movie.data.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

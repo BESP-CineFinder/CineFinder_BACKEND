@@ -21,6 +21,7 @@ public class LoginCheckAspect {
 	public Object checkLogin(ProceedingJoinPoint joinPoint) throws Throwable {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+		// TODO : 업보
 		if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
 			throw new IllegalStateException("로그인이 필요합니다.");
 		}

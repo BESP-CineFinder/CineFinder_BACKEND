@@ -8,9 +8,9 @@ import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.user.data.entity.Role;
 import com.cinefinder.user.data.entity.User;
 import com.cinefinder.user.data.repository.UserRepository;
-import com.cinefinder.user.data.request.UserSignUpRequestDto;
-import com.cinefinder.user.data.response.UserInfoResponseDto;
-import com.cinefinder.user.data.response.UserSessionResponseDto;
+import com.cinefinder.user.data.dto.UserSignUpRequestDto;
+import com.cinefinder.user.data.dto.UserInfoResponseDto;
+import com.cinefinder.user.data.dto.UserSessionResponseDto;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +27,7 @@ public class UserService {
 	@Transactional
 	public void completeSignup(UserSignUpRequestDto request) {
 		if (userRepository.findByKakaoSub(request.getKakaoSub()).isPresent()) {
+			// TODO : 업보
 			throw new IllegalStateException("User already exists");
 		}
 

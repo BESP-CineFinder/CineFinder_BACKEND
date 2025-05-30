@@ -33,6 +33,7 @@ public class LoginArgumentResolver implements HandlerMethodArgumentResolver {
 		}
 
 		// 로그인되지 않은 경우 예외 처리
+		// TODO : 업보
 		throw new IllegalStateException("로그인된 사용자가 아닙니다.");
 	}
 }

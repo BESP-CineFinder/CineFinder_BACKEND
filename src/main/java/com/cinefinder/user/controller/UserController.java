@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cinefinder.global.mapper.ResponseMapper;
@@ -15,10 +14,10 @@ import com.cinefinder.global.util.annotation.LoginRequired;
 import com.cinefinder.global.util.annotation.LogoutRequired;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.user.data.entity.User;
-import com.cinefinder.user.data.response.UserInfoResponseDto;
-import com.cinefinder.user.data.response.UserSessionResponseDto;
+import com.cinefinder.user.data.dto.UserInfoResponseDto;
+import com.cinefinder.user.data.dto.UserSessionResponseDto;
 import com.cinefinder.user.service.UserService;
-import com.cinefinder.user.data.request.UserSignUpRequestDto;
+import com.cinefinder.user.data.dto.UserSignUpRequestDto;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

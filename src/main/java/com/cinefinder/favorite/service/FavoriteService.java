@@ -7,7 +7,7 @@ import com.cinefinder.favorite.mapper.FavoriteMapper;
 import com.cinefinder.favorite.model.FavoriteMovie;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

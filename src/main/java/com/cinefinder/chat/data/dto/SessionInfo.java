@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+// TODO: 업보
 public class SessionInfo {
     private Long userId;
     private String movieId;

@@ -1,4 +1,4 @@
-package com.cinefinder.user.data.response;
+package com.cinefinder.user.data.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

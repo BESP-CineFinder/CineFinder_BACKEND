@@ -2,7 +2,7 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
@@ -62,7 +62,6 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     List<CinemaScheduleApiResponseDto> result = requestSchedule(theaterId, movieId, formattedDate);
                     allSchedules.addAll(result);
                 } catch (Exception e) {
-                    // TODO: 롯데시네마 API 호출 실패 시 예외 처리
                     log.warn("롯데시네마에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}", movieId);
                 }
             }

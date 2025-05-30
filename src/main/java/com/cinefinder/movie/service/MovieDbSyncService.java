@@ -4,7 +4,7 @@ import com.cinefinder.chat.service.ChatLogElasticService;
 import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
@@ -63,7 +63,7 @@ public class MovieDbSyncService {
                 if (originMovieDetails != null) {
                     originMovieDetails.updateCodes(movieDetails);
                     originMovieDetails.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
-                    originMovieDetails.setMissingRequiredField(response);
+                    originMovieDetails.updateMissingRequiredField(response);
                     redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
                 }
             }
@@ -79,7 +79,7 @@ public class MovieDbSyncService {
 
         if (movieDetails != null && movieDetails.hasMissingRequiredField()) {
             MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
-            if (daumDetails != null) movieDetails.setMissingRequiredField(daumDetails);
+            if (daumDetails != null) movieDetails.updateMissingRequiredField(daumDetails);
         }
 
         return movieDetails;

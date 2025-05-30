@@ -1,9 +1,9 @@
 package com.cinefinder.favorite.mapper;
 
-import com.cinefinder.favorite.data.Favorite;
+import com.cinefinder.favorite.data.entity.Favorite;
 import com.cinefinder.favorite.data.dto.FavoriteRequestDto;
 import com.cinefinder.favorite.model.FavoriteMovie;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.mapper.MovieMapper;
 import io.netty.util.internal.StringUtil;
 

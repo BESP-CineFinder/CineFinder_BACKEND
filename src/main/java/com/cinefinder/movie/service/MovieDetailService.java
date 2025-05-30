@@ -3,7 +3,7 @@ package com.cinefinder.movie.service;
 import com.cinefinder.favorite.data.repository.FavoriteRepository;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
@@ -84,6 +84,7 @@ public class MovieDetailService {
             String redisKey = "movieDetails:" + movieKey;
             MovieDetails returnMovieDetails = null;
             String url = String.format(
+                    // TODO : 업보
                     kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&sort=repRlsDate,1&listCount=1",
                     kmdbServiceKey,
                     URLEncoder.encode(title, StandardCharsets.UTF_8)
@@ -95,7 +96,7 @@ public class MovieDetailService {
             for (MovieDetails movieDetails : movieDetailsList) {
                 if (movieDetails.hasMissingRequiredField()) {
                     MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
-                    if (daumDetails != null) movieDetails.setMissingRequiredField(daumDetails);
+                    if (daumDetails != null) movieDetails.updateMissingRequiredField(daumDetails);
                 }
 
                 redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);

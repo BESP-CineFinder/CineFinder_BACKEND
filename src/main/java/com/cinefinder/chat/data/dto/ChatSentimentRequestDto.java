@@ -1,10 +1,9 @@
-package com.cinefinder.chat.data.dto.request;
+package com.cinefinder.chat.data.dto;
 
 import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 @AllArgsConstructor

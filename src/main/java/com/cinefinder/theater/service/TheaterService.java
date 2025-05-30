@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.entity.Theater;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -14,7 +14,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import com.cinefinder.global.exception.custom.CustomException;
-import com.cinefinder.theater.data.ElasticsearchTheater;
+import com.cinefinder.theater.data.entity.ElasticsearchTheater;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;

@@ -1,7 +1,7 @@
 package com.cinefinder.chat.service;
 
-import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
-import com.cinefinder.chat.data.dto.request.ChatRequestDto;
+import com.cinefinder.chat.data.dto.ChatResponseDto;
+import com.cinefinder.chat.data.dto.ChatRequestDto;
 import com.cinefinder.chat.data.entity.ChatMessage;
 import com.cinefinder.chat.data.entity.ChatType;
 import com.cinefinder.chat.data.mapper.ChatMapper;

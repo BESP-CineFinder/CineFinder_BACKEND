@@ -1,7 +1,7 @@
 package com.cinefinder.movie.mapper;
 
-import com.cinefinder.movie.data.Movie;
-import com.cinefinder.movie.data.SimplifiedMovieDto;
+import com.cinefinder.movie.data.entity.Movie;
+import com.cinefinder.movie.data.dto.SimplifiedMovieDto;
 import com.cinefinder.movie.data.model.MovieDetails;
 
 public class MovieMapper {

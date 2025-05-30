@@ -1,6 +1,6 @@
 package com.cinefinder.brand.service;
 
-import com.cinefinder.brand.data.Brand;
+import com.cinefinder.brand.data.entity.Brand;
 import com.cinefinder.brand.data.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

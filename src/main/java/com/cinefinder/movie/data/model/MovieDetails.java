@@ -38,7 +38,7 @@ public class MovieDetails {
             .anyMatch(StringUtil::isNullOrEmpty);
     }
 
-    public void setMissingRequiredField(MovieDetails movieDetails) {
+    public void updateMissingRequiredField(MovieDetails movieDetails) {
         if (StringUtil.isNullOrEmpty(nation)) this.updateNation(movieDetails.getNation());
         if (StringUtil.isNullOrEmpty(plotText)) this.updatePlotText(movieDetails.getPlotText());
         if (StringUtil.isNullOrEmpty(runtime)) this.updateRuntime(movieDetails.getRuntime());
