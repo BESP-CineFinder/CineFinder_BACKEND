@@ -36,6 +36,18 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
     @Value("${movie.cgv.name}")
     private String brandName;
 
+    @Value("${movie.cgv.main-url}")
+    private String mainUrl;
+
+    @Value("${movie.cgv.referer-endpoint}")
+    private String refererUri;
+
+    @Value("${movie.cgv.cookie-endpoint}")
+    private String cookieUri;
+
+    @Value("${movie.cgv.schedule-endpoint}")
+    private String scheduleUri;
+
     private final BrandService brandService;
     private final TheaterService theaterService;
     private final MovieService movieService;
@@ -45,14 +57,14 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
     private String getRequiredCookies(String movieParam, String theaterParam) {
 
         String refererUrl = String.format(
-                "https://m.cgv.co.kr/WebApp/Reservation/QuickResult.aspx?mc=&mgc=%s&tc=%s&ymd=&rt=MOVIE&fst=&fet=&fsrc=&fmac=",
+                mainUrl + refererUri,
                 movieParam, theaterParam
         );
 
-        String dataImgPath = "MovieImg.aspx?MovieIdx=" + movieParam.split("\\|")[0];
+        String dataImgPath = cookieUri + movieParam.split("\\|")[0];
         String encodedPath = URLEncoder.encode("\"" + dataImgPath + "\"", StandardCharsets.UTF_8);
 
-        String reservationUrl = "https://m.cgv.co.kr/WebApp/Reservation/" + encodedPath;
+        String reservationUrl = mainUrl + encodedPath;
 
         Request request = new Request.Builder()
                 .url(reservationUrl)
@@ -103,7 +115,7 @@ public class CgvScreenScheduleServiceImpl implements ScreenScheduleService {
         MediaType mediaType = MediaType.parse("application/json");
         okhttp3.RequestBody body = RequestBody.create(mediaType, requestBodyJson);
         Request request = new Request.Builder()
-                .url("https://m.cgv.co.kr/WebAPP/Reservation/Common/ajaxTheaterScheduleList.aspx/GetTheaterScheduleList")
+                .url(mainUrl + scheduleUri)
                 .method("POST", body)
                 .addHeader("Accept", "application/json, text/javascript, */*; q=0.01")
                 .addHeader("Accept-Language", "ko,en-US;q=0.9,en;q=0.8,ko-KR;q=0.7")

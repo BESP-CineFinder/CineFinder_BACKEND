@@ -38,6 +38,12 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
     @Value("${movie.lotte.name}")
     private String brandName;
 
+    @Value("${movie.lotte.main-url}")
+    private String mainUrl;
+
+    @Value("${movie.lotte.schedule-endpoint}")
+    private String scheduleUri;
+
     private final BrandService brandService;
     private final TheaterService theaterService;
     private final MovieService movieService;
@@ -66,7 +72,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
     }
 
     private List<CinemaScheduleApiResponseDto> requestSchedule(String cinemaId, String movieId, String playDate) throws Exception {
-        String url = "https://www.lottecinema.co.kr/LCWS/Ticketing/TicketingData.aspx";
+        String url = mainUrl + scheduleUri;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

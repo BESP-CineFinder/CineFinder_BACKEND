@@ -87,18 +87,24 @@ api:
 movie:
   cgv:
     name: CGV
-    main-url: https://m.cgv.co.kr/WebApp
-    theater-default-endpoint: /TheaterV4/Default.aspx
-    theater-detail-endpoint: /TheaterV4/TheaterDetail.aspx?tc=
+    main-url: ${CGV_MAIN_URL}
+    theater-default-endpoint: ${CGV_THEATER_DEFAULT_ENDPOINT}
+    theater-detail-endpoint: ${CGV_THEATER_DETAIL_ENDPOINT}
+    referer-endpoint: ${CGV_REFERER_ENDPOINT}
+    cookie-endpoint: ${CGV_COOKIE_ENDPOINT}
+    schedule-endpoint: ${CGV_SCHEDULE_ENDPOINT}
   lotte:
     name: 롯데시네마
-    main-url: https://www.lottecinema.co.kr
-    theater-default-endpoint: /LCWS/Cinema/CinemaData.aspx
+    main-url: ${LOTTE_CINEMA_MAIN_URL}
+    theater-default-endpoint: ${LOTTE_CINEMA_THEATER_DEFAULT_ENDPOINT}
+    schedule-endpoint: ${LOTTE_CINEMA_SCHEDULE_ENDPOINT}
   mega:
     name: 메가박스
-    main-url: https://www.megabox.co.kr
-    theater-default-endpoint: /theater/list
-    theater-detail-endpoint: /on/oh/ohc/Brch/infoPage.do
+    main-url: ${MEGA_BOX_MAIN_URL}
+    mobile-main-url: ${MEGA_BOX_MOBILE_MAIN_URL}
+    theater-default-endpoint: ${MEGA_BOX_THEATER_DEFAULT_ENDPOINT}
+    theater-detail-endpoint: ${MEGA_BOX_THEATER_DETAIL_ENDPOINT}
+    schedule-endpoint: ${MEGA_BOX_SCHEDULE_ENDPOINT}
 
 rabbitmq:
   websocket_endpoint: ${WEBSOCKET_ENDPOINT}
