@@ -16,7 +16,7 @@ import java.util.Map;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TheaterDbSyncService {
+public class TheaterSyncService {
 
     private final TheaterRepository theaterRepository;
     private final Map<String, TheaterCrawlerService> theaterCrawlerServices;

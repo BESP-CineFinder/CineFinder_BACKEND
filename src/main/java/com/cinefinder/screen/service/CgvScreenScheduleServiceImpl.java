@@ -7,7 +7,7 @@ import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.mapper.TheaterMapper;
-import com.cinefinder.theater.service.BrandService;
+import com.cinefinder.brand.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

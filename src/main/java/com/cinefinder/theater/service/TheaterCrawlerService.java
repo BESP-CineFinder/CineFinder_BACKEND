@@ -11,7 +11,7 @@ public interface TheaterCrawlerService {
     List<Theater> getCrawlData();
     String getBrandName();
 
-    default List<ElasticsearchTheater> returnToElasticsearch(List<Theater> theaters, ElasticsearchTheaterRepository repo) {
+    default List<ElasticsearchTheater> returnToElasticsearch(List<Theater> theaters) {
         return theaters.stream()
             .map(TheaterMapper::toElasticsearchDocument)
             .toList();
@@ -24,6 +24,6 @@ public interface TheaterCrawlerService {
         List<String> oldIds = oldDocs.stream().map(ElasticsearchTheater::getId).toList();
 
         repo.deleteAllById(oldIds);
-        repo.saveAll(returnToElasticsearch(theaters, repo));
+        repo.saveAll(returnToElasticsearch(theaters));
     }
 }

@@ -1,7 +1,7 @@
-package com.cinefinder.theater.service;
+package com.cinefinder.brand.service;
 
-import com.cinefinder.theater.data.Brand;
-import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.brand.data.Brand;
+import com.cinefinder.brand.data.repository.BrandRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;

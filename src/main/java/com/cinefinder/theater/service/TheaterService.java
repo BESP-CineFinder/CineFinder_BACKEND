@@ -35,7 +35,7 @@ public class TheaterService {
 	private final RedissonClient redissonClient;
 	private final TheaterRepository theaterRepository;
 	private final ElasticsearchClient elasticsearchClient;
-	private final TheaterDbSyncService theaterDbSyncService;
+	private final TheaterSyncService theaterSyncService;
 
 	public Theater getTheaterInfo(String brand, String theaterId) {
 		return theaterRepository.findByBrandNameAndCode(brand, theaterId)
@@ -108,7 +108,7 @@ public class TheaterService {
 			}
 
 			log.info("🔒[영화관 데이터 갱신] 락 획득 성공!");
-			return theaterDbSyncService.theaterSyncLogic();
+			return theaterSyncService.theaterSyncLogic();
 
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
