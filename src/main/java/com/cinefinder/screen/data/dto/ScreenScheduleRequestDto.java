@@ -12,5 +12,5 @@ public class ScreenScheduleRequestDto {
     private Double lat;
     private Double lng;
     private Double distance;
-    private List<String> movieNames;
+    private List<Long> movieIds;
 }
