@@ -5,6 +5,7 @@ import com.cinefinder.favorite.service.FavoriteService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.model.BoxOffice;
+import com.cinefinder.movie.data.model.MovieDetails;
 import com.cinefinder.movie.service.BoxOfficeService;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.recommend.data.dto.RecommendResponseDto;
@@ -86,10 +87,13 @@ public class RecommendService {
                 total += 2 * (entry.getValue() - 2);
                 total += (rankMap.get(movieId) != null) ? 2 - (0.1 * (rankMap.get(movieId) - 1)) : 0;
 
+                MovieDetails movieDetails = movieService.getMovieDetailsByMovieId(movieId);
+                movieDetails.updateFavoriteCount(favoriteService.countFavoriteMovieList(movieId));
+
                 RecommendResponseDto recommendResponseDto = RecommendResponseDto.builder()
                     .movieId(movieId)
                     .score(total)
-                    .movieDetails(movieService.getMovieDetailsByMovieId(movieId))
+                    .movieDetails(movieDetails)
                     .build();
 
                 recommendResponseDtoList.add(recommendResponseDto);
