@@ -65,6 +65,9 @@ public class MovieDbSyncService {
                     originMovieResponseDto.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
                     originMovieResponseDto.updateMissingRequiredField(response);
                     redisTemplate.opsForHash().put(redisKey, movieKey, originMovieResponseDto);
+                } else {
+                    movieResponseDto.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
+                    redisTemplate.opsForHash().put(redisKey, movieKey, movieResponseDto);
                 }
             }
         } catch (Exception e) {

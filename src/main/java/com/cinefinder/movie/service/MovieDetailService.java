@@ -95,11 +95,18 @@ public class MovieDetailService {
             String response = restTemplate.getForObject(new URI(url), String.class);
 
             List<MovieResponseDto> movieResponseDtoList = UtilParse.extractMovieDetailsList(response, movieKey);
+          
+            if (movieResponseDtoList.isEmpty()) movieResponseDtoList.add(movieHelperService.requestMovieDaumApi(title));
+          
             for (MovieResponseDto movieResponseDto : movieResponseDtoList) {
+                if (movieResponseDto == null) continue;
+              
                 if (movieResponseDto.hasMissingRequiredField()) {
                     MovieResponseDto daumDetails = movieHelperService.requestMovieDaumApi(title);
                     if (daumDetails != null) movieResponseDto.updateMissingRequiredField(daumDetails);
                 }
+              
+                movieResponseDto.updateMovieKey(movieKey);
 
                 redisTemplate.opsForHash().put(redisKey, movieKey, movieResponseDto);
                 redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);

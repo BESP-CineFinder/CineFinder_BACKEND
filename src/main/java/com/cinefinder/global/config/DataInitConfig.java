@@ -1,6 +1,5 @@
 package com.cinefinder.global.config;
 
-import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.brand.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
