@@ -50,7 +50,8 @@ public enum ApiStatus {
 	_FILTERING_FAIL_RESPONSE_PARSING(HttpStatus.INTERNAL_SERVER_ERROR, 5003, "비속어 필터링 응답 파싱 중 오류가 발생했습니다."),
 	_FILTERING_FAIL_UNKNOWN(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "비속어 필터링 도중 알 수 없는 오류가 발생했습니다."),
 	_AUTHENTICATION_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인증 실패"),
-	_USER_ALREADY_EXISTS(HttpStatus.INTERNAL_SERVER_ERROR, 500, "이미 존재하는 사용자입니다.");
+	_USER_ALREADY_EXISTS(HttpStatus.INTERNAL_SERVER_ERROR, 500, "이미 존재하는 사용자입니다."),
+	_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인터럽트 예외가 발생했습니다.");
 
 	private final HttpStatus httpStatus;
 	private final int code;

@@ -112,7 +112,7 @@ public class TheaterService {
 
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("동기화 중단됨", e);
+			throw new CustomException(ApiStatus._INTERRUPT_EXCEPTION, "외부의 중단 요청으로 예외 발생: "+ e.getMessage());
 		} finally {
 			if (isLocked) {
 				lock.unlock();
