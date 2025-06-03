@@ -96,11 +96,11 @@ public class MovieService {
     @Transactional(readOnly = true)
     public Movie fetchMovieByBrandMovieCode(String brandName, String movieCode) {
         if (brandName.equals(cgvBrandName)) {
-            return movieRepository.findByCgvCode(movieCode);
+            return movieRepository.findByCgvCode(movieCode).orElse(null);
         } else if (brandName.equals(lotteBrandName)) {
-            return movieRepository.findByLotteCinemaCode(movieCode);
+            return movieRepository.findByLotteCinemaCode(movieCode).orElse(null);
         } else if (brandName.equals(megaBrandName)) {
-            return movieRepository.findByMegaBoxCode(movieCode);
+            return movieRepository.findByMegaBoxCode(movieCode).orElse(null);
         } else {
             return null;
         }

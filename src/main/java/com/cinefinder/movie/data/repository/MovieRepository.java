@@ -11,11 +11,10 @@ import java.util.Optional;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-    // TODO : 업보
     Optional<Movie> findByMovieKey(String movieKey);
-    Movie findByCgvCode(String cgvCode);
-    Movie findByLotteCinemaCode(String lotteCode);
-    Movie findByMegaBoxCode(String megaCode);
+    Optional<Movie> findByCgvCode(String cgvCode);
+    Optional<Movie> findByLotteCinemaCode(String lotteCode);
+    Optional<Movie> findByMegaBoxCode(String megaCode);
 
     @Query(value = """
         SELECT *
