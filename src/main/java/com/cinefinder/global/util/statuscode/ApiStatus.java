@@ -48,7 +48,8 @@ public enum ApiStatus {
 	_FILTERING_FAIL_REQUEST_JSON(HttpStatus.INTERNAL_SERVER_ERROR, 5001, "비속어 필터링 요청 JSON 생성 중 오류가 발생했습니다."),
 	_FILTERING_FAIL_API_COMMUNICATION(HttpStatus.INTERNAL_SERVER_ERROR, 5002, "비속어 필터링 API 통신 중 오류가 발생했습니다."),
 	_FILTERING_FAIL_RESPONSE_PARSING(HttpStatus.INTERNAL_SERVER_ERROR, 5003, "비속어 필터링 응답 파싱 중 오류가 발생했습니다."),
-	_FILTERING_FAIL_UNKNOWN(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "비속어 필터링 도중 알 수 없는 오류가 발생했습니다.");
+	_FILTERING_FAIL_UNKNOWN(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "비속어 필터링 도중 알 수 없는 오류가 발생했습니다."),
+	_AUTHENTICATION_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인증 실패");
 
 	private final HttpStatus httpStatus;
 	private final int code;

@@ -1,5 +1,7 @@
 package com.cinefinder.global.util.AOP;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -21,9 +23,8 @@ public class LoginCheckAspect {
 	public Object checkLogin(ProceedingJoinPoint joinPoint) throws Throwable {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		// TODO : 업보
 		if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
-			throw new IllegalStateException("로그인이 필요합니다.");
+			throw new CustomException(ApiStatus._AUTHENTICATION_FAIL, "로그인이 필요한 서비스입니다.");
 		}
 		return joinPoint.proceed();
 	}

@@ -1,7 +1,9 @@
 package com.cinefinder.global.util.resolver;
 
+import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.oauth2.entity.CustomUserDetails;
 import com.cinefinder.global.util.annotation.Login;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.user.data.entity.User;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,7 +35,6 @@ public class LoginArgumentResolver implements HandlerMethodArgumentResolver {
 		}
 
 		// 로그인되지 않은 경우 예외 처리
-		// TODO : 업보
-		throw new IllegalStateException("로그인된 사용자가 아닙니다.");
+		throw new CustomException(ApiStatus._AUTHENTICATION_FAIL, "로그인이 필요한 서비스입니다.");
 	}
 }
