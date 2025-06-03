@@ -27,8 +27,7 @@ public class UserService {
 	@Transactional
 	public void completeSignup(UserSignUpRequestDto request) {
 		if (userRepository.findByKakaoSub(request.getKakaoSub()).isPresent()) {
-			// TODO : 업보
-			throw new IllegalStateException("User already exists");
+			throw new CustomException(ApiStatus._USER_ALREADY_EXISTS);
 		}
 
 		User user = User.builder()
