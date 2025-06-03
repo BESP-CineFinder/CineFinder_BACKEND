@@ -1,4 +1,4 @@
-package com.cinefinder.movie.data.model;
+package com.cinefinder.movie.data.dto;
 
 import lombok.*;
 
@@ -7,12 +7,12 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class BoxOffice {
+public class BoxOfficeResponseDto {
     private String rank;               /* 순위 */
     private Long movieId;              /* 영화 ID */
     private String movieKey;           /* 정규화된 영화명 키 */
     private String movieNm;            /* 영화명 */
-    private MovieDetails movieDetails; /* 영화상세정보 */
+    private MovieResponseDto movieResponseDto; /* 영화상세정보 */
 
     public void updateRank(String rank) {
         this.rank = rank;
@@ -22,7 +22,7 @@ public class BoxOffice {
         this.movieId = movieId;
     }
 
-    public void updateMovieDetails(MovieDetails movieDetails) {
-        this.movieDetails = movieDetails;
+    public void updateMovieDetails(MovieResponseDto movieResponseDto) {
+        this.movieResponseDto = movieResponseDto;
     }
 }

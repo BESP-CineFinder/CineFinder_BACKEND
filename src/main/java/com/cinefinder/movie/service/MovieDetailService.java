@@ -4,7 +4,7 @@ import com.cinefinder.favorite.data.repository.FavoriteRepository;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.entity.Movie;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.util.UtilParse;
@@ -33,6 +33,9 @@ public class MovieDetailService {
     @Value("${api.kmdb.request-url}")
     private String kmdbRequestUrl;
 
+    @Value("${api.kmdb.request-parameter}")
+    private String kmdbRequestParameter;
+
     @Value("${api.kmdb.service-key}")
     private String kmdbServiceKey;
 
@@ -42,7 +45,7 @@ public class MovieDetailService {
     private final MovieRepository movieRepository;
     private final FavoriteRepository favoriteRepository;
 
-    public MovieDetails getMovieDetails(String title) {
+    public MovieResponseDto getMovieDetails(String title) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String movieKey = UtilString.normalizeMovieKey(title);
@@ -51,9 +54,9 @@ public class MovieDetailService {
             if (redisTemplate.hasKey(redisKey)) {
                 log.debug("✅ 영화 상세정보 캐시 조회 : {}", movieKey);
                 Object object = redisTemplate.opsForHash().get(redisKey, movieKey);
-                MovieDetails movieDetails = mapper.convertValue(object, MovieDetails.class);
-                movieDetails.updateFavoriteCount(favoriteRepository.countByMovieId(movieDetails.getMovieId()));
-                return movieDetails;
+                MovieResponseDto movieResponseDto = mapper.convertValue(object, MovieResponseDto.class);
+                movieResponseDto.updateFavoriteCount(favoriteRepository.countByMovieId(movieResponseDto.getMovieId()));
+                return movieResponseDto;
             } else {
                 return getMovieDetailsFromDB(movieKey, title);
             }
@@ -62,14 +65,14 @@ public class MovieDetailService {
         }
     }
 
-    public MovieDetails getMovieDetailsFromDB(String movieKey, String title) {
+    public MovieResponseDto getMovieDetailsFromDB(String movieKey, String title) {
         try {
             Optional<Movie> optionalMovie = movieRepository.findByMovieKey(movieKey);
             if (optionalMovie.isPresent()) {
                 log.debug("✅ 영화 상세정보 DB 조회 : {}", movieKey);
-                MovieDetails movieDetails = MovieMapper.toMovieDetails(optionalMovie.get());
-                movieDetails.updateFavoriteCount(favoriteRepository.countByMovieId(movieDetails.getMovieId()));
-                return movieDetails;
+                MovieResponseDto movieResponseDto = MovieMapper.toMovieDetails(optionalMovie.get());
+                movieResponseDto.updateFavoriteCount(favoriteRepository.countByMovieId(movieResponseDto.getMovieId()));
+                return movieResponseDto;
             } else {
                 return fetchMovieDetails(movieKey, title);
             }
@@ -78,33 +81,32 @@ public class MovieDetailService {
         }
     }
 
-    public MovieDetails fetchMovieDetails(String movieKey, String title) {
+    public MovieResponseDto fetchMovieDetails(String movieKey, String title) {
         try {
             log.debug("✅ 영화 상세정보 KMDB API 호출 {} : ", movieKey);
             String redisKey = "movieDetails:" + movieKey;
-            MovieDetails returnMovieDetails = null;
+            MovieResponseDto returnMovieResponseDto = null;
             String url = String.format(
-                    // TODO : 업보
-                    kmdbRequestUrl + "?collection=kmdb_new2&detail=Y&ServiceKey=%s&title=%s&sort=repRlsDate,1&listCount=1",
+                    kmdbRequestUrl + kmdbRequestParameter,
                     kmdbServiceKey,
                     URLEncoder.encode(title, StandardCharsets.UTF_8)
             );
 
             String response = restTemplate.getForObject(new URI(url), String.class);
 
-            List<MovieDetails> movieDetailsList = UtilParse.extractMovieDetailsList(response, movieKey);
-            for (MovieDetails movieDetails : movieDetailsList) {
-                if (movieDetails.hasMissingRequiredField()) {
-                    MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
-                    if (daumDetails != null) movieDetails.updateMissingRequiredField(daumDetails);
+            List<MovieResponseDto> movieResponseDtoList = UtilParse.extractMovieDetailsList(response, movieKey);
+            for (MovieResponseDto movieResponseDto : movieResponseDtoList) {
+                if (movieResponseDto.hasMissingRequiredField()) {
+                    MovieResponseDto daumDetails = movieHelperService.requestMovieDaumApi(title);
+                    if (daumDetails != null) movieResponseDto.updateMissingRequiredField(daumDetails);
                 }
 
-                redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
+                redisTemplate.opsForHash().put(redisKey, movieKey, movieResponseDto);
                 redisTemplate.expire(redisKey, 1, TimeUnit.DAYS);
-                returnMovieDetails = movieDetails;
+                returnMovieResponseDto = movieResponseDto;
             }
 
-            return returnMovieDetails;
+            return returnMovieResponseDto;
         } catch (IllegalArgumentException e) {
             throw new CustomException(ApiStatus._INTERNAL_SERVER_ERROR, "영화 상세정보 저장 중 API 응답 결과가 2개 이상으로 데이터 정합성 위배");
         } catch (URISyntaxException e) {

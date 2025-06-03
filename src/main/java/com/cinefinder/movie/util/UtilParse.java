@@ -1,7 +1,7 @@
 package com.cinefinder.movie.util;
 
-import com.cinefinder.movie.data.model.BoxOffice;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.BoxOfficeResponseDto;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +19,7 @@ import java.util.Properties;
 
 @Slf4j
 public class UtilParse {
-    public static List<BoxOffice> extractDailyBoxOfficeInfoList(String response) throws JsonProcessingException {
+    public static List<BoxOfficeResponseDto> extractDailyBoxOfficeInfoList(String response) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
 
         // 1. 일간 박스오피스 목록 파싱
@@ -28,25 +28,25 @@ public class UtilParse {
                 .path("dailyBoxOfficeList");
 
         // 2. 요청 및 응답 List 생성
-        List<BoxOffice> list = new ArrayList<>();
+        List<BoxOfficeResponseDto> list = new ArrayList<>();
         for (JsonNode node : dailyBoxOfficeList) {
             String movieNm = node.path("movieNm").asText();
 
-            BoxOffice boxOffice = BoxOffice.builder()
+            BoxOfficeResponseDto boxOfficeResponseDto = BoxOfficeResponseDto.builder()
                 .rank(node.path("rank").asText())
                 .movieNm(movieNm)
                 .movieKey(UtilString.normalizeMovieKey(movieNm))
                 .build();
 
-            list.add(boxOffice);
+            list.add(boxOfficeResponseDto);
         }
 
         return list;
     }
 
-    public static List<MovieDetails> extractMovieDetailsList(String response, String movieKey) throws JsonProcessingException {
+    public static List<MovieResponseDto> extractMovieDetailsList(String response, String movieKey) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        List<MovieDetails> list = new ArrayList<>();
+        List<MovieResponseDto> list = new ArrayList<>();
 
         // 1. 일간 박스오피스 목록 파싱
         JsonNode result = mapper.readTree(response)
@@ -102,7 +102,7 @@ public class UtilParse {
             JsonNode vodsNode = node.path("vods").path("vod");
             for (JsonNode vod : vodsNode) vods.add(vod.path("vodUrl").asText());
 
-            MovieDetails movieDetails = MovieDetails.builder()
+            MovieResponseDto movieResponseDto = MovieResponseDto.builder()
                 .movieKey(movieKey)
                 .title(title)
                 .titleEng(titleEng)
@@ -119,42 +119,42 @@ public class UtilParse {
                 .vods(String.join("|", vods))
                 .build();
 
-            list.add(movieDetails);
+            list.add(movieResponseDto);
         }
 
         return list;
     }
 
-    public static MovieDetails extractDaumMovieDetails(String response) {
+    public static MovieResponseDto extractDaumMovieDetails(String response) {
         Document doc = Jsoup.parse(response);
         Elements dts = doc.select("dt");
 
         if (dts.isEmpty()) return null;
 
-        MovieDetails movieDetails = new MovieDetails();
+        MovieResponseDto movieResponseDto = new MovieResponseDto();
         for (Element dt : dts) {
             Element dd = dt.nextElementSibling();
             if (dd == null) continue;
 
             switch (dt.text()) {
-                case "국가" -> movieDetails.updateNation(dd.text());
-                case "장르" -> movieDetails.updateGenre(dd.text());
-                case "등급" -> movieDetails.updateRatingGrade(dd.text());
-                case "시간" -> movieDetails.updateRuntime(dd.text().replace("분", ""));
-                case "개봉" -> movieDetails.updateReleaseDate(dd.text().replace(".", ""));
+                case "국가" -> movieResponseDto.updateNation(dd.text());
+                case "장르" -> movieResponseDto.updateGenre(dd.text());
+                case "등급" -> movieResponseDto.updateRatingGrade(dd.text());
+                case "시간" -> movieResponseDto.updateRuntime(dd.text().replace("분", ""));
+                case "개봉" -> movieResponseDto.updateReleaseDate(dd.text().replace(".", ""));
             }
         }
 
-        if (StringUtil.isNullOrEmpty(movieDetails.getPlotText())) {
+        if (StringUtil.isNullOrEmpty(movieResponseDto.getPlotText())) {
             Element summary = doc.selectFirst("c-summary");
-            if (summary != null) movieDetails.updatePlotText(summary.text());
+            if (summary != null) movieResponseDto.updatePlotText(summary.text());
         }
 
-        if (StringUtil.isNullOrEmpty(movieDetails.getPosters())) {
+        if (StringUtil.isNullOrEmpty(movieResponseDto.getPosters())) {
             Element cDocContent = doc.selectFirst("c-doc-content");
             if (cDocContent != null) {
                 Element cThumb = cDocContent.selectFirst("c-thumb");
-                if (cThumb != null) movieDetails.updatePosters(cThumb.attr("data-original-src"));
+                if (cThumb != null) movieResponseDto.updatePosters(cThumb.attr("data-original-src"));
             }
         }
 
@@ -173,74 +173,74 @@ public class UtilParse {
                 }
             }
 
-            movieDetails.updateVods(String.join("|", vodList));
-            movieDetails.updateStlls(String.join("|", stllList));
+            movieResponseDto.updateVods(String.join("|", vodList));
+            movieResponseDto.updateStlls(String.join("|", stllList));
         }
 
-        return movieDetails;
+        return movieResponseDto;
     }
 
-    public static List<MovieDetails> extractCgvMovieList(String response) {
+    public static List<MovieResponseDto> extractCgvMovieList(String response) {
         if (response == null) return new ArrayList<>();
 
         Document doc = Jsoup.parse(response);
         Elements movieItems = doc.select("div.mm_list_item");
 
-        List<MovieDetails> movieDetailsList = new ArrayList<>();
+        List<MovieResponseDto> movieResponseDtoList = new ArrayList<>();
         for (Element movie : movieItems) {
-            MovieDetails movieDetails = new MovieDetails();
+            MovieResponseDto movieResponseDto = new MovieResponseDto();
 
-            movieDetails.updateTitle(movie.selectFirst("div.mm_list_item strong.tit").text());
+            movieResponseDto.updateTitle(movie.selectFirst("div.mm_list_item strong.tit").text());
 
             Element button = movie.selectFirst("a.btn_reserve");
             String onclick = button.attr("onclick");
             String[] argsArray = onclick.split("'");
             if (argsArray.length >= 4) {
-                movieDetails.updateCgvCode(argsArray[3]);
+                movieResponseDto.updateCgvCode(argsArray[3]);
             }
 
-            movieDetailsList.add(movieDetails);
+            movieResponseDtoList.add(movieResponseDto);
         }
 
-        return movieDetailsList;
+        return movieResponseDtoList;
     }
 
-    public static List<MovieDetails> extractMegaBoxMovieList(String response) throws IOException {
+    public static List<MovieResponseDto> extractMegaBoxMovieList(String response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 
         JsonNode curationBannerListNodes = mapper.readTree(response).path("movieList");
 
-        List<MovieDetails> movieDetailsList = new ArrayList<>();
+        List<MovieResponseDto> movieResponseDtoList = new ArrayList<>();
         for (JsonNode node : curationBannerListNodes) {
-            MovieDetails movieDetails = new MovieDetails();
+            MovieResponseDto movieResponseDto = new MovieResponseDto();
 
-            movieDetails.updateTitle(decodeUnicode(node.path("movieNm").asText()));
-            movieDetails.updateMegaBoxCode(node.path("movieNo").asText());
+            movieResponseDto.updateTitle(decodeUnicode(node.path("movieNm").asText()));
+            movieResponseDto.updateMegaBoxCode(node.path("movieNo").asText());
 
-            movieDetailsList.add(movieDetails);
+            movieResponseDtoList.add(movieResponseDto);
         }
 
-        return movieDetailsList;
+        return movieResponseDtoList;
     }
 
-    public static List<MovieDetails> extractLotteCinemaMovieList(String response) throws IOException {
+    public static List<MovieResponseDto> extractLotteCinemaMovieList(String response) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
 
         JsonNode items = mapper.readTree(response)
             .path("Movies")
             .path("Items");
 
-        List<MovieDetails> movieDetailsList = new ArrayList<>();
+        List<MovieResponseDto> movieResponseDtoList = new ArrayList<>();
         for (JsonNode node : items) {
-            MovieDetails movieDetails = new MovieDetails();
+            MovieResponseDto movieResponseDto = new MovieResponseDto();
 
-            movieDetails.updateTitle(decodeUnicode(node.path("MovieNameKR").asText()));
-            movieDetails.updateLotteCinemaCode(node.path("RepresentationMovieCode").asText());
+            movieResponseDto.updateTitle(decodeUnicode(node.path("MovieNameKR").asText()));
+            movieResponseDto.updateLotteCinemaCode(node.path("RepresentationMovieCode").asText());
 
-            movieDetailsList.add(movieDetails);
+            movieResponseDtoList.add(movieResponseDto);
         }
 
-        return movieDetailsList;
+        return movieResponseDtoList;
     }
 
     private static String decodeUnicode(String input) throws IOException {

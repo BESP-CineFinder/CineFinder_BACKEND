@@ -2,7 +2,7 @@ package com.cinefinder.movie.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.cinefinder.movie.util.UtilParse;
 import com.cinefinder.movie.util.UtilString;
 import io.netty.util.internal.StringUtil;
@@ -39,8 +39,8 @@ public class MovieHelperService {
     private static final List<String> IGNORE_TITLE_LIST = List.of("AD");
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public List<MovieDetails> requestMultiplexMovieApi() {
-        List<MovieDetails> multiplexMovieList = new ArrayList<>();
+    public List<MovieResponseDto> requestMultiplexMovieApi() {
+        List<MovieResponseDto> multiplexMovieList = new ArrayList<>();
         multiplexMovieList.addAll(requestMovieCgvApi());
         multiplexMovieList.addAll(requestMovieMegaBoxApi());
         multiplexMovieList.addAll(requestMovieLotteCinemaApi());
@@ -48,7 +48,7 @@ public class MovieHelperService {
         return multiplexMovieList;
     }
 
-    public List<MovieDetails> requestMovieCgvApi() {
+    public List<MovieResponseDto> requestMovieCgvApi() {
         try {
             String response = restTemplate.getForObject(cgvRequestUrl, String.class);
 
@@ -60,7 +60,7 @@ public class MovieHelperService {
         }
     }
 
-    public List<MovieDetails> requestMovieMegaBoxApi() {
+    public List<MovieResponseDto> requestMovieMegaBoxApi() {
         try {
             String jsonBody = "{"
                 + "\"currentPage\":\"1\","
@@ -85,9 +85,9 @@ public class MovieHelperService {
         }
     }
 
-    public List<MovieDetails> requestMovieLotteCinemaApi() {
+    public List<MovieResponseDto> requestMovieLotteCinemaApi() {
         try {
-            List<MovieDetails> movieDetailsList = new ArrayList<>();
+            List<MovieResponseDto> movieResponseDtoList = new ArrayList<>();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -121,10 +121,10 @@ public class MovieHelperService {
                 HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(payload, headers);
                 String response = restTemplate.postForObject(lotteCinemaRequestUrl, request, String.class);
 
-                movieDetailsList.addAll(UtilParse.extractLotteCinemaMovieList(response));
+                movieResponseDtoList.addAll(UtilParse.extractLotteCinemaMovieList(response));
             }
 
-            return movieDetailsList;
+            return movieResponseDtoList;
         } catch (IOException e) {
             throw new CustomException(ApiStatus._EXTERNAL_API_FAIL, "롯데시네마 영화목록 API 호출 실패");
         } catch (Exception e) {
@@ -132,38 +132,38 @@ public class MovieHelperService {
         }
     }
 
-    public Map<String, MovieDetails> mergeAndDeduplicateMovieDetails(List<MovieDetails> totalMovieDetails) {
+    public Map<String, MovieResponseDto> mergeAndDeduplicateMovieDetails(List<MovieResponseDto> totalMovieDetails) {
         try {
-            Map<String, MovieDetails> distinctMap = new HashMap<>();
-            for (MovieDetails movieDetails : totalMovieDetails) {
-                String normalizeMovieKey = UtilString.normalizeMovieKey(movieDetails.getTitle());
-                String title = movieDetails.getTitle();
-                String cgvCode = movieDetails.getCgvCode();
-                String megaBoxCode = movieDetails.getMegaBoxCode();
-                String lotteCinemaCode = movieDetails.getLotteCinemaCode();
-                MovieDetails originMovieDetails = distinctMap.get(normalizeMovieKey);
+            Map<String, MovieResponseDto> distinctMap = new HashMap<>();
+            for (MovieResponseDto movieResponseDto : totalMovieDetails) {
+                String normalizeMovieKey = UtilString.normalizeMovieKey(movieResponseDto.getTitle());
+                String title = movieResponseDto.getTitle();
+                String cgvCode = movieResponseDto.getCgvCode();
+                String megaBoxCode = movieResponseDto.getMegaBoxCode();
+                String lotteCinemaCode = movieResponseDto.getLotteCinemaCode();
+                MovieResponseDto originMovieResponseDto = distinctMap.get(normalizeMovieKey);
 
                 if (IGNORE_TITLE_LIST.contains(title)) continue;
 
-                if (originMovieDetails != null) {
+                if (originMovieResponseDto != null) {
                     if (!StringUtil.isNullOrEmpty(cgvCode)) {
-                        originMovieDetails.updateCgvCode(movieDetails.getCgvCode());
+                        originMovieResponseDto.updateCgvCode(movieResponseDto.getCgvCode());
                     }
 
                     if (!StringUtil.isNullOrEmpty(megaBoxCode)) {
-                        originMovieDetails.updateMegaBoxCode(movieDetails.getMegaBoxCode());
+                        originMovieResponseDto.updateMegaBoxCode(movieResponseDto.getMegaBoxCode());
                     }
 
                     if (!StringUtil.isNullOrEmpty(lotteCinemaCode)) {
-                        originMovieDetails.updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
+                        originMovieResponseDto.updateLotteCinemaCode(movieResponseDto.getLotteCinemaCode());
                     }
 
-                    if (originMovieDetails.getTitle().length() >= title.length()) {
-                        movieDetails = originMovieDetails;
+                    if (originMovieResponseDto.getTitle().length() >= title.length()) {
+                        movieResponseDto = originMovieResponseDto;
                     }
                 }
 
-                distinctMap.putIfAbsent(normalizeMovieKey, movieDetails);
+                distinctMap.putIfAbsent(normalizeMovieKey, movieResponseDto);
             }
 
             return distinctMap;
@@ -172,7 +172,7 @@ public class MovieHelperService {
         }
     }
 
-    public MovieDetails requestMovieDaumApi(String title) {
+    public MovieResponseDto requestMovieDaumApi(String title) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36");

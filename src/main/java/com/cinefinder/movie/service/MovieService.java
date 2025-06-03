@@ -3,8 +3,8 @@ package com.cinefinder.movie.service;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 import com.cinefinder.movie.data.entity.Movie;
-import com.cinefinder.movie.data.model.BoxOffice;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.BoxOfficeResponseDto;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +22,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class MovieService {
-    @Value("${api.kmdb.request-url}")
-    private String kmdbRequestUrl;
-
-    @Value("${api.kmdb.service-key}")
-    private String kmdbServiceKey;
-
-    @Value("${api.daum.request-url}")
-    private String daumRequestUrl;
-
     @Value("${movie.cgv.name}")
     private String cgvBrandName;
 
@@ -46,11 +37,11 @@ public class MovieService {
     private final MovieDetailService movieDetailService;
     private final BoxOfficeService boxOfficeService;
 
-    public List<BoxOffice> fetchDailyBoxOfficeInfo() {
+    public List<BoxOfficeResponseDto> fetchDailyBoxOfficeInfo() {
         return boxOfficeService.getDailyBoxOfficeInfo();
     }
 
-    public MovieDetails fetchMovieDetails(String title) {
+    public MovieResponseDto fetchMovieDetails(String title) {
         return movieDetailService.getMovieDetails(title);
     }
 
@@ -80,7 +71,7 @@ public class MovieService {
     }
 
     @Transactional(readOnly = true)
-    public MovieDetails getMovieDetailsByMovieId(Long movieId) {
+    public MovieResponseDto getMovieDetailsByMovieId(Long movieId) {
         return MovieMapper.toMovieDetails(
             movieRepository.findById(movieId).orElseThrow(() ->
                 new CustomException(ApiStatus._NOT_FOUND, "해당 영화를 찾을 수 없습니다.")

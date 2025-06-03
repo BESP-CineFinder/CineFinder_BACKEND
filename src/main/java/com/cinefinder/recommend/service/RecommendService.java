@@ -4,7 +4,7 @@ import com.cinefinder.chat.service.ChatLogElasticService;
 import com.cinefinder.favorite.service.FavoriteService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.model.BoxOffice;
+import com.cinefinder.movie.data.dto.BoxOfficeResponseDto;
 import com.cinefinder.movie.service.BoxOfficeService;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.recommend.data.dto.RecommendResponseDto;
@@ -70,11 +70,11 @@ public class RecommendService {
 
             List<Long> movieIds = movieService.findAllMovieIds();
             Map<Long, Double> sentimentMap = chatLogElasticService.getSentimentScores(movieIds);
-            List<BoxOffice> boxOfficeList = boxOfficeService.getDailyBoxOfficeInfo();
+            List<BoxOfficeResponseDto> boxOfficeResponseDtoList = boxOfficeService.getDailyBoxOfficeInfo();
 
             Map<Long, Integer> rankMap = new HashMap<>();
-            for (BoxOffice boxOffice : boxOfficeList) {
-                rankMap.put(boxOffice.getMovieId(), Integer.parseInt(boxOffice.getRank()));
+            for (BoxOfficeResponseDto boxOfficeResponseDto : boxOfficeResponseDtoList) {
+                rankMap.put(boxOfficeResponseDto.getMovieId(), Integer.parseInt(boxOfficeResponseDto.getRank()));
             }
 
             List<RecommendResponseDto> recommendResponseDtoList = new ArrayList<>();
@@ -89,7 +89,7 @@ public class RecommendService {
                 RecommendResponseDto recommendResponseDto = RecommendResponseDto.builder()
                     .movieId(movieId)
                     .score(total)
-                    .movieDetails(movieService.getMovieDetailsByMovieId(movieId))
+                    .movieResponseDto(movieService.getMovieDetailsByMovieId(movieId))
                     .build();
 
                 recommendResponseDtoList.add(recommendResponseDto);

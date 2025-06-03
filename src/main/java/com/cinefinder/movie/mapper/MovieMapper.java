@@ -2,11 +2,11 @@ package com.cinefinder.movie.mapper;
 
 import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.data.dto.SimplifiedMovieDto;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 
 public class MovieMapper {
-    public static MovieDetails toMovieDetails(Movie movie) {
-        return MovieDetails.builder()
+    public static MovieResponseDto toMovieDetails(Movie movie) {
+        return MovieResponseDto.builder()
             .movieId(movie.getId())
             .cgvCode(movie.getCgvCode())
             .megaBoxCode(movie.getMegaBoxCode())
@@ -28,13 +28,13 @@ public class MovieMapper {
             .build();
     }
 
-    public static Movie toEntity(MovieDetails movieDetails, MovieDetails response) {
+    public static Movie toEntity(MovieResponseDto movieResponseDto, MovieResponseDto response) {
         return Movie.builder()
             .movieKey(response.getMovieKey())
-            .cgvCode(movieDetails.getCgvCode())
-            .megaBoxCode(movieDetails.getMegaBoxCode())
-            .lotteCinemaCode(movieDetails.getLotteCinemaCode())
-            .title(movieDetails.getTitle())
+            .cgvCode(movieResponseDto.getCgvCode())
+            .megaBoxCode(movieResponseDto.getMegaBoxCode())
+            .lotteCinemaCode(movieResponseDto.getLotteCinemaCode())
+            .title(movieResponseDto.getTitle())
             .titleEng(response.getTitleEng())
             .nation(response.getNation())
             .genre(response.getGenre())
