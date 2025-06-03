@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -41,29 +42,30 @@ public class ChatRoomService {
     }
 
     public void handleJoin(String sessionId, String movieId, ChatMessage message) {
-        log.info("User joined: {}", message.getNickName());
+        CompletableFuture.runAsync(() -> {
+            try {
+                Long userId = Long.valueOf(message.getSenderId());
+                String nickname = message.getNickName();
 
-        Long userId = Long.valueOf(message.getSenderId());
-        String nickname = message.getNickName();
+                redisSessionService.registerSessionInfo(sessionId, userId, movieId, nickname);
 
-        redisSessionService.registerSessionInfo(sessionId, userId, movieId, nickname);
+                addParticipant(movieId, nickname); // Redis Set 사용
 
-        // Redis 참여자 추가
-        addParticipant(movieId, message.getNickName());
+                ChatMessage systemMessage = ChatMessage.builder()
+                        .type(ChatType.SYSTEM)
+                        .movieId(movieId)
+                        .message(nickname + "님이 입장하셨습니다.")
+                        .build();
 
-        // 시스템 메시지 생성
-        ChatMessage systemMessage = ChatMessage.builder()
-                .type(ChatType.SYSTEM)
-                .movieId(movieId)
-                .message(message.getNickName() + "님이 입장하셨습니다.")
-                .build();
+                messagingTemplate.convertAndSend("/topic/chat-" + movieId, systemMessage);
 
-        // 시스템 메시지 전송
-        messagingTemplate.convertAndSend("/topic/chat-" + movieId, systemMessage);
+                Set<String> participants = getParticipants(movieId);
+                messagingTemplate.convertAndSend("/topic/chat-" + movieId, new ArrayList<>(participants));
 
-        // 참여자 목록 전송
-        Set<String> participants = getParticipants(movieId);
-        messagingTemplate.convertAndSend("/topic/chat-" + movieId, new ArrayList<>(participants));
+            } catch (Exception e) {
+                log.error("비동기 handleJoin 처리 중 오류", e);
+            }
+        });
     }
 
     public void handleLeave(String movieId, ChatMessage message) {
