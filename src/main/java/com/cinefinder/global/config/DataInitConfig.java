@@ -2,6 +2,7 @@ package com.cinefinder.global.config;
 
 import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.brand.service.BrandService;
+import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.theater.service.TheaterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

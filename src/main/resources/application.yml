@@ -68,6 +68,7 @@ api:
   kmdb:
     request-url: ${KMDB_REQUEST_URL}
     service-key: ${KMDB_SERVICE_KEY}
+    reuqest-parameter: ${KMDB_REQUEST_PARAMETER}
   daum:
     request-url: ${DAUM_REQUEST_URL}
   cgv:
