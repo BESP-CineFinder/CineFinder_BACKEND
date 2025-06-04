@@ -1,6 +1,6 @@
 package com.cinefinder.chat.data.mapper;
 
-import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
+import com.cinefinder.chat.data.dto.ChatResponseDto;
 import com.cinefinder.chat.data.entity.ChatLogEntity;
 import com.cinefinder.chat.data.entity.ChatMessage;
 

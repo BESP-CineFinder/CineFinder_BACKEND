@@ -2,8 +2,8 @@ package com.cinefinder.movie.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
-import com.cinefinder.movie.data.model.BoxOffice;
+import com.cinefinder.movie.data.entity.Movie;
+import com.cinefinder.movie.data.dto.BoxOfficeResponseDto;
 import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.util.UtilParse;
@@ -39,7 +39,7 @@ public class BoxOfficeService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final MovieRepository movieRepository;
 
-    public List<BoxOffice> getDailyBoxOfficeInfo() {
+    public List<BoxOfficeResponseDto> getDailyBoxOfficeInfo() {
         ObjectMapper mapper = new ObjectMapper();
         String latestDate = UtilString.getLatestDateString();
         String latestDateRedisKey = "dailyBoxOffice:" + latestDate;
@@ -52,12 +52,12 @@ public class BoxOfficeService {
                 .stream()
                 .map(entry -> {
                     String rank = entry.getKey().toString();
-                    BoxOffice boxOffice = mapper.convertValue(entry.getValue(), BoxOffice.class);
-                    Movie movie = movieRepository.findByMovieKey(boxOffice.getMovieKey())
+                    BoxOfficeResponseDto boxOfficeResponseDto = mapper.convertValue(entry.getValue(), BoxOfficeResponseDto.class);
+                    Movie movie = movieRepository.findByMovieKey(boxOfficeResponseDto.getMovieKey())
                         .orElseThrow(() -> new IllegalStateException("‼️ 해당 영화의 상세정보 없음"));
-                    boxOffice.updateRank(rank);
-                    boxOffice.updateMovieDetails(MovieMapper.toMovieDetails(movie));
-                    return boxOffice;
+                    boxOfficeResponseDto.updateRank(rank);
+                    boxOfficeResponseDto.updateMovieDetails(MovieMapper.toMovieDetails(movie));
+                    return boxOfficeResponseDto;
                 })
                 .sorted(Comparator.comparingInt(info -> Integer.parseInt(info.getRank())))
                 .collect(Collectors.toList());
@@ -67,7 +67,7 @@ public class BoxOfficeService {
         }
     }
 
-    public List<BoxOffice> fetchDailyBoxOfficeInfo() {
+    public List<BoxOfficeResponseDto> fetchDailyBoxOfficeInfo() {
         try {
             String latestDate = UtilString.getLatestDateString();
             String latestDateRedisKey = "dailyBoxOffice:" + latestDate;
@@ -83,16 +83,16 @@ public class BoxOfficeService {
             String beforeDateRedisKey = "dailyBoxOffice:" + beforeDate;
             redisTemplate.delete(beforeDateRedisKey);
 
-            List<BoxOffice> dailyBoxOfficeList = UtilParse.extractDailyBoxOfficeInfoList(response);
-            for (BoxOffice boxOffice : dailyBoxOfficeList) {
-                Movie movie = movieRepository.findByMovieKey(boxOffice.getMovieKey())
+            List<BoxOfficeResponseDto> dailyBoxOfficeResponseDtoList = UtilParse.extractDailyBoxOfficeInfoList(response);
+            for (BoxOfficeResponseDto boxOfficeResponseDto : dailyBoxOfficeResponseDtoList) {
+                Movie movie = movieRepository.findByMovieKey(boxOfficeResponseDto.getMovieKey())
                     .orElseThrow(() -> new IllegalStateException("‼️ 해당 영화의 상세정보 없음"));
-                boxOffice.updateMovieId(movieRepository.findMovieIdByMovieKey(boxOffice.getMovieKey()));
-                boxOffice.updateMovieDetails(MovieMapper.toMovieDetails(movie));
-                redisTemplate.opsForHash().put(latestDateRedisKey, boxOffice.getRank(), boxOffice);
+                boxOfficeResponseDto.updateMovieId(movieRepository.findMovieIdByMovieKey(boxOfficeResponseDto.getMovieKey()));
+                boxOfficeResponseDto.updateMovieDetails(MovieMapper.toMovieDetails(movie));
+                redisTemplate.opsForHash().put(latestDateRedisKey, boxOfficeResponseDto.getRank(), boxOfficeResponseDto);
             }
 
-            return dailyBoxOfficeList;
+            return dailyBoxOfficeResponseDtoList;
         } catch (URISyntaxException e) {
             throw new CustomException(ApiStatus._INVALID_URI_FORMAT, "일간 박스오피스 정보 저장 중 URI 구분 분석 오류 발생");
         } catch (RestClientException e) {

@@ -2,8 +2,8 @@ package com.cinefinder.theater.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.theater.data.Theater;
-import com.cinefinder.theater.data.repository.BrandRepository;
+import com.cinefinder.theater.data.entity.Theater;
+import com.cinefinder.brand.data.repository.BrandRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;

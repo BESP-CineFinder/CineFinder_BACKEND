@@ -1,6 +1,6 @@
 package com.cinefinder.theater.service;
 
-import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.entity.Theater;
 import com.cinefinder.theater.data.repository.ElasticsearchTheaterRepository;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.Map;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TheaterDbSyncService {
+public class TheaterSyncService {
 
     private final TheaterRepository theaterRepository;
     private final Map<String, TheaterCrawlerService> theaterCrawlerServices;

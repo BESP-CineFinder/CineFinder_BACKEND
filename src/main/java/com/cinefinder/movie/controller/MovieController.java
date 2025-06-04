@@ -3,9 +3,8 @@ package com.cinefinder.movie.controller;
 import com.cinefinder.global.mapper.ResponseMapper;
 import com.cinefinder.global.response.BaseResponse;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
-import com.cinefinder.movie.data.model.BoxOffice;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.BoxOfficeResponseDto;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.cinefinder.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +19,12 @@ public class MovieController {
     private final MovieService movieService;
 
     @GetMapping("/box-office/daily")
-    public ResponseEntity<BaseResponse<List<BoxOffice>>> getDailyBoxOfficeInfo() {
+    public ResponseEntity<BaseResponse<List<BoxOfficeResponseDto>>> getDailyBoxOfficeInfo() {
         return ResponseMapper.successOf(ApiStatus._OK, movieService.fetchDailyBoxOfficeInfo(), MovieController.class);
     }
 
     @GetMapping("/details")
-    public ResponseEntity<BaseResponse<MovieDetails>> fetchMovieDetails(@RequestParam String title) {
+    public ResponseEntity<BaseResponse<MovieResponseDto>> fetchMovieDetails(@RequestParam String title) {
         return ResponseMapper.successOf(ApiStatus._OK, movieService.fetchMovieDetails(title), MovieController.class);
     }
 

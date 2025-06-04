@@ -1,4 +1,4 @@
-package com.cinefinder.movie.data;
+package com.cinefinder.movie.data.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.cinefinder.user.data.request;
+package com.cinefinder.user.data.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

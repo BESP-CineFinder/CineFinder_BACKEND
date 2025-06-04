@@ -1,6 +1,6 @@
 package com.cinefinder.movie.data.repository;
 
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,9 +12,9 @@ import java.util.Optional;
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     Optional<Movie> findByMovieKey(String movieKey);
-    Movie findByCgvCode(String cgvCode);
-    Movie findByLotteCinemaCode(String lotteCode);
-    Movie findByMegaBoxCode(String megaCode);
+    Optional<Movie> findByCgvCode(String cgvCode);
+    Optional<Movie> findByLotteCinemaCode(String lotteCode);
+    Optional<Movie> findByMegaBoxCode(String megaCode);
 
     @Query(value = """
         SELECT *

@@ -2,12 +2,12 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.mapper.TheaterMapper;
-import com.cinefinder.theater.service.BrandService;
+import com.cinefinder.brand.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +38,12 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
     @Value("${movie.lotte.name}")
     private String brandName;
 
+    @Value("${movie.lotte.main-url}")
+    private String mainUrl;
+
+    @Value("${movie.lotte.schedule-endpoint}")
+    private String scheduleUri;
+
     private final BrandService brandService;
     private final TheaterService theaterService;
     private final MovieService movieService;
@@ -56,7 +62,6 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
                     List<CinemaScheduleApiResponseDto> result = requestSchedule(theaterId, movieId, formattedDate);
                     allSchedules.addAll(result);
                 } catch (Exception e) {
-                    // TODO: 롯데시네마 API 호출 실패 시 예외 처리
                     log.warn("롯데시네마에서 찾을 수 없는 영화 정보가 있습니다. MovieCode: {}", movieId);
                 }
             }
@@ -66,7 +71,7 @@ public class LotteScreenScheduleServiceImpl implements ScreenScheduleService {
     }
 
     private List<CinemaScheduleApiResponseDto> requestSchedule(String cinemaId, String movieId, String playDate) throws Exception {
-        String url = "https://www.lottecinema.co.kr/LCWS/Ticketing/TicketingData.aspx";
+        String url = mainUrl + scheduleUri;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

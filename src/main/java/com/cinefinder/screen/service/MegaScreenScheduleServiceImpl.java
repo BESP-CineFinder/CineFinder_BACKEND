@@ -2,12 +2,12 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.mapper.MovieMapper;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.CinemaScheduleApiResponseDto;
 import com.cinefinder.theater.mapper.TheaterMapper;
-import com.cinefinder.theater.service.BrandService;
+import com.cinefinder.brand.service.BrandService;
 import com.cinefinder.theater.service.TheaterService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,13 +33,17 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
     @Value("${movie.mega.name}")
     private String brandName;
 
+    @Value("${movie.mega.mobile-main-url}")
+    private String mainUrl;
+
+    @Value("${movie.mega.schedule-endpoint}")
+    private String scheduleUri;
+
     private final BrandService brandService;
     private final TheaterService theaterService;
     private final MovieService movieService;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private static final String MEGABOX_URL = "https://m.megabox.co.kr/on/oh/ohb/SimpleBooking/selectBokdList.do";
 
     @Override
     public List<CinemaScheduleApiResponseDto> getTheaterSchedule(String playYMD, List<String> movieIds, List<String> theaterIds) {
@@ -66,7 +70,7 @@ public class MegaScreenScheduleServiceImpl implements ScreenScheduleService{
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(MEGABOX_URL, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(mainUrl + scheduleUri, request, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 String responseBody = response.getBody();

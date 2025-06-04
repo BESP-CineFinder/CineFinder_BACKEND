@@ -3,7 +3,7 @@ package com.cinefinder.theater.controller;
 import com.cinefinder.global.mapper.ResponseMapper;
 import com.cinefinder.global.response.BaseResponse;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.entity.Theater;
 import com.cinefinder.theater.service.TheaterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

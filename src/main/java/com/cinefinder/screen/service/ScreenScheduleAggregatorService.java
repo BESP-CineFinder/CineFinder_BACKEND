@@ -2,7 +2,7 @@ package com.cinefinder.screen.service;
 
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.screen.data.dto.MovieGroupedScheduleResponseDto;
 import com.cinefinder.screen.data.dto.ScreenScheduleRequestDto;
@@ -106,7 +106,7 @@ public class ScreenScheduleAggregatorService {
         }};
 
         for (Long movieId : movieIds) {
-            MovieDetails movieDetail = movieService.getMovieDetailsByMovieId(movieId);
+            MovieResponseDto movieDetail = movieService.getMovieDetailsByMovieId(movieId);
             String cgvCode = movieDetail.getCgvCode();
             String lotteCode = movieDetail.getLotteCinemaCode();
             String megaCode = movieDetail.getMegaBoxCode();

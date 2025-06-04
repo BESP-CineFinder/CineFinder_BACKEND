@@ -4,8 +4,8 @@ import com.cinefinder.chat.service.ChatLogElasticService;
 import com.cinefinder.favorite.service.FavoriteService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.model.BoxOffice;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.dto.BoxOfficeResponseDto;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.cinefinder.movie.service.BoxOfficeService;
 import com.cinefinder.movie.service.MovieService;
 import com.cinefinder.recommend.data.dto.RecommendResponseDto;
@@ -71,11 +71,11 @@ public class RecommendService {
 
             List<Long> movieIds = movieService.findAllMovieIds();
             Map<Long, Double> sentimentMap = chatLogElasticService.getSentimentScores(movieIds);
-            List<BoxOffice> boxOfficeList = boxOfficeService.getDailyBoxOfficeInfo();
+            List<BoxOfficeResponseDto> boxOfficeResponseDtoList = boxOfficeService.getDailyBoxOfficeInfo();
 
             Map<Long, Integer> rankMap = new HashMap<>();
-            for (BoxOffice boxOffice : boxOfficeList) {
-                rankMap.put(boxOffice.getMovieId(), Integer.parseInt(boxOffice.getRank()));
+            for (BoxOfficeResponseDto boxOfficeResponseDto : boxOfficeResponseDtoList) {
+                rankMap.put(boxOfficeResponseDto.getMovieId(), Integer.parseInt(boxOfficeResponseDto.getRank()));
             }
 
             List<RecommendResponseDto> recommendResponseDtoList = new ArrayList<>();
@@ -87,13 +87,13 @@ public class RecommendService {
                 total += 2 * (entry.getValue() - 2);
                 total += (rankMap.get(movieId) != null) ? 2 - (0.1 * (rankMap.get(movieId) - 1)) : 0;
 
-                MovieDetails movieDetails = movieService.getMovieDetailsByMovieId(movieId);
-                movieDetails.updateFavoriteCount(favoriteService.countFavoriteMovieList(movieId));
+                MovieResponseDto movieResponseDto = movieService.getMovieDetailsByMovieId(movieId);
+                movieResponseDto.updateFavoriteCount(favoriteService.countFavoriteMovieList(movieId));
 
                 RecommendResponseDto recommendResponseDto = RecommendResponseDto.builder()
                     .movieId(movieId)
                     .score(total)
-                    .movieDetails(movieDetails)
+                    .movieResponseDto(movieResponseDto)
                     .build();
 
                 recommendResponseDtoList.add(recommendResponseDto);
@@ -120,7 +120,7 @@ public class RecommendService {
             return recommendResponseDtoList;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("동기화 중단됨", e);
+            throw new CustomException(ApiStatus._INTERRUPT_EXCEPTION, "외부의 중단 요청으로 예외 발생: "+ e.getMessage());
         } finally {
             if (isLocked) {
                 lock.unlock();

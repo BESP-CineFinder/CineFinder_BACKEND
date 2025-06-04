@@ -2,8 +2,8 @@ package com.cinefinder.theater.mapper;
 
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
-import com.cinefinder.theater.data.ElasticsearchTheater;
-import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.entity.ElasticsearchTheater;
+import com.cinefinder.theater.data.entity.Theater;
 import com.cinefinder.theater.data.dto.SimplifiedTheaterDto;
 
 public class TheaterMapper {

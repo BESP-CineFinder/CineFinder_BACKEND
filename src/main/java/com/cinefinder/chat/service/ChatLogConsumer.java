@@ -29,38 +29,42 @@ public class ChatLogConsumer {
 
     @Scheduled(fixedDelay = 5000)
     public void consumeAndBulkInsert() {
-        ConsumerRecords<String, ChatMessage> records = kafkaConsumer.poll(Duration.ofMillis(3000));
-        if (!records.isEmpty()) {
-            try {
-                // 파티션 별로 처리
-                for (TopicPartition partition : records.partitions()) {
-                    List<ConsumerRecord<String, ChatMessage>> partitionRecords = records.records(partition);
-                    List<ChatMessage> messages = new ArrayList<>();
+        try {
+            ConsumerRecords<String, ChatMessage> records = kafkaConsumer.poll(Duration.ofMillis(3000));
+            if (!records.isEmpty()) {
+                try {
+                    // 파티션 별로 처리
+                    for (TopicPartition partition : records.partitions()) {
+                        List<ConsumerRecord<String, ChatMessage>> partitionRecords = records.records(partition);
+                        List<ChatMessage> messages = new ArrayList<>();
 
-                    for (ConsumerRecord<String, ChatMessage> record : partitionRecords) {
-                        messages.add(record.value());
+                        for (ConsumerRecord<String, ChatMessage> record : partitionRecords) {
+                            messages.add(record.value());
+                        }
+
+                        // topic 이름 == Elasticsearch index 이름
+                        String indexName = partition.topic();
+
+                        // 개별 파티션별 저장 시도
+                        try {
+                            log.info("✅ Saving messages to index {} : {}", indexName, messages.size());
+                            String movieId = extractMovieIdFromTopic(indexName); // topic이 "chat-{movieId}"라면 movieId만 추출
+                            chatLogElasticService.saveBulk(movieId, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
+                            redisSessionService.clearCachedMessages(movieId);
+                            kafkaConsumer.commitSync(Collections.singletonMap(partition,
+                                    new OffsetAndMetadata(partitionRecords.getLast().offset() + 1)));
+                        } catch (Exception e) {
+                            log.error("Failed to save messages for index {}. Will seek back", indexName, e);
+                            long firstOffset = partitionRecords.getFirst().offset();
+                            kafkaConsumer.seek(partition, firstOffset); // 실패 시 재처리 위해 seek
+                        }
                     }
-
-                    // topic 이름 == Elasticsearch index 이름
-                    String indexName = partition.topic();
-
-                    // 개별 파티션별 저장 시도
-                    try {
-                        log.info("✅ Saving messages to index {} : {}", indexName, messages.size());
-                        String movieId = extractMovieIdFromTopic(indexName); // topic이 "chat-{movieId}"라면 movieId만 추출
-                        chatLogElasticService.saveBulk(movieId, messages); // 이 saveBulk는 indexName을 받는 형태여야 함
-                        redisSessionService.clearCachedMessages(movieId);
-                        kafkaConsumer.commitSync(Collections.singletonMap(partition,
-                            new OffsetAndMetadata(partitionRecords.getLast().offset() + 1)));
-                    } catch (Exception e) {
-                        log.error("Failed to save messages for index {}. Will seek back", indexName, e);
-                        long firstOffset = partitionRecords.getFirst().offset();
-                        kafkaConsumer.seek(partition, firstOffset); // 실패 시 재처리 위해 seek
-                    }
+                } catch (Exception e) {
+                    log.error("Unexpected error during partitioned processing", e);
                 }
-            } catch (Exception e) {
-                log.error("Unexpected error during partitioned processing", e);
             }
+        } catch (IllegalStateException e) {
+            log.warn("⚠️Kafka Consumer가 아직은 닫혀있음 -> 메시지: {}", e.getMessage());
         }
     }
 

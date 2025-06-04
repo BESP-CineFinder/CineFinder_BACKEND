@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.entity.Theater;
 import com.cinefinder.theater.data.repository.TheaterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -14,7 +14,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import com.cinefinder.global.exception.custom.CustomException;
-import com.cinefinder.theater.data.ElasticsearchTheater;
+import com.cinefinder.theater.data.entity.ElasticsearchTheater;
 import com.cinefinder.global.util.statuscode.ApiStatus;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -35,7 +35,7 @@ public class TheaterService {
 	private final RedissonClient redissonClient;
 	private final TheaterRepository theaterRepository;
 	private final ElasticsearchClient elasticsearchClient;
-	private final TheaterDbSyncService theaterDbSyncService;
+	private final TheaterSyncService theaterSyncService;
 
 	public Theater getTheaterInfo(String brand, String theaterId) {
 		return theaterRepository.findByBrandNameAndCode(brand, theaterId)
@@ -108,11 +108,11 @@ public class TheaterService {
 			}
 
 			log.info("🔒[영화관 데이터 갱신] 락 획득 성공!");
-			return theaterDbSyncService.theaterSyncLogic();
+			return theaterSyncService.theaterSyncLogic();
 
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("동기화 중단됨", e);
+			throw new CustomException(ApiStatus._INTERRUPT_EXCEPTION, "외부의 중단 요청으로 예외 발생: "+ e.getMessage());
 		} finally {
 			if (isLocked) {
 				lock.unlock();

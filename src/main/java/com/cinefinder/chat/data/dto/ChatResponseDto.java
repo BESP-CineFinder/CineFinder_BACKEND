@@ -1,4 +1,4 @@
-package com.cinefinder.chat.data.dto.reponse;
+package com.cinefinder.chat.data.dto;
 
 import com.cinefinder.chat.data.entity.ChatType;
 import lombok.Builder;

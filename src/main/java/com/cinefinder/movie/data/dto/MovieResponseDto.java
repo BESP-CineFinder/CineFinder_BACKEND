@@ -1,4 +1,4 @@
-package com.cinefinder.movie.data.model;
+package com.cinefinder.movie.data.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.netty.util.internal.StringUtil;
@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 @Builder
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MovieDetails {
+public class MovieResponseDto {
     private Long movieId;              /* 영화 ID */
     private String cgvCode;            /* CGV 영화 코드 */
     private String megaBoxCode;        /* 메가박스 영화 코드 */
@@ -38,22 +38,22 @@ public class MovieDetails {
             .anyMatch(StringUtil::isNullOrEmpty);
     }
 
-    public void setMissingRequiredField(MovieDetails movieDetails) {
-        if (StringUtil.isNullOrEmpty(nation)) this.updateNation(movieDetails.getNation());
-        if (StringUtil.isNullOrEmpty(plotText)) this.updatePlotText(movieDetails.getPlotText());
-        if (StringUtil.isNullOrEmpty(runtime)) this.updateRuntime(movieDetails.getRuntime());
-        if (StringUtil.isNullOrEmpty(genre)) this.updateGenre(movieDetails.getGenre());
-        if (StringUtil.isNullOrEmpty(releaseDate)) this.updateReleaseDate(movieDetails.getReleaseDate());
-        if (StringUtil.isNullOrEmpty(ratingGrade)) this.updateRatingGrade(movieDetails.getRatingGrade());
-        if (StringUtil.isNullOrEmpty(posters)) this.updatePosters(movieDetails.getPosters());
-        if (StringUtil.isNullOrEmpty(stlls)) this.updateStlls(movieDetails.getStlls());
-        if (StringUtil.isNullOrEmpty(vods)) this.updateVods(movieDetails.getVods());
+    public void updateMissingRequiredField(MovieResponseDto movieResponseDto) {
+        if (StringUtil.isNullOrEmpty(nation)) this.updateNation(movieResponseDto.getNation());
+        if (StringUtil.isNullOrEmpty(plotText)) this.updatePlotText(movieResponseDto.getPlotText());
+        if (StringUtil.isNullOrEmpty(runtime)) this.updateRuntime(movieResponseDto.getRuntime());
+        if (StringUtil.isNullOrEmpty(genre)) this.updateGenre(movieResponseDto.getGenre());
+        if (StringUtil.isNullOrEmpty(releaseDate)) this.updateReleaseDate(movieResponseDto.getReleaseDate());
+        if (StringUtil.isNullOrEmpty(ratingGrade)) this.updateRatingGrade(movieResponseDto.getRatingGrade());
+        if (StringUtil.isNullOrEmpty(posters)) this.updatePosters(movieResponseDto.getPosters());
+        if (StringUtil.isNullOrEmpty(stlls)) this.updateStlls(movieResponseDto.getStlls());
+        if (StringUtil.isNullOrEmpty(vods)) this.updateVods(movieResponseDto.getVods());
     }
 
-    public void updateCodes(MovieDetails movieDetails) {
-        updateCgvCode(movieDetails.getCgvCode());
-        updateMegaBoxCode(movieDetails.getMegaBoxCode());
-        updateLotteCinemaCode(movieDetails.getLotteCinemaCode());
+    public void updateCodes(MovieResponseDto movieResponseDto) {
+        updateCgvCode(movieResponseDto.getCgvCode());
+        updateMegaBoxCode(movieResponseDto.getMegaBoxCode());
+        updateLotteCinemaCode(movieResponseDto.getLotteCinemaCode());
     }
 
     public void updateStlls(String stlls) { this.stlls = stlls;}

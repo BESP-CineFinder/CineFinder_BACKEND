@@ -4,8 +4,8 @@ import com.cinefinder.chat.service.ChatLogElasticService;
 import com.cinefinder.chat.service.KafkaService;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
-import com.cinefinder.movie.data.model.MovieDetails;
+import com.cinefinder.movie.data.entity.Movie;
+import com.cinefinder.movie.data.dto.MovieResponseDto;
 import com.cinefinder.movie.data.repository.MovieRepository;
 import com.cinefinder.movie.mapper.MovieMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,20 +33,20 @@ public class MovieDbSyncService {
 
     public void fetchMultiplexMovieDetails() {
         try {
-            List<MovieDetails> totalMovieDetails = movieHelperService.requestMultiplexMovieApi();
+            List<MovieResponseDto> totalMovieDetails = movieHelperService.requestMultiplexMovieApi();
 
-            Map<String, MovieDetails> map = movieHelperService.mergeAndDeduplicateMovieDetails(totalMovieDetails);
-            for (Map.Entry<String, MovieDetails> entry : map.entrySet()) {
-                MovieDetails movieDetails = entry.getValue();
+            Map<String, MovieResponseDto> map = movieHelperService.mergeAndDeduplicateMovieDetails(totalMovieDetails);
+            for (Map.Entry<String, MovieResponseDto> entry : map.entrySet()) {
+                MovieResponseDto movieResponseDto = entry.getValue();
                 String movieKey = entry.getKey();
                 String redisKey = "movieDetails:" + movieKey;
-                String title = movieDetails.getTitle();
+                String title = movieResponseDto.getTitle();
 
-                MovieDetails response = resolveMovieDetails(movieKey, title);
+                MovieResponseDto response = resolveMovieDetails(movieKey, title);
 
                 if (response == null) continue;
 
-                Movie movie = MovieMapper.toEntity(movieDetails, response);
+                Movie movie = MovieMapper.toEntity(movieResponseDto, response);
                 Optional<Movie> optionalOriginMovie = movieRepository.findByMovieKey(movieKey);
                 if (optionalOriginMovie.isPresent()) {
                     Movie originMovie = optionalOriginMovie.get();
@@ -59,15 +59,15 @@ public class MovieDbSyncService {
                     chatLogElasticService.createElasticsearchSentimentIndex(movie.getId().toString());
                 }
 
-                MovieDetails originMovieDetails = (MovieDetails) redisTemplate.opsForHash().get(redisKey, movieKey);
-                if (originMovieDetails != null) {
-                    originMovieDetails.updateCodes(movieDetails);
-                    originMovieDetails.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
-                    originMovieDetails.setMissingRequiredField(response);
-                    redisTemplate.opsForHash().put(redisKey, movieKey, originMovieDetails);
+                MovieResponseDto originMovieResponseDto = (MovieResponseDto) redisTemplate.opsForHash().get(redisKey, movieKey);
+                if (originMovieResponseDto != null) {
+                    originMovieResponseDto.updateCodes(movieResponseDto);
+                    originMovieResponseDto.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
+                    originMovieResponseDto.updateMissingRequiredField(response);
+                    redisTemplate.opsForHash().put(redisKey, movieKey, originMovieResponseDto);
                 } else {
-                    movieDetails.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
-                    redisTemplate.opsForHash().put(redisKey, movieKey, movieDetails);
+                    movieResponseDto.updateMovieId(movieRepository.findMovieIdByMovieKey(movieKey));
+                    redisTemplate.opsForHash().put(redisKey, movieKey, movieResponseDto);
                 }
             }
         } catch (Exception e) {
@@ -77,14 +77,14 @@ public class MovieDbSyncService {
         }
     }
 
-    public MovieDetails resolveMovieDetails(String movieKey, String title) {
-        MovieDetails movieDetails = movieDetailService.fetchMovieDetails(movieKey, title);
+    public MovieResponseDto resolveMovieDetails(String movieKey, String title) {
+        MovieResponseDto movieResponseDto = movieDetailService.fetchMovieDetails(movieKey, title);
 
-        if (movieDetails != null && movieDetails.hasMissingRequiredField()) {
-            MovieDetails daumDetails = movieHelperService.requestMovieDaumApi(title);
-            if (daumDetails != null) movieDetails.setMissingRequiredField(daumDetails);
+        if (movieResponseDto != null && movieResponseDto.hasMissingRequiredField()) {
+            MovieResponseDto daumDetails = movieHelperService.requestMovieDaumApi(title);
+            if (daumDetails != null) movieResponseDto.updateMissingRequiredField(daumDetails);
         }
 
-        return movieDetails;
+        return movieResponseDto;
     }
 }

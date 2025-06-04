@@ -1,6 +1,6 @@
 package com.cinefinder.theater.data.repository;
 
-import com.cinefinder.theater.data.Theater;
+import com.cinefinder.theater.data.entity.Theater;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

@@ -1,6 +1,4 @@
-package com.cinefinder.theater.data;
-
-import java.util.List;
+package com.cinefinder.theater.data.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;

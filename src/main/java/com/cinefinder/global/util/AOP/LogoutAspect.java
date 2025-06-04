@@ -1,5 +1,7 @@
 package com.cinefinder.global.util.AOP;
 
+import com.cinefinder.global.exception.custom.CustomException;
+import com.cinefinder.global.util.statuscode.ApiStatus;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -35,18 +37,18 @@ public class LogoutAspect {
 		// 1. 로그인 여부 확인
 		var authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || !authentication.isAuthenticated()) {
-			throw new RuntimeException("로그인된 사용자가 아닙니다.");
+			throw new CustomException(ApiStatus._AUTHENTICATION_FAIL, "로그인된 사용자가 아닙니다.");
 		}
 
 		// 2. 현재 요청 객체 가져오기
 		ServletRequestAttributes sra = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 		if (sra == null) {
-			throw new IllegalStateException("Request context is not available");
+			throw new CustomException(ApiStatus._AUTHENTICATION_FAIL, "현재 요청 정보가 없습니다.");
 		}
 		HttpServletRequest request = sra.getRequest();
 		HttpServletResponse response = sra.getResponse();
 		if (response == null) {
-			throw new IllegalStateException("Response object is not available");
+			throw new CustomException(ApiStatus._AUTHENTICATION_FAIL, "응답 객체가 없습니다.");
 		}
 
 		// 3. 토큰 유효성 검사 및 사용자 정보 추출
@@ -54,7 +56,7 @@ public class LogoutAspect {
 		log.info("Logout token: {}", token);
 
 		if (token == null || !jwtUtil.validateToken(token)) {
-			throw new RuntimeException("유효하지 않은 토큰입니다.");
+			throw new CustomException(ApiStatus._AUTHENTICATION_FAIL, "유효하지 않은 토큰입니다.");
 		}
 
 		String username = jwtUtil.getUsernameFromToken(token);

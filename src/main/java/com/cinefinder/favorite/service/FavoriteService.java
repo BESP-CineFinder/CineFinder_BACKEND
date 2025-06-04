@@ -4,10 +4,10 @@ import com.cinefinder.favorite.data.dto.FavoriteRequestDto;
 import com.cinefinder.favorite.data.dto.FavoriteResponseDto;
 import com.cinefinder.favorite.data.repository.FavoriteRepository;
 import com.cinefinder.favorite.mapper.FavoriteMapper;
-import com.cinefinder.favorite.model.FavoriteMovie;
+import com.cinefinder.favorite.data.dto.FavoriteMovieResponseDto;
 import com.cinefinder.global.exception.custom.CustomException;
 import com.cinefinder.global.util.statuscode.ApiStatus;
-import com.cinefinder.movie.data.Movie;
+import com.cinefinder.movie.data.entity.Movie;
 import com.cinefinder.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +63,7 @@ public class FavoriteService {
         }
     }
 
-    public List<FavoriteMovie> getFavoriteMovieListByUser(Long userId) {
+    public List<FavoriteMovieResponseDto> getFavoriteMovieListByUser(Long userId) {
         try {
             List<Long> movieIdList = favoriteRepository.findMovieIdListByUserId(userId);
 
@@ -78,10 +78,10 @@ public class FavoriteService {
                 throw new RuntimeException("ID에 해당하는 영화정보를 모두 찾을 수 없음");
             }
 
-            List<FavoriteMovie> favoriteMovieList = new ArrayList<>();
-            for (Movie movie : movieList) favoriteMovieList.add(FavoriteMapper.toFavoriteMovie(movie));
+            List<FavoriteMovieResponseDto> favoriteMovieResponseDtoList = new ArrayList<>();
+            for (Movie movie : movieList) favoriteMovieResponseDtoList.add(FavoriteMapper.toFavoriteMovie(movie));
 
-            return favoriteMovieList;
+            return favoriteMovieResponseDtoList;
         } catch (Exception e) {
             throw new CustomException(ApiStatus._READ_FAIL, "좋아요 영화목록 조회 중 오류 발생");
         }

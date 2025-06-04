@@ -7,18 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import com.cinefinder.chat.data.dto.reponse.ChatResponseDto;
-import com.cinefinder.chat.data.dto.request.ChatRequestDto;
-import com.cinefinder.chat.data.dto.request.ChatSentimentRequestDto;
-import com.cinefinder.chat.data.entity.ChatMessage;
-import com.cinefinder.chat.data.entity.ChatLogEntity;
+import com.cinefinder.chat.data.dto.ChatSentimentRequestDto;
 import com.cinefinder.chat.data.entity.ChatSentiment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.aggregations.AvgAggregate;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
