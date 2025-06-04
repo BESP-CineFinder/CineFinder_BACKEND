@@ -1,6 +1,5 @@
 package com.cinefinder.global.util.statuscode;
 
-import co.elastic.clients.elasticsearch.nodes.Http;
 import org.springframework.http.HttpStatus;
 
 import lombok.AllArgsConstructor;
@@ -23,35 +22,28 @@ public enum ApiStatus {
 	_METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, 405, "허용되지 않은 메소드입니다."),
 	_CONFLICT(HttpStatus.CONFLICT, 409, "충돌이 발생했습니다."),
 	_INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "서버 내부 오류가 발생했습니다."),
-	_INVALID_URI_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, 500, "유효하지 않은 URI 형식입니다."),
 	_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, 503, "서비스를 사용할 수 없습니다."),
+	_FILE_DOWNLOAD_TIMEOUT(HttpStatus.REQUEST_TIMEOUT, 408,"다운로드가 완료되지 않았습니다."),
+	_FILE_DOWNLOAD_FAIL(HttpStatus.FAILED_DEPENDENCY, 424,"파일 크롤링이 실패했습니다."),
+	_FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 500,"파일 삭제에 실패했습니다."),
+	_FILE_UNZIP_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 500,"파일 압축 해제에 실패했습니다."),
+	_FILE_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 500,"파일 로딩에 실패했습니다."),
+	_CSV_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, 500,"csv파일 로딩에 실패했습니다."),
+	_CSV_FILEPATH_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "CSV 파일 경로가 잘못되었습니다."),
 	_EMBEDDING_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "임베딩 서버 호출에 실패했습니다."),
+	_VECTOR_LENGTH_DIFFERENT(HttpStatus.BAD_REQUEST, 400, "벡터 길이가 일치하지 않습니다."),
 	_READ_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "DB 읽기에 실패하였습니다."),
-	_OPERATION_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "DB 조작에 실패하였습니다."),
+	_ES_CRTRYM_INDEXING_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "최근 분기 INDEXING 작업에 실패하였습니다."),
 	_ES_BULK_INDEXING_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Index 생성 중 에러 발생"),
 	_ES_INDEX_QUERY_CREATE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "IndexQuery 생성 중 에러 발생"),
+	_RECENT_CRTRYM_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,500 ,"최근 분기 정보가 없습니다."),
     _ES_INDEX_LIST_FETCH_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인덱스 목록 조회 중 예외 발생"),
-	_EXTERNAL_API_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "외부 API 호출 실패"),
-	_MESSAGE_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "채팅 로그 메세지 파싱 실패"),
-	_CREATE_TOPIC_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "토픽 생성 실패"),
-	_NOT_EXISTENT_TOPIC(HttpStatus.INTERNAL_SERVER_ERROR, 500, "존재하지 않는 영화 입니다."),
-	_JSOUP_CONNECT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Jsoup 연결 실패"),
-	_THEATER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 극장을 찾을 수 없습니다."),
-	_JSON_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "JSON 파싱 실패"),
-	_HTML_PARSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "HTML 파싱 실패"),
-	_INVALID_WEBSOCKET_URI(HttpStatus.INTERNAL_SERVER_ERROR, 500, "존재하지 않는 웹소켓 URI 입니다."),
-	_NOT_EXIST_ACCESS_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Access토큰을 찾을 수 없습니다."),
-	_USER_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, 500, "유저를 찾을 수 없습니다."),
-	_REDIS_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 저장 실패"),
-	_REDIS_CHECK_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "Redis 조회 실패"),
-	_SIMULTANEOUS_USE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 500, "해당 기능을 다른곳에서 사용중입니다."),
-	_FILTERING_FAIL_REQUEST_JSON(HttpStatus.INTERNAL_SERVER_ERROR, 5001, "비속어 필터링 요청 JSON 생성 중 오류가 발생했습니다."),
-	_FILTERING_FAIL_API_COMMUNICATION(HttpStatus.INTERNAL_SERVER_ERROR, 5002, "비속어 필터링 API 통신 중 오류가 발생했습니다."),
-	_FILTERING_FAIL_RESPONSE_PARSING(HttpStatus.INTERNAL_SERVER_ERROR, 5003, "비속어 필터링 응답 파싱 중 오류가 발생했습니다."),
-	_FILTERING_FAIL_UNKNOWN(HttpStatus.INTERNAL_SERVER_ERROR, 5000, "비속어 필터링 도중 알 수 없는 오류가 발생했습니다."),
-	_AUTHENTICATION_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인증 실패"),
-	_USER_ALREADY_EXISTS(HttpStatus.INTERNAL_SERVER_ERROR, 500, "이미 존재하는 사용자입니다."),
-	_INTERRUPT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, 500, "인터럽트 예외가 발생했습니다.");
+	_ES_KEYWORD_COUNT_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "키워드 카운트 중 예외 발생"),
+	_PATENT_CHECK_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "중복 검사 중 예외 발생"),
+	_OPENAI_RESPONSE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "OpenAI 응답 없음"),
+	_BRANDING_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "상호명 추천 중 예외 발생"),
+	_ES_READ_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "elasticSearch 인덱스 읽어오는 도중 예외 발생"),
+	_PREFER_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, 500, "선호 이름 저장 중 오류가 발생했습니다.");
 
 	private final HttpStatus httpStatus;
 	private final int code;

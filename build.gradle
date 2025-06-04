@@ -29,26 +29,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	implementation 'org.springframework.session:spring-session-data-redis'
-	implementation 'org.redisson:redisson-spring-boot-starter:3.23.5'
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.jsoup:jsoup:1.20.1'
-	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-	implementation 'org.openkoreantext:open-korean-text:2.1.0'
-
-	//websocket
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-	implementation 'org.springframework.boot:spring-boot-starter-amqp'
-	implementation 'org.springframework.boot:spring-boot-starter-reactor-netty'
-
-	//elasticsearch
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
-
-	//kafka
-	implementation 'org.springframework.kafka:spring-kafka'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
@@ -59,16 +42,7 @@ dependencies {
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
 
-	// JWT
-	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
-
-	// Oauth2
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
 	// Test Dependencies
-	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.batch:spring-batch-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
