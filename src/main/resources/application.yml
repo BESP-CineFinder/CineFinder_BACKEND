@@ -1,127 +1,185 @@
 spring:
   application:
     name: cinefinder
-#
-#  profiles:
-#    active: ${PROFILE}
 
-#  datasource:
-#    username: ${MYSQL_USER}
-#    password: ${MYSQL_PASSWORD}
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#
-#  cache:
-#    type: redis
-#  data:
-#    redis:
-#      port: ${REDIS_EXTERNAL_PORT}
-#
-#  elasticsearch:
-#    limit: ${ES_LIMIT}
-#    index-name: ${INDEX_NAME}
-#
-#  ai:
-#    openai:
-#      api-key: ${OPENAI_API_KEY}
-#      base-url: https://api.openai.com/
-#      chat:
-#        options:
-#          model: gpt-4-turbo
-#          temperature: 1
-#
-#springdoc:
-#  swagger-ui:
-#    path: /api-docs
-#  default-consumes-media-type: application/json
-#  default-produces-media-type: application/json
-#
-#kipris:
-#  service-key: ${KIPRIS_SERVICE_KEY}
-#  request-url: ${KIPRIS_REQUEST_URL}
-#
-## =========================== LOCAL  ===========================
-#---
-#spring.config.activate.on-profile: local
-#
-#server:
-#  port: ${LOCAL_SERVER_PORT}
-#
-#spring:
-#  datasource:
-#    url: jdbc:mysql://${LOCAL_HOST}:${MYSQL_EXTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-#
-#  data:
-#    redis:
-#      host: ${LOCAL_HOST}
-#
-#  elasticsearch:
-#    uris: http://${LOCAL_HOST}:${ES_EXTERNAL_PORT_1}/
-#    connection-timeout: 1200s
-#    socket-timeout: 1200s
-#
-#  jpa:
-#    database-platform: org.hibernate.dialect.MySQL8Dialect
-#    hibernate:
-#      ddl-auto: update
-##    properties:
-##      hibernate:
-##        show_sql: true
-##        format_sql: true
-##        use_sql_comments: false
-#
-#embed:
-#  huggingface:
-#    uri: ${LOCAL_HUGGINGFACE_URI}
-#
-## ??? ??
-#logging-level:
-#  org.hibernate.SQL: debug
-#  org.hibernate.type: trace
-#  org.springframework.data.elasticsearch.client: debug
-#
-## info:
-##   web:
-##     frontUrl: "http://localhost:8080"
-##     domain: "localhost"
-#
-## =======================================  MAIN  =======================================
-#---
-#spring.config.activate.on-profile: main
-#
-#server:
-#  port: ${MAIN_SERVER_PORT}
-#
-#spring:
-#  datasource:
-#    url: jdbc:mysql://${MAIN_HOST}:${MYSQL_EXTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
-#
-#  data:
-#    redis:
-#      host: ${MAIN_HOST}
-#
-#  elasticsearch:
-#    uris: http://${MAIN_HOST}:${ES_EXTERNAL_PORT_1}/
-#    connection-timeout: 1200s
-#    socket-timeout: 1200s
-#
-#  jpa:
-#    database-platform: org.hibernate.dialect.MySQL8Dialect
-#    hibernate:
-#      ddl-auto: validate
+  session:
+    store-type: redis
+    timeout: 1800
+
+  profiles:
+    active: ${PROFILE}
+
+  datasource:
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  cache:
+    type: redis
+  data:
+    redis:
+      port: ${REDIS_EXTERNAL_PORT}
+
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration:
+      access: ${JWT_EXPIRE_ACCESS}
+      refresh: ${JWT_EXPIRE_REFRESH}
+
+  rabbitmq:
+    username: ${RABBITMQ_LOGIN}
+    password: ${RABBITMQ_PASSWORD} #default Password
+    host: rabbitmq # default host
+    port: ${RABBITMQ_PORT}      #default port
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope:
+              - profile_nickname
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: "https://kauth.kakao.com/oauth/authorize"
+            token-uri: "https://kauth.kakao.com/oauth/token"
+            user-info-uri: "https://kapi.kakao.com/v2/user/me"
+            user-name-attribute: id
+
+  kafka:
+    bootstrap-servers: Kafka00Service:10000,Kafka01Service:10001 # 카프카 서버 주소
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: chat-log-consumer-group
+      auto-offset-reset: earliest
+    template:
+      default-topic: chat-log
+
+api:
+  kobis:
+    request-url: ${KOBIS_REQUEST_URL}
+    service-key: ${KOBIS_SERVICE_KEY}
+  kmdb:
+    request-url: ${KMDB_REQUEST_URL}
+    service-key: ${KMDB_SERVICE_KEY}
+    reuqest-parameter: ${KMDB_REQUEST_PARAMETER}
+  daum:
+    request-url: ${DAUM_REQUEST_URL}
+  cgv:
+    code:
+      request-url: ${CGV_CODE_REQUEST_URL}
+  mega-box:
+    code:
+      request-url: ${MEGA_BOX_CODE_REQUEST_URL}
+  lotte-cinema:
+    code:
+      request-url: ${LOTTE_CINEMA_CODE_REQUEST_URL}
+  bad-word-filter:
+    code:
+      request-url: ${BAD_WORD_FILTER_URL}
+      service-key: ${BAD_WORD_FILTER_KEY}
+
+movie:
+  cgv:
+    name: CGV
+    main-url: ${CGV_MAIN_URL}
+    theater-default-endpoint: ${CGV_THEATER_DEFAULT_ENDPOINT}
+    theater-detail-endpoint: ${CGV_THEATER_DETAIL_ENDPOINT}
+    referer-endpoint: ${CGV_REFERER_ENDPOINT}
+    cookie-endpoint: ${CGV_COOKIE_ENDPOINT}
+    schedule-endpoint: ${CGV_SCHEDULE_ENDPOINT}
+  lotte:
+    name: 롯데시네마
+    main-url: ${LOTTE_CINEMA_MAIN_URL}
+    theater-default-endpoint: ${LOTTE_CINEMA_THEATER_DEFAULT_ENDPOINT}
+    schedule-endpoint: ${LOTTE_CINEMA_SCHEDULE_ENDPOINT}
+  mega:
+    name: 메가박스
+    main-url: ${MEGA_BOX_MAIN_URL}
+    mobile-main-url: ${MEGA_BOX_MOBILE_MAIN_URL}
+    theater-default-endpoint: ${MEGA_BOX_THEATER_DEFAULT_ENDPOINT}
+    theater-detail-endpoint: ${MEGA_BOX_THEATER_DETAIL_ENDPOINT}
+    schedule-endpoint: ${MEGA_BOX_SCHEDULE_ENDPOINT}
+
+rabbitmq:
+  websocket_endpoint: ${WEBSOCKET_ENDPOINT}
+  user: ${RABBITMQ_LOGIN}
+  password: ${RABBITMQ_PASSWORD}
+
+# =========================== LOCAL  ===========================
+---
+spring.config.activate.on-profile: local
+
+server:
+  port: ${LOCAL_SERVER_PORT}
+
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:${MYSQL_INTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+
+  data:
+    redis:
+      host: redis
+    elasticsearch:
+      repositories:
+        enabled: true
+
+  elasticsearch:
+    uris: http://elasticsearch:${ES_EXTERNAL_PORT_1}/
+    connection-timeout: 120s
+    socket-timeout: 120s
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
 #    properties:
 #      hibernate:
 #        show_sql: true
-#        format_sql: false
+#        format_sql: true
 #        use_sql_comments: false
-#
-#embed:
-#  huggingface:
-#    uri: ${MAIN_HUGGINGFACE_URI}
-#
-#
-## info:
-##   web:
-##     frontUrl: ""
-##     domain: ""
-#
-#---
+
+
+# logging
+logging-level:
+  org.hibernate.SQL: debug
+  org.hibernate.type: trace
+  org.springframework.data.elasticsearch.client: debug
+  org.springframework.web: debug
+
+# =======================================  MAIN  =======================================
+---
+spring.config.activate.on-profile: main
+
+server:
+  port: ${MAIN_SERVER_PORT}
+
+spring:
+  datasource:
+    url: jdbc:mysql://${MAIN_HOST}:${MYSQL_EXTERNAL_PORT}/${MYSQL_DB_NAME}?serverTimezone=Asia/Seoul&useUnicode=true&characterEncoding=UTF-8
+
+  data:
+    redis:
+      host: ${MAIN_HOST}
+
+  elasticsearch:
+    uris: http://${MAIN_HOST}:${ES_EXTERNAL_PORT_1}/
+    connection-timeout: 120s
+    socket-timeout: 120s
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: false
+        use_sql_comments: false
+---

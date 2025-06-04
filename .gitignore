@@ -40,13 +40,15 @@ src/main/resources/data/
 
 ### ElasticSearch ###
 infra/elasticsearch/data
-infra/local/elasticsearch/data/
 
 ### local ###
 .env
 db
-elasticsearch
 infra/db/
-infra/elasticsearch/data/
-infra/local/.env
-infra/local/db/
+infra/.env
+infra/db/
+.dockerignore
+
+
+## certKey ##
+infra/certs/local*
