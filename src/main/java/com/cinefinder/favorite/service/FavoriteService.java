@@ -1,5 +1,6 @@
 package com.cinefinder.favorite.service;
 
+import com.cinefinder.favorite.data.dto.FavoriteCheckRequestDto;
 import com.cinefinder.favorite.data.dto.FavoriteRequestDto;
 import com.cinefinder.favorite.data.dto.FavoriteResponseDto;
 import com.cinefinder.favorite.data.repository.FavoriteRepository;
@@ -46,9 +47,14 @@ public class FavoriteService {
         }
     }
 
-    public List<FavoriteResponseDto> checkFavorite(Long userId, List<Long> movieIdList) {
+    public List<FavoriteResponseDto> checkFavorite(FavoriteCheckRequestDto favoriteCheckRequestDto) {
         try {
+            List<Long> movieIdList = favoriteCheckRequestDto.getMovieId();
+            Long userId = favoriteCheckRequestDto.getUserId();
             List<FavoriteResponseDto> favoriteResponseDtoList = new ArrayList<>();
+
+            if (movieIdList == null) return favoriteResponseDtoList;
+
             for (Long movieId : movieIdList) {
                 favoriteResponseDtoList.add(FavoriteResponseDto.builder()
                     .userId(userId)

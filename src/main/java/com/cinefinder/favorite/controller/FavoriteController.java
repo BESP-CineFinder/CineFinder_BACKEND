@@ -1,5 +1,6 @@
 package com.cinefinder.favorite.controller;
 
+import com.cinefinder.favorite.data.dto.FavoriteCheckRequestDto;
 import com.cinefinder.favorite.data.dto.FavoriteRequestDto;
 import com.cinefinder.favorite.data.dto.FavoriteMovieResponseDto;
 import com.cinefinder.favorite.data.dto.FavoriteResponseDto;
@@ -27,10 +28,9 @@ public class FavoriteController {
 
     @GetMapping
     public ResponseEntity<BaseResponse<List<FavoriteResponseDto>>> checkFavorite(
-            @RequestParam Long userId,
-            @RequestParam List<Long> movieId
+            @ModelAttribute FavoriteCheckRequestDto favoriteCheckRequestDto
     ) {
-        return ResponseMapper.successOf(ApiStatus._OK, favoriteService.checkFavorite(userId, movieId), FavoriteController.class);
+        return ResponseMapper.successOf(ApiStatus._OK, favoriteService.checkFavorite(favoriteCheckRequestDto), FavoriteController.class);
     }
 
     @GetMapping("/movie-list")
