@@ -83,12 +83,17 @@ public class RecommendService {
                 double total = 0;
                 Long movieId = entry.getKey();
 
-                total += 3 * favoriteService.countFavoriteMovieList(movieId);
-                total += 2 * (entry.getValue() - 2);
-                total += (rankMap.get(movieId) != null) ? 2 - (0.1 * (rankMap.get(movieId) - 1)) : 0;
+                long favoriteCount = favoriteService.countFavoriteMovieList(movieId);
+                total += calculateFavoriteScore(favoriteCount);
+
+                Double sentiment = entry.getValue();
+                total += calculateSentimentScore(sentiment);
+
+                Integer rank = rankMap.get(movieId);
+                total += calculateRankScore(rank);
 
                 MovieResponseDto movieResponseDto = movieService.getMovieDetailsByMovieId(movieId);
-                movieResponseDto.updateFavoriteCount(favoriteService.countFavoriteMovieList(movieId));
+                movieResponseDto.updateFavoriteCount(favoriteCount);
 
                 RecommendResponseDto recommendResponseDto = RecommendResponseDto.builder()
                     .movieId(movieId)
@@ -126,5 +131,17 @@ public class RecommendService {
                 lock.unlock();
             }
         }
+    }
+
+    private double calculateFavoriteScore(long favoriteCount) {
+        return 3 * favoriteCount;
+    }
+
+    private double calculateSentimentScore(Double sentiment) {
+        return (sentiment != 0) ? 2 * (sentiment - 2) : 0;
+    }
+
+    private double calculateRankScore(Integer rank) {
+        return (rank != null) ? 2 - (0.1 * (rank - 1)) : 0;
     }
 }
